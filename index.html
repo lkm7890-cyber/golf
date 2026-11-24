@@ -395,7 +395,7 @@ function prep(h) { // 사전 계산
 // ================= 실제 코스 스코어카드 기반 코스 =================
 // 파/야드는 공개 스코어카드(화이트티) 실측값. 홀 모양·해저드 위치는 공개 지도 데이터가 없어 코스 특징만 반영한 근사치.
 const COURSES = {
- bpk: { name: '방파콩 리버사이드 CC', rain: .25, fw: 44, greenR: [17, 14], windMul: 1.35, slopeMul: .9, p3water: true, td: 1, latW: .6, bunkMul: 1.5,
+ bpk: { name: '방파콩 리버사이드 CC', rain: .25, fw: 44, greenR: [17, 14], windMul: 1.35, slopeMul: .9, p3water: true, td: 2, latW: .6, bunkMul: 1.5,
    note: '돌림판 고정 홈구장 · 강바람 · 파3 워터캐리 · 14번홀 오른쪽 물가 벌레 함정 (파·야드 실측, 모양 근사 · 위성사진: 홀 사이마다 라군, 벙커 많고 나무 적음)',
    par: [4,4,5,3,4,4,3,4,5, 4,4,5,3,4,4,3,4,5],
    yd:  [370,380,495,180,397,375,175,400,524, 374,370,490,148,380,350,170,310,505],
@@ -461,7 +461,7 @@ function pathInfo(h, p) { let best = null; for (let i = 0; i < h.seg.length; i++
 function pathPoint(h, s) { s = clamp(s, 0, h.len); for (let i = 0; i < h.seg.length; i++) if (s <= h.cum[i + 1] + 1e-6) { const t = (s - h.cum[i]) / (h.seg[i] || 1); return { x: h.P[i].x + (h.P[i + 1].x - h.P[i].x) * t, y: h.P[i].y + (h.P[i + 1].y - h.P[i].y) * t }; } return h.P[h.P.length - 1]; }
 function inWater(w, p) { if (w.t === 'e') return ((p.x - w.x) / w.rx) ** 2 + ((p.y - w.y) / w.ry) ** 2 <= 1; return segInfo(p, { x: w.ax, y: w.ay }, { x: w.bx, y: w.by }).d <= w.r; }
 // 나무: 코스별 밀도(td 0~3, 위성사진 기준)로 러프에 배치. 공이 나무 밑(반경 5.5)에 서면 '나무 밑' 라이
-const TREE_TH = [.05, .16, .36, .6];
+const TREE_TH = [.12, .3, .48, .68];
 function treeCell(h, ix, iy) { const r = hsh(ix + 91, iy + 17); if (r > TREE_TH[h.td == null ? 2 : h.td]) return null; return { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; }
 function nearTree(h, p) { if (h.pinPos && dist(p, h.pinPos) < 30) return false; const cx = Math.floor(p.x / 24), cy = Math.floor(p.y / 24); for (let iy = cy - 1; iy <= cy + 1; iy++) for (let ix = cx - 1; ix <= cx + 1; ix++) { const t = treeCell(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5.5) return true; } return false; }
 function terr(h, p) {
@@ -1321,7 +1321,7 @@ const sx = x => cx() + (x - cam.x) * cam.s, sy = y => cy() - (y - cam.y) * cam.s
 const PAL = { ob: '#0b120e', line: '#d9e2d6', rough: '#2a6a34', cut: '#34803f', fw: '#4ea854', fwL: '#5dbb62', green: '#76d57d', fringe: '#58b862', sand: '#e8d89c', sandD: '#c9b678', water: '#2f80d0', waterD: '#235f9f', wave: '#8fd0f7' };
 function hsh(ix, iy) { let h = Math.imul(ix, 374761393) + Math.imul(iy, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
 const TREE = ['..GGGG...', '.GGLLGG..', 'GGLLGGGG.', 'GGGGGGGG.', '.GGGGGG..', '..GGGG...', '....T....', '....T....'];
-function drawTree(x, y) { for (let r = 0; r < 8; r++) for (let c = 0; c < 9; c++) { const k = TREE[r][c]; if (k === '.') continue; bx.fillStyle = k === 'G' ? '#1d5a2b' : k === 'L' ? '#2f8a43' : '#5b3a1e'; bx.fillRect(x + c, y + r, 1, 1); } }
+function drawTree(x, y, ps) { ps = ps || 1; for (let r = 0; r < 8; r++) for (let c = 0; c < 9; c++) { const k = TREE[r][c]; if (k === '.') continue; bx.fillStyle = k === 'G' ? '#1d5a2b' : k === 'L' ? '#2f8a43' : '#5b3a1e'; bx.fillRect(x + c * ps, y + r * ps, ps, ps); } }
 function pxRing(cx0, cy0, r, col) { bx.fillStyle = col; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; bx.fillRect(Math.round(cx0 + Math.cos(a) * r) - 1, Math.round(cy0 + Math.sin(a) * r) - 1, 2, 2); } }
 function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1347,7 +1347,7 @@ function render() {
   }
   // 나무 (장식)
   { const cs = 24, x0 = Math.floor((cam.x - BW / 2 / k) / cs) - 1, x1 = Math.ceil((cam.x + BW / 2 / k) / cs) + 1, y0 = Math.floor((cam.y - BH * .54 / k) / cs) - 1, y1 = Math.ceil((cam.y + BH * .46 / k) / cs) + 1;
-    for (let iy = y1; iy >= y0; iy--) for (let ix = x0; ix <= x1; ix++) { const wp = treeCell(h, ix, iy); if (!wp) continue; { const tt2 = terr(h, wp); if (tt2 !== 'rough' && tt2 !== 'trees') continue; } if (pathInfo(h, wp).d < h.fw / 2 + 9) continue; if (dist(wp, h.pinPos) < 26) continue; drawTree(R_(X(wp.x)) - 4, R_(Y(wp.y)) - 8); } }
+    for (let iy = y1; iy >= y0; iy--) for (let ix = x0; ix <= x1; ix++) { let wp = treeCell(h, ix, iy), ob = false; if (!wp) { if (hsh(ix + 91, iy + 17) > .72) continue; wp = { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; ob = true; } { const tt2 = terr(h, wp); if (ob ? tt2 !== 'ob' : (tt2 !== 'rough' && tt2 !== 'trees' && tt2 !== 'ob')) continue; } if (pathInfo(h, wp).d < h.fw / 2 + 9) continue; if (dist(wp, h.pinPos) < 26) continue; { const ps = Math.max(1, Math.round(k * .85)); drawTree(R_(X(wp.x)) - 4 * ps, R_(Y(wp.y)) - 8 * ps, ps); } } }
   // 핀 + 깃발
   const pn = h.pinPos, px = R_(X(pn.x)), py = R_(Y(pn.y)); bx.fillStyle = '#111'; bx.fillRect(px - 2, py - 1, 4, 2); bx.fillStyle = '#fff'; bx.fillRect(px, py - 14, 1, 14);
   const fw = Math.floor(G.t * 4) % 2; bx.fillStyle = '#e33'; bx.fillRect(px + 1, py - 14, 5 + fw, 2); bx.fillRect(px + 1, py - 12, 4 - fw, 2); bx.fillRect(px + 1, py - 10, 3 + fw, 1);
@@ -1450,7 +1450,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.7';
+const VERSION = 'v0.32.8';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1475,6 +1475,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.8', '2026-11-24', ['🌳 나무 늘림: 모든 구장 러프의 나무 밀도 약 1.5~2배 + 코스 밖(OB 구역) 검은 빈 공간을 숲으로 채워 홀 사이 나무숲처럼 보이게. 방파콩은 페어웨이를 따라 늘어선 야자수가 많다는 코스 소개에 맞춰 "적음"→"보통"으로 상향']],
  ['v0.32.7', '2026-11-24', ['💰 수리비 인하 전 비싼 값에 수리한 것 보상: 이규만 +5,000밧 (1회, 메뉴 들어가면 자동 지급)', '앞으로 수리할 때마다 수리 기록(날짜·장비·금액)을 저장해 보상·정산 근거로 사용']],
  ['v0.32.6', '2026-11-24', ['🔧 장비 내구도가 너무 빨리 닳던 것 완화: 드라이버 사망 -35→-15, 탑볼 -5→-2, 뒤땅 -4→-1.5, 심한 미스샷 -2→-0.7(기준도 더 큰 미스만), 벙커샷 -1→-0.5, 공 분실 -10→-4', '💸 수리비 약 60% 인하: 장비 가격 × 닳은 비율 × 40% → 15% (최소 50→30밧). 예) 2만밧 드라이버 30% 닳음: 2,400밧 → 900밧']],
  ['v0.32.5', '2026-11-24', ['🗺 코스 정확도 개선(방파콩 4번홀): 공개 코스 소개 기준 시그니처 파3 반영 — 왼쪽 큰 반달 호수가 페어웨이 안쪽까지 파고듦, 그린 벙커, 경사 큰 2단 그린']],
