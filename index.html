@@ -232,7 +232,7 @@ tr.me td{background:rgba(255,182,39,.13)}
     <button class="btn" id="rouBtn" type="button">🎡 조작 돌림판</button>
     <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체</option></select></label>
     
-    <label><input type="checkbox" id="oVoice" checked> 🔊 대사 음성</label>
+    <label><input type="checkbox" id="oVib" checked> 📳 심박 진동</label> <label><input type="checkbox" id="oVoice" checked> 🔊 대사 음성</label>
     <label><input type="checkbox" id="oWx" checked> 🌦 실시간 날씨</label>
   </div><div class="help" id="wxNote" style="margin:0 0 8px"></div><div style="margin-bottom:10px">
     <input type="checkbox" id="oHcp" style="display:none">
@@ -1406,7 +1406,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.27.1';
+const VERSION = 'v0.28.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1431,6 +1431,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.28.0', '2026-11-24', ['랭킹에 8명 전원 표시 — 아직 접속하지 않은 사람은 흐리게 "미접속"으로, 능력치는 캐릭터 기본값으로 나옴', '📳 심박 진동: 스윙(파워·정확도 게이지) 중 심장 박동에 맞춰 폰이 두근두근 진동하고 화면에 ❤ 심박수가 표시됨', '구찌를 맞으면 심박수가 확 올라 진동이 빨라짐. 그린 위 퍼팅·마지막 홀·강풍·멀티 대결에서도 조금씩 올라감', '라운드 준비 화면의 "📳 심박 진동" 체크로 끌 수 있음. 아이폰은 브라우저가 진동을 지원하지 않아 ❤ 표시만 나옴']],
  ['v0.27.1', '2026-11-24', ['실시간 랭킹을 메뉴의 "🏆 실시간 랭킹" 버튼으로 이동 — 누르면 자산·능력치·대결 순위가 한 줄에 한 명씩 크게 표시됨']],
  ['v0.27.0', '2026-11-24', ['🏆 실시간 랭킹 3종: 메뉴 화면과 클럽하우스에 전원 순위가 실시간으로 표시됨. 본인은 주황색', '💰 자산 랭킹 = 지갑 + 주식 평가액 − 대출', '🏌 능력치 랭킹 = 파워·정확도·퍼팅 종합 점수 (장비·레벨·연습 반영, 내 능력치 화면에도 표시)', '⚔ 대결 랭킹 = 멀티 모드 1위 횟수와 내기 누적 손익 (이번 버전부터 집계)', '카톡 파일로 하던 때의 옛 기록은 랭킹에서 제외 — 링크로 접속한 사람만 나옴']],
  ['v0.26.4', '2026-11-24', ['모든 화면 오른쪽 위에 "← 메뉴" 버튼 고정 — 목록이 길어도 맨 아래까지 내리지 않고 바로 돌아감', '폰의 뒤로 가기 버튼(또는 뒤로 밀기)을 누르면 게임이 꺼지지 않고 메뉴로 돌아감. 라운드 중에는 실수로 나가지 않게 막음']],
@@ -1495,12 +1496,12 @@ function netProfile() { if (!NET.ok || G.phase === undefined) return; clearTimeo
 let RANK = {};
 function abil(c) { const f = gearFx(c), lv = 1 - .008 * (lvOf(c.id) - 1), p = c.mult * f.drv * 100, a = c.acc * 100 * (2 - f.iAcc * lv * (1 - .005 * trPts('i'))), u = c.putt * 100 * (2 - f.putt * lv * (1 - .005 * trPts('p'))); return { p: Math.round(p), a: Math.round(a), u: Math.round(u), t: Math.round((p + a + u) / 3) }; }
 let RKT = 'a';
-function rankHTML(sep) { sep = sep || ' · '; const all = Object.keys(RANK || {}).filter(k => CH.some(c => c.id === k) && RANK[k] && RANK[k].v === 2); if (!all.length) return ''; const R_ = RANK, md = i => ['🥇', '🥈', '🥉'][i] || (i + 1) + '.', row = (k, i, t) => `<span style="${k === SV.myCh ? 'color:#ffb627;font-weight:bold' : ''}">${md(i)} ${CH.find(x => x.id === k).name} ${t}</span>`, tab = (k, n) => `<button data-rk="${k}" style="font:inherit;font-size:12px;padding:5px 9px;margin:0 4px 4px 0;border:0;background:${RKT === k ? '#ffb627' : '#2a2416'};color:${RKT === k ? '#111' : '#e8d9a8'}">${n}</button>`; let body;
-  if (RKT === 'b') body = all.slice().sort((x, y) => (R_[y].ab | 0) - (R_[x].ab | 0)).map((k, i) => row(k, i, `${R_[k].ab | 0}점 <small style="opacity:.7">Lv.${R_[k].lv | 0}</small>`)).join(sep) + '<br><span style="opacity:.6">종합 = 파워·정확도·퍼팅 평균 (장비·레벨·연습 반영)</span>';
-  else if (RKT === 'd') body = all.slice().sort((x, y) => (R_[y].mw | 0) - (R_[x].mw | 0) || (R_[y].mm | 0) - (R_[x].mm | 0)).map((k, i) => row(k, i, `${R_[k].mw | 0}승/${R_[k].mr | 0}판 <small style="opacity:.7">${(R_[k].mm | 0) >= 0 ? '+' : ''}${(R_[k].mm | 0).toLocaleString()}밧</small>`)).join(sep) + '<br><span style="opacity:.6">멀티 모드 대결 1위 횟수 · 내기 누적 손익</span>';
-  else body = all.slice().sort((x, y) => (R_[y].a | 0) - (R_[x].a | 0)).map((k, i) => row(k, i, `${(R_[k].a | 0).toLocaleString()}밧`)).join(sep) + '<br><span style="opacity:.6">총자산 = 지갑 + 주식 − 빚</span>';
-  return '<b style="color:#ffe08a">🏆 실시간 랭킹</b><br>' + tab('a', '💰 자산') + tab('b', '🏌 능력치') + tab('d', '⚔ 대결') + '<br>' + body; }
-function drawRank() { for (const id of ['rankBody', 'clubRank']) { const e = $('#' + id); const h = id === 'rankBody' ? (rankHTML('<br>') || '아직 랭킹에 올라온 사람이 없습니다.') : rankHTML(); if (e) { e.innerHTML = h; e.style.display = h ? 'block' : 'none'; e.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { RKT = b.dataset.rk; drawRank(); }); } } }
+function rankHTML(sep, noTitle) { sep = sep || ' · '; const R_ = RANK || {}, all = CH.map(c => c.id), has = k => !!(R_[k] && (R_[k].v === 2 || R_[k].w != null)), D = k => R_[k] || {}, baseAb = k => { const c = CH.find(x => x.id === k); return Math.round((c.mult * 100 + c.acc * 100 + c.putt * 100) / 3); }, md = i => ['🥇', '🥈', '🥉'][i] || (i + 1) + '.', row = (k, i, t) => `<span style="${k === SV.myCh ? 'color:#ffb627;font-weight:bold' : has(k) ? '' : 'opacity:.55'}">${md(i)} ${CH.find(x => x.id === k).name} ${t}</span>`, tab = (k, n) => `<button data-rk="${k}" style="font:inherit;font-size:12px;padding:5px 9px;margin:0 4px 4px 0;border:0;background:${RKT === k ? '#ffb627' : '#2a2416'};color:${RKT === k ? '#111' : '#e8d9a8'}">${n}</button>`, off = '<small style="opacity:.7">미접속</small>', ord = f => all.slice().sort((x, y) => (has(y) - has(x)) || (f(y) - f(x))); let body;
+  if (RKT === 'b') { const f = k => D(k).ab != null ? D(k).ab | 0 : baseAb(k); body = ord(f).map((k, i) => row(k, i, `${f(k)}점 ${D(k).ab != null ? `<small style="opacity:.7">Lv.${D(k).lv | 0}</small>` : '<small style="opacity:.7">기본값</small>'}`)).join(sep) + '<br><span style="opacity:.6">종합 = 파워·정확도·퍼팅 평균 (장비·레벨·연습 반영)</span>'; }
+  else if (RKT === 'd') body = all.slice().sort((x, y) => (D(y).mw | 0) - (D(x).mw | 0) || (D(y).mm | 0) - (D(x).mm | 0) || (has(y) - has(x))).map((k, i) => row(k, i, `${D(k).mw | 0}승/${D(k).mr | 0}판 <small style="opacity:.7">${(D(k).mm | 0) >= 0 ? '+' : ''}${(D(k).mm | 0).toLocaleString()}밧</small>`)).join(sep) + '<br><span style="opacity:.6">멀티 모드 대결 1위 횟수 · 내기 누적 손익</span>';
+  else { const f = k => D(k).a != null ? D(k).a | 0 : D(k).w | 0; body = ord(f).map((k, i) => row(k, i, has(k) ? `${f(k).toLocaleString()}밧${D(k).v === 2 ? '' : ' <small style="opacity:.7">옛 기록</small>'}` : off)).join(sep) + '<br><span style="opacity:.6">총자산 = 지갑 + 주식 − 빚 · 흐린 글씨는 아직 새 버전으로 접속하지 않은 사람</span>'; }
+  return (noTitle ? '' : '<b style="color:#ffe08a">🏆 실시간 랭킹</b><br>') + tab('a', '💰 자산') + tab('b', '🏌 능력치') + tab('d', '⚔ 대결') + '<br>' + body; }
+function drawRank() { for (const id of ['rankBody', 'clubRank']) { const e = $('#' + id); const h = id === 'rankBody' ? rankHTML('<br>', 1) : rankHTML(); if (e) { e.innerHTML = h; e.style.display = h ? 'block' : 'none'; e.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { RKT = b.dataset.rk; drawRank(); }); } } }
 let onl = {}, chatSeen = {}, chatInit = false;
 function netBeat(st) { if (NET.ok) nreq('PUT', '/on/' + SV.did, { ch: G.me, lv: lvOf(G.me), st: st || (G.multi ? 'multi' : ['aim', 'power', 'acc', 'fly', 'wait', 'result', 'stock'].includes(G.phase) ? 'play' : 'menu'), ts: Date.now() }).catch(() => { }); }
 async function netInit() { try { await nreq('GET', '/ping'); NET.ok = true; } catch (e) { NET.ok = false; return; } cfgLoad(); cloudSync(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
@@ -1615,6 +1616,11 @@ try { const q = new URLSearchParams(location.search).get('me'); if (!SV.myCh && 
 $('#mRank').onclick = () => { let o = $('#rankBox'); if (!o) { o = document.createElement('div'); o.id = 'rankBox'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:rgba(5,8,11,.97);overflow:auto;padding:14px'; document.body.appendChild(o); } o.innerHTML = '<div style="max-width:420px;margin:0 auto"><h3 style="color:#ffe08a;margin:4px 0 10px;font-size:20px">🏆 실시간 랭킹</h3><div class="box" id="rankBody" style="font-size:15px;line-height:2.1"></div><button class="go" id="rankClose" style="background:#22303c;color:#fff">← 메뉴</button></div>'; $('#rankClose').onclick = () => o.remove(); drawRank(); netProfile(); };
 $('#mStat').onclick = () => { if (!SV.myCh) { whoAmI(); return; } drawStat(); };
 showMenu(); whoAmI();
+{ const v = $('#oVib'); if (v) { v.checked = SV.vib !== 0; v.onchange = () => { SV.vib = v.checked ? 1 : 0; saveSV(); }; } }
+// ---- 심박수 진동: 스윙(파워·정확도) 중 심장 박동에 맞춰 진동. 구찌를 맞으면 심박수가 올라 진동도 빨라짐 ----
+function hbBpm() { const st = G.human; if (!st) return 70; let b = 68 + Math.max(0, (G.gucciMul || 1) - 1) * 450 + Math.max(0, (G.accMul || 1) - 1) * 150; if (st.lie === 'green') b += 12; if (G.hi === G.nHoles - 1) b += 10; if (G.phase === 'acc') b += 8; if ((G.windS || 0) > 5) b += 5; if (G.multi) b += 6; return clamp(Math.round(b), 60, 165); }
+{ const hb = document.createElement('div'); hb.id = 'hb'; hb.style.cssText = 'position:fixed;right:12px;top:42%;z-index:30;pointer-events:none;color:#ff6b6b;font-size:19px;font-weight:bold;text-shadow:0 0 6px #000,0 0 2px #000;transition:transform .12s;display:none'; document.body.appendChild(hb); let hbNext = 0;
+  setInterval(() => { const on = (G.phase === 'power' || G.phase === 'acc') && G.human; if (!on) { if (hb.style.display !== 'none') { hb.style.display = 'none'; try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) { } } hbNext = 0; return; } const bpm = hbBpm(), now = performance.now(); hb.style.display = 'block'; hb.style.color = bpm >= 110 ? '#ff3b3b' : '#ff8f8f'; hb.textContent = '❤ ' + bpm + (bpm >= 110 ? ' 두근두근' : ''); if (now >= hbNext) { hbNext = now + 60000 / bpm; try { if (SV.vib !== 0 && navigator.vibrate) navigator.vibrate(bpm >= 110 ? [45, 70, 30] : [35, 90, 20]); } catch (e) { } hb.style.transform = 'scale(1.4)'; setTimeout(() => { hb.style.transform = 'scale(1)'; }, 130); } }, 40); }
 // ---- 어디서나 뒤로 가기: 화면 오른쪽 위 "← 메뉴" 버튼 + 폰의 뒤로 가기 버튼 지원 ----
 const NAVMAP = [['sMulti', 'mLeaveBtn'], ['sStk', 'stkClose'], ['sPrac', 'pracClose'], ['sInfo', 'infoClose'], ['sClub', 'clubClose'], ['sShop', 'shopClose'], ['sReal', 'realClose'], ['sTitle', 'toMenu']];
 function navBtn() { if ($('#statBox')) return $('#statClose'); if ($('#rankBox')) return $('#rankClose'); if ($('#whoBox') || $('#pinSet')) return null; for (const [sc, b] of NAVMAP) { const e = $('#' + sc); if (e && e.classList.contains('on')) return $('#' + b); } return null; }
