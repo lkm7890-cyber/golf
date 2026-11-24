@@ -399,7 +399,7 @@ const COURSES = {
    note: '돌림판 고정 홈구장 · 강바람 · 파3 워터캐리 · 14번홀 오른쪽 물가 벌레 함정 (파·야드 실측, 모양 근사 · 위성사진: 홀 사이마다 라군, 벙커 많고 나무 적음)',
    par: [4,4,5,3,4,4,3,4,5, 4,4,5,3,4,4,3,4,5],
    yd:  [370,380,495,180,397,375,175,400,524, 374,370,490,148,380,350,170,310,505],
-   special: { 14: { water: [{ s: .55, lat: 'R', rx: 14, ry: 42, gap: 9 }], name: '오른쪽 물가 벌레 함정' } } },
+   special: { 4: { noP3: true, water: [{ s: .55, lat: 'L', rx: 26, ry: 46, gap: -11 }], gbunk: 3, slopeK: 1.7, name: '시그니처 파3 · 왼쪽 반달 호수가 페어웨이 안쪽까지 · 2단 그린' }, 14: { water: [{ s: .55, lat: 'R', rx: 14, ry: 42, gap: 9 }], name: '오른쪽 물가 벌레 함정' } } },
  gv: { name: '그린밸리 CC (2포트 금지구장)', fw: 26, greenR: [14, 12], windMul: 1, slopeMul: 1.3, p3water: true, bunkMul: 1.6, rain: .3, hard: true, td: 2, latW: .5,
    note: '하드코어 모드: 좁은 페어웨이, 2포트 멤버 정확도 디버프 (파·야드 추정 ✱)', par: [4,4,3,5,4,4,3,5,4], yd: [380,395,175,520,370,405,190,530,400], special: {} },
  pcc: { name: '파타야 CC', rain: .2, fw: 38, greenR: [16, 14], windMul: .9, slopeMul: 1.5, p3water: false, td: 2, latW: .15,
@@ -431,7 +431,7 @@ function buildCourse(key, part, seed) { // part: 'front' | 'back' | 'quick'(3홀
     const dOv = C.dogs && C.dogs[i + 1]; const dog = dOv ? ({ L: -1, R: 1, S: 0, LR: 0 })[dOv] : par === 5 ? (i % 2 ? 1 : -1) : (par === 4 && yd < 380 && i % 3 === 0 ? (i % 2 ? -1 : 1) : 0);
     let pts; if (dOv === 'LR') { const a = rad(24), L1 = yd * .3, L2 = yd * .35; pts = [[0, 0], [0, L1], [-L2 * Math.sin(a), L1 + L2 * Math.cos(a)], [0, L1 + 2 * L2 * Math.cos(a)]]; } else if (!dog) pts = [[0, 0], [0, yd]]; else { const c = yd * .55, L2 = yd * .45, a = rad(28); pts = [[0, 0], [0, c], [dog * L2 * Math.sin(a), c + L2 * Math.cos(a)]]; }
     const spF = C.special[i + 1] || {}, fw = (par === 3 ? Math.min(C.fw, 32) : C.fw) * (spF.fwMul || 1);
-    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 40, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul, (rr() - .5) * .9 * C.slopeMul], td: C.td, estimated: key === 'grn' || key === 'gv' };
+    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 40, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1), (rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1)], td: C.td, estimated: key === 'grn' || key === 'gv' };
     prep(h); h.g.rx = C.greenR[0]; h.g.ry = C.greenR[1];
     const at = (s, lat) => { const p = pathPoint(h, s), q = pathPoint(h, Math.min(h.len, s + 2)), r2 = pathPoint(h, Math.max(0, s - 2)); let tx = q.x - r2.x, ty = q.y - r2.y; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l; return { x: p.x + ty * lat, y: p.y - tx * lat }; };
     const bm = C.bunkMul || 1;
@@ -441,7 +441,7 @@ function buildCourse(key, part, seed) { // part: 'front' | 'back' | 'quick'(3홀
     const gp = h.g; const gb = spF.gbunk || (par === 3 ? 3 : 2); for (let b = 0; b < gb; b++) { const side = b % 2 ? 1 : -1, ang = (b / gb) * Math.PI * 2, p = gb > 3 ? { x: gp.x + Math.cos(ang) * (C.greenR[0] + 7), y: gp.y + Math.sin(ang) * (C.greenR[1] + 7) } : at(h.len - (b === 2 ? 22 : 4), side * (C.greenR[0] + 6)); h.bunk.push({ x: p.x, y: p.y, r: 7 + rr() * 2 }); }
     if (spF.gbFront) { const p = at(h.len - C.greenR[1] - 7, 0); h.bunk.push({ x: p.x, y: p.y, r: 9, deep: true }); }
     // 파3 워터캐리
-    if (par === 3 && C.p3water) { const p = at(h.len - 28, 0); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 24, ry: 9 }); h.name = '파3 워터캐리'; }
+    if (par === 3 && C.p3water && !spF.noP3) { const p = at(h.len - 28, 0); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 24, ry: 9 }); h.name = '파3 워터캐리'; }
     // 호수 (로얄레이크사이드)
     if (C.lakes && par !== 3 && i % 2 === 0 && !C.special[i + 1]) { const side = i % 4 === 0 ? -1 : 1, p = at(yd * .6, side * (fw / 2 + 20)); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 22, ry: 46 }); h.name = '호수 홀'; }
     // 홀 옆 라군 (위성사진 기준 코스별 빈도)
@@ -1450,7 +1450,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.4';
+const VERSION = 'v0.32.5';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1475,6 +1475,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.5', '2026-11-24', ['🗺 코스 정확도 개선(방파콩 4번홀): 공개 코스 소개 기준 시그니처 파3 반영 — 왼쪽 큰 반달 호수가 페어웨이 안쪽까지 파고듦, 그린 벙커, 경사 큰 2단 그린']],
  ['v0.32.4', '2026-11-24', ['⛳ 짧은 퍼팅 게이지 개선: 게이지 끝이 항상 50야드였던 것을 거리에 따라 6 / 12 / 25 / 50야드로 자동 변경. 3야드 퍼팅이면 게이지 끝이 6야드라 표시선이 게이지 가운데쯤에 옴 (기존엔 왼쪽 끝 6% 지점). 클럽 칸에 "게이지 끝 Ny" 표시']],
  ['v0.32.3', '2026-11-24', ['🔍 그린에 올라가면 화면이 그린 전체·공·핀에 맞춰 크게 확대됨 (프린지에서 퍼터 잡을 때도 동일). 퍼팅 라인과 거리감 보기 쉬워짐']],
  ['v0.32.2', '2026-11-24', ['🏌 로얄레이크사이드 코스 실측 반영: 18홀 파·화이트티 야드를 공식 스코어카드 값으로 교체 (기존 추정 ✱ 해제)', '실제 홀 특징 반영 — 6번 그린 앞 깊은 벙커 / 7번 더블 도그렉(좌→우) / 9번 마리나 등대 홀 / 10번 왼쪽 강·좁은 페어웨이 / 14번 살짝 좌 도그렉 + 왼쪽 개울 + 그린 앞 가로지르는 개울 / 18번 260야드 지점 개울이 홀을 가로지름 + 그린 왼쪽 물 + 그린 벙커 7개', '나머지 홀 모양은 근사치(공개 홀 가이드 없음)']],
