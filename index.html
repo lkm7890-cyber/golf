@@ -409,9 +409,17 @@ const COURSES = {
    note: '좁은 페어웨이 · 러프·벙커 공략이 핵심 (파·야드 추정 ✱, 모양 근사)',
    par: [4,5,3,4,4,3,4,5,4], yd: [385,515,170,390,365,185,400,525,395], special: {} },
  rls: { name: '로얄레이크사이드 GC', rain: .6, drv: .05, fw: 36, greenR: [15, 13], windMul: 1.1, slopeMul: 1, p3water: true, lakes: true, td: 2, bunkMul: 1.4,
-   note: '1,999밧 프로모션 · 호수 홀 · 기본 배판 · 폭우 지옥훈련과 드라이버 사망 다발 (파 실측, 야드 일부 추정 ✱)',
+   note: '1,999밧 프로모션 · 방파콩강 하구, 코스를 두른 라군과 가로지르는 개울 · 넓은 페어웨이에 웨이스트 벙커 · 기본 배판 (파·화이트티 야드 실측, 7·10·14·18번홀 공개 코스 가이드 반영)',
    par: [5,4,3,4,4,3,5,4,4, 5,4,3,4,4,3,4,4,5],
-   yd:  [495,352,175,370,370,175,500,370,370, 500,370,175,370,370,175,370,370,500], special: {} },
+   yd:  [495,352,157,371,340,174,492,356,402, 511,335,148,414,344,126,367,354,516],
+   dogs: { 7: 'LR', 10: 'S', 14: 'L', 18: 'S' },
+   special: {
+     6: { gbFront: true, name: '그린 앞 깊은 벙커' },
+     7: { name: '더블 도그렉 (좌→우)' },
+     9: { water: [{ s: .45, lat: 'R', rx: 16, ry: 60, gap: 8 }], name: '마리나 등대 홀' },
+     10: { fwMul: .78, water: [{ s: .5, lat: 'L', rx: 20, ry: 150, gap: 3 }], name: '왼쪽 강 · 좁은 페어웨이' },
+     14: { water: [{ s: .38, lat: 'L', rx: 9, ry: 55, gap: 3 }, { s: .86, lat: 'C', rx: 0, ry: 7, gap: 0 }], name: '왼쪽 개울 + 그린 앞 개울' },
+     18: { water: [{ s: .5, lat: 'C', rx: 0, ry: 9, gap: 0 }, { s: .9, lat: 'L', rx: 14, ry: 45, gap: 6 }], gbunk: 7, name: '260야드 개울이 홀을 가로지름 · 그린 왼쪽 물·OB · 벙커 7개' } } },
 };
 COURSES.scr = Object.assign({}, COURSES.bpk, { name: '삼화 스크린골프장', windMul: .0001, rain: 0, note: '바람·비 없음. 정b 우드 110야드·쓰리펏 디버프 (방파콩 데이터 기반)' });
 function mulb(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -420,25 +428,26 @@ function buildCourse(key, part, seed) { // part: 'front' | 'back' | 'quick'(3홀
   let sel = null; if (part === 'quick' && seed != null) { const rq = mulb(seed | 0), all = C.par.map((_, j) => j); sel = []; while (sel.length < 3 && all.length) sel.push(all.splice(Math.floor(rq() * all.length), 1)[0]); sel.sort((a, b) => a - b); }
   for (let k = 0; k < cnt; k++) {
     const i = sel ? sel[k] : off + k, par = C.par[i], yd = C.yd[i], rr = mulb(7919 * (i + 1) + key.charCodeAt(0) * 31);
-    const dog = par === 5 ? (i % 2 ? 1 : -1) : (par === 4 && yd < 380 && i % 3 === 0 ? (i % 2 ? -1 : 1) : 0);
-    let pts; if (!dog) pts = [[0, 0], [0, yd]]; else { const c = yd * .55, L2 = yd * .45, a = rad(28); pts = [[0, 0], [0, c], [dog * L2 * Math.sin(a), c + L2 * Math.cos(a)]]; }
-    const fw = par === 3 ? Math.min(C.fw, 32) : C.fw;
-    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 40, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul, (rr() - .5) * .9 * C.slopeMul], td: C.td, estimated: (key === 'rls' && i !== 0 && i !== 1) || key === 'grn' || key === 'gv' };
+    const dOv = C.dogs && C.dogs[i + 1]; const dog = dOv ? ({ L: -1, R: 1, S: 0, LR: 0 })[dOv] : par === 5 ? (i % 2 ? 1 : -1) : (par === 4 && yd < 380 && i % 3 === 0 ? (i % 2 ? -1 : 1) : 0);
+    let pts; if (dOv === 'LR') { const a = rad(24), L1 = yd * .3, L2 = yd * .35; pts = [[0, 0], [0, L1], [-L2 * Math.sin(a), L1 + L2 * Math.cos(a)], [0, L1 + 2 * L2 * Math.cos(a)]]; } else if (!dog) pts = [[0, 0], [0, yd]]; else { const c = yd * .55, L2 = yd * .45, a = rad(28); pts = [[0, 0], [0, c], [dog * L2 * Math.sin(a), c + L2 * Math.cos(a)]]; }
+    const spF = C.special[i + 1] || {}, fw = (par === 3 ? Math.min(C.fw, 32) : C.fw) * (spF.fwMul || 1);
+    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 40, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul, (rr() - .5) * .9 * C.slopeMul], td: C.td, estimated: key === 'grn' || key === 'gv' };
     prep(h); h.g.rx = C.greenR[0]; h.g.ry = C.greenR[1];
     const at = (s, lat) => { const p = pathPoint(h, s), q = pathPoint(h, Math.min(h.len, s + 2)), r2 = pathPoint(h, Math.max(0, s - 2)); let tx = q.x - r2.x, ty = q.y - r2.y; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l; return { x: p.x + ty * lat, y: p.y - tx * lat }; };
     const bm = C.bunkMul || 1;
     // 페어웨이 벙커 (착지 구간)
     if (par >= 4) { const nb = Math.round(2 * bm); for (let b = 0; b < nb; b++) { const s = yd * (.55 + rr() * .12) + (par === 5 ? 20 : 0) + b * 18, side = (b + i) % 2 ? 1 : -1, p = at(Math.min(s, h.len - 70), side * (fw / 2 + 5 + rr() * 3)); h.bunk.push({ x: p.x, y: p.y, r: 7 + rr() * 3 }); } }
     // 그린 주변 벙커
-    const gp = h.g; const gb = par === 3 ? 3 : 2; for (let b = 0; b < gb; b++) { const side = b % 2 ? 1 : -1, p = at(h.len - (b === 2 ? 22 : 4), side * (C.greenR[0] + 6)); h.bunk.push({ x: p.x, y: p.y, r: 7 + rr() * 2 }); }
+    const gp = h.g; const gb = spF.gbunk || (par === 3 ? 3 : 2); for (let b = 0; b < gb; b++) { const side = b % 2 ? 1 : -1, ang = (b / gb) * Math.PI * 2, p = gb > 3 ? { x: gp.x + Math.cos(ang) * (C.greenR[0] + 7), y: gp.y + Math.sin(ang) * (C.greenR[1] + 7) } : at(h.len - (b === 2 ? 22 : 4), side * (C.greenR[0] + 6)); h.bunk.push({ x: p.x, y: p.y, r: 7 + rr() * 2 }); }
+    if (spF.gbFront) { const p = at(h.len - C.greenR[1] - 7, 0); h.bunk.push({ x: p.x, y: p.y, r: 9, deep: true }); }
     // 파3 워터캐리
     if (par === 3 && C.p3water) { const p = at(h.len - 28, 0); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 24, ry: 9 }); h.name = '파3 워터캐리'; }
     // 호수 (로얄레이크사이드)
-    if (C.lakes && par !== 3 && i % 2 === 0) { const side = i % 4 === 0 ? -1 : 1, p = at(yd * .6, side * (fw / 2 + 20)); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 22, ry: 46 }); h.name = '호수 홀'; }
+    if (C.lakes && par !== 3 && i % 2 === 0 && !C.special[i + 1]) { const side = i % 4 === 0 ? -1 : 1, p = at(yd * .6, side * (fw / 2 + 20)); h.water.push({ t: 'e', x: p.x, y: p.y, rx: 22, ry: 46 }); h.name = '호수 홀'; }
     // 홀 옆 라군 (위성사진 기준 코스별 빈도)
     { const r3 = mulb(104729 * (i + 1) + key.charCodeAt(1) * 17); if (C.latW && par !== 3 && !C.special[i + 1] && r3() < C.latW) { const side = r3() < .5 ? -1 : 1, rx = 13 + r3() * 6, p = at(yd * (.42 + r3() * .22), side * (fw / 2 + 9 + rx)); h.water.push({ t: 'e', x: p.x, y: p.y, rx, ry: 32 + r3() * 16 }); if (!h.name) h.name = (side > 0 ? '오른쪽' : '왼쪽') + ' 라군 홀'; } }
     // 특별 홀
-    const sp = C.special[i + 1]; if (sp) { if (sp.water) for (const w of sp.water) { const p = at(yd * w.s, (w.lat === 'R' ? 1 : -1) * (fw / 2 + w.gap + w.rx)); h.water.push({ t: 'e', x: p.x, y: p.y, rx: w.rx, ry: w.ry }); } h.name = sp.name || h.name; }
+    const sp = C.special[i + 1]; if (sp) { if (sp.water) for (const w of sp.water) { if (w.lat === 'C') { const p = at(Math.min(yd * w.s, h.len - 30), 0); h.water.push({ t: 'e', x: p.x, y: p.y, rx: fw / 2 + 26, ry: w.ry, cross: true }); continue; } const p = at(yd * w.s, (w.lat === 'R' ? 1 : -1) * (fw / 2 + w.gap + w.rx)); h.water.push({ t: 'e', x: p.x, y: p.y, rx: w.rx, ry: w.ry }); } h.name = sp.name || h.name; }
     if (!h.name) h.name = par === 5 ? '파5 롱홀' : `파${par}`;
     // 물이 그린/티와 겹치면 제거 (안전장치)
     h.water = h.water.filter(w => ((w.x - h.g.x) / (w.rx + h.g.rx)) ** 2 + ((w.y - h.g.y) / (w.ry + h.g.ry)) ** 2 > 1 || w.ry < 12);
@@ -1280,6 +1289,10 @@ function camSnap() {
   const ex = Math.max(Math.abs(tgt.x - st.pos.x), 30) + 34, ey = Math.max(Math.abs(tgt.y - st.pos.y), 30) + 40;
   const s = clamp(Math.min(Wd * .9 / (ex), Ht * .62 / (ey)), 1.1, 13);
   camT = { x: mid.x, y: mid.y, s };
+  // 그린 위(프린지·퍼터 포함): 그린 전체 + 공 + 핀이 꽉 차게 크게 확대
+  if (st.lie === 'green' || st.lie === 'fringe' || c.putter) { const g = h.g, xs = [st.pos.x, h.pinPos.x, g.x - g.rx, g.x + g.rx], ys = [st.pos.y, h.pinPos.y, g.y - g.ry, g.y + g.ry];
+    const x0 = Math.min(...xs) - 4, x1 = Math.max(...xs) + 4, y0 = Math.min(...ys) - 5, y1 = Math.max(...ys) + 6;
+    camT = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, s: clamp(Math.min(Wd * .94 / (x1 - x0), Ht * .58 / (y1 - y0)), 2, 22) }; }
 }
 const COL = { ob: '#17301f', rough: '#2f7a3d', fw: '#58b45c', fw2: '#63c067', green: '#7ad77e', fringe: '#5fbf63', sand: '#eadba0', water: '#3d92dc' };
 let lastT = 0;
@@ -1379,7 +1392,7 @@ window.addEventListener('keyup', e => { if (e.code === 'ArrowLeft') keys.L = 0; 
 setInterval(() => { if (keys.L) adjAim(-.6); if (keys.R) adjAim(.6); }, 55);
 
 // ================= 테스트/디버그 훅 =================
-window.__golf = { chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -1433,7 +1446,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.1';
+const VERSION = 'v0.32.3';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1458,6 +1471,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.3', '2026-11-24', ['🔍 그린에 올라가면 화면이 그린 전체·공·핀에 맞춰 크게 확대됨 (프린지에서 퍼터 잡을 때도 동일). 퍼팅 라인과 거리감 보기 쉬워짐']],
+ ['v0.32.2', '2026-11-24', ['🏌 로얄레이크사이드 코스 실측 반영: 18홀 파·화이트티 야드를 공식 스코어카드 값으로 교체 (기존 추정 ✱ 해제)', '실제 홀 특징 반영 — 6번 그린 앞 깊은 벙커 / 7번 더블 도그렉(좌→우) / 9번 마리나 등대 홀 / 10번 왼쪽 강·좁은 페어웨이 / 14번 살짝 좌 도그렉 + 왼쪽 개울 + 그린 앞 가로지르는 개울 / 18번 260야드 지점 개울이 홀을 가로지름 + 그린 왼쪽 물 + 그린 벙커 7개', '나머지 홀 모양은 근사치(공개 홀 가이드 없음)']],
  ['v0.32.1', '2026-11-24', ['🌐 멀티 화면에 "지금 접속 상태" 추가: 8명 전원을 🟢 접속 중(싱글/멀티 중 표시) · 🟡 방금 전 · ⚪ 미접속(몇 분/시간 전)으로 표시. 방 참가자 목록에도 접속 표시', '📋 오늘의 싱글 퀘스트에 "연습 또는 레슨 3회 받기" 고정 추가 (퀘스트 4개로). 연습장에서 개인 연습·프로 레슨 등 아무거나 3번 하면 바로 달성, 성공/실패 상관없음. 멀티 시합을 한 날은 연습장이 닫혀 달성 불가', '🔴 클럽하우스에 안 읽은 새 메시지가 있으면 메뉴의 클럽하우스 버튼에 빨간 숫자 배지 표시. 메뉴 화면에 있을 때 새 메시지가 오면 알림 문구 + 짧은 진동. 클럽하우스를 열면 읽음 처리(다른 폰과는 별개)', '3홀(빠른 라운드) 선택 시 매번 1~3번홀이 아니라 그 구장 전체에서 3개 홀을 무작위로 뽑음 (멀티는 방 전원이 같은 홀)', '퍼터는 그린·프린지와 그린 엣지 약 5야드 이내 페어웨이에서만 선택 가능. 그 밖에서는 클럽을 넘겨도 퍼터가 건너뛰어짐 (동반자 AI도 동일)']],
  ['v0.32.0', '2026-11-24', ['코스 정확도 향상: 구글 지도 위성사진을 보고 구장별 특징 반영 — 방파콩은 홀 옆 라군(물)과 벙커가 많고 나무는 적게, 그린우드는 나무 빽빽하게, 그린밸리는 큰 연못, 파타야CC·로얄레이크사이드는 나무 중간', '🌳 나무가 장식이 아니라 실제 장애물로: 러프의 나무 밑에 공이 서면 "나무 밑" 라이(거리 약 60%, 정확도 저하)', '구장마다 나무 밀도가 다르게 그려짐. 홀 옆 라군 홀 추가(방파콩 약 60%, 그린밸리 약 50%)', '구찌 멘트 대폭 추가: 캐릭터별 5개씩 + 받아치는 대사 추가 + 상황별 구찌(퍼팅·나무 밑·벙커·물 있는 홀)', '참고: 홀별 정확한 도그렉·해저드 위치는 확인된 자료가 없어 구장 전체 특징만 반영(제미나이도 위성사진은 못 봄)']],
  ['v0.31.2', '2026-11-24', ['컨시드(OK) 거리를 약 60cm → 퍼터 한 자루 길이(약 87cm)로 확대. 그린 위에서 핀에 이 거리 안으로 붙으면 자동 OK(1타 추가)']],
