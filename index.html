@@ -1423,7 +1423,7 @@ function drawShop() {
   $('#shopBody').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => { const g = GEAR.find(x => x.id === b.dataset.buy); if (SV.wallet < g.price) return; SV.wallet -= g.price; SV.owned.push(g.id); SV.equip[g.slot] = g.id; saveSV(); beep(880, .12); drawShop(); });
   $('#shopBody').querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const [gid, uid] = b.dataset.up.split(':'), g = GEAR.find(x => x.id === gid), u = UPG.find(x => x.id === uid && x.slot === g.slot); if (!u || SV.wallet < u.price) return; SV.wallet -= u.price; SV.up = SV.up || {}; SV.up[gid] = SV.up[gid] || {}; SV.up[gid][uid] = 1; saveSV(); beep(988, .12); drawShop(); });
   $('#shopBody').querySelectorAll('[data-sell]').forEach(b => b.onclick = () => { const g = GEAR.find(x => x.id === b.dataset.sell), p = sellPrice(g); if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = `정말 판매? +${p.toLocaleString()}밧`; b.style.background = '#7a2a2a'; setTimeout(() => { delete b.dataset.sure; b.textContent = `중고판매 ${p.toLocaleString()}`; b.style.background = ''; }, 3000); return; } SV.owned = SV.owned.filter(x => x !== g.id); if (SV.equip[g.slot] === g.id) SV.equip[g.slot] = null; if (SV.dur) delete SV.dur[g.id]; SV.wallet += p; saveSV(); beep(990, .12); drawShop(); });
-  $('#shopBody').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => { const g = GEAR.find(x => x.id === b.dataset.fix), c = repairCost(g); if (SV.wallet < c) return; SV.wallet -= c; SV.dur = SV.dur || {}; SV.dur[g.id] = 100; saveSV(); beep(880, .12); drawShop(); });
+  $('#shopBody').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => { const g = GEAR.find(x => x.id === b.dataset.fix), c = repairCost(g); if (SV.wallet < c) return; SV.wallet -= c; SV.dur = SV.dur || {}; SV.dur[g.id] = 100; SV.fixLog = (SV.fixLog || []).concat([[Date.now(), g.id, c]]).slice(-30); saveSV(); beep(880, .12); drawShop(); });
   $('#shopBody').querySelectorAll('[data-eq]').forEach(b => b.onclick = () => { const [slot, id] = b.dataset.eq.split(':'); SV.equip[slot] = id || null; saveSV(); drawShop(); });
 }
 $('#shopBtn').onclick = () => { drawShop(); $('#sShop').classList.add('on'); };
@@ -1450,7 +1450,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.6';
+const VERSION = 'v0.32.7';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1475,6 +1475,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.7', '2026-11-24', ['💰 수리비 인하 전 비싼 값에 수리한 것 보상: 이규만 +5,000밧 (1회, 메뉴 들어가면 자동 지급)', '앞으로 수리할 때마다 수리 기록(날짜·장비·금액)을 저장해 보상·정산 근거로 사용']],
  ['v0.32.6', '2026-11-24', ['🔧 장비 내구도가 너무 빨리 닳던 것 완화: 드라이버 사망 -35→-15, 탑볼 -5→-2, 뒤땅 -4→-1.5, 심한 미스샷 -2→-0.7(기준도 더 큰 미스만), 벙커샷 -1→-0.5, 공 분실 -10→-4', '💸 수리비 약 60% 인하: 장비 가격 × 닳은 비율 × 40% → 15% (최소 50→30밧). 예) 2만밧 드라이버 30% 닳음: 2,400밧 → 900밧']],
  ['v0.32.5', '2026-11-24', ['🗺 코스 정확도 개선(방파콩 4번홀): 공개 코스 소개 기준 시그니처 파3 반영 — 왼쪽 큰 반달 호수가 페어웨이 안쪽까지 파고듦, 그린 벙커, 경사 큰 2단 그린']],
  ['v0.32.4', '2026-11-24', ['⛳ 짧은 퍼팅 게이지 개선: 게이지 끝이 항상 50야드였던 것을 거리에 따라 6 / 12 / 25 / 50야드로 자동 변경. 3야드 퍼팅이면 게이지 끝이 6야드라 표시선이 게이지 가운데쯤에 옴 (기존엔 왼쪽 끝 6% 지점). 클럽 칸에 "게이지 끝 Ny" 표시']],
@@ -1601,7 +1602,10 @@ $('#oMode').onchange = () => { const m = $('#oMode').value === 'm'; setTimeout(f
 $('#againBtn').addEventListener('click', () => mLeave(true));
 // ================= 메뉴 =================
 function drawMe() { const mc = CH.find(c => c.id === SV.myCh); $('#menuMe').innerHTML = mc ? `🏌 내 캐릭터: <b style="color:${mc.ink};font-size:17px">${mc.name}</b> <small>${SV.title ? '「' + SV.title + '」 ' : ''}Lv.${lvOf(mc.id)} · ${mc.port}포트</small> <button id="chSw" style="font:inherit;font-size:11.5px;padding:4px 8px;margin-left:6px;border:0;background:#2a3440;color:#cfd8e0">내가 아니에요</button><div style="font-size:19px;margin-top:4px">💰 보유 금액 <b style="color:#ffb627">${Math.round(SV.wallet).toLocaleString()}밧</b></div>` : ''; const sw = $('#chSw'); if (sw) sw.onclick = () => switchCh(sw); }
-function showMenu() { const pay = null; try { if (SV.myCh) achCheck(); } catch (e) { } drawMe(); try { drawRank(); netProfile(); } catch (e) { } ['sTitle', 'sFinal', 'sShop', 'sReal', 'sClub'].forEach(i => $('#' + i).classList.remove('on')); $('#sMenu').classList.add('on'); G.phase = 'title'; { const dl = dailyLogin(); if (dl) setTimeout(() => { toast(dl, '#ffe08a'); beep(880, .12); }, pay ? 2600 : 300); try { drawDaily(); } catch (e) { } try { drawLoan(); } catch (e) { } } drawMe(); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 🎟 스탬프 ${SV.stamp | 0}개${stkVal() ? ` · 📈 주식 ${stkVal().toLocaleString()}밧` : ''}${SV.loan && SV.loan.amt ? ` · 🏦 빚 ${SV.loan.amt.toLocaleString()}밧` : ''} · 라운드 ${SV.rounds}회`; musicLabel(); bgmStart('menu'); const c = $('#logoCv').getContext('2d'); c.clearRect(0, 0, 96, 40); CH.forEach((ch, i) => drawSprite(c, ch, i % 2 ? 'back' : 'idle', i * 12 - 2, 12 + (i % 2) * 6, 1)); }
+// 1회성 보상: v0.32.6 수리비 인하 전 비싼 수리비 낸 것 (이규만 5,000밧). 서버 저장본 동기화가 끝난 뒤(메뉴 진입 시) 지급
+const COMP = [{ id: 'fix0326', ch: 'gm', amt: 5000, msg: '🔧 수리비 인하 전 비싼 수리비 보상' }];
+function grantComp() { if (!SV.myCh) return; SV.comp = SV.comp || {}; for (const c of COMP) { if (c.ch !== SV.myCh || SV.comp[c.id]) continue; SV.comp[c.id] = Date.now(); SV.wallet = (SV.wallet | 0) + c.amt; saveSV(); setTimeout(() => toast(`${c.msg} +${c.amt.toLocaleString()}밧`, '#9fffb0'), 600); } }
+function showMenu() { const pay = null; try { grantComp(); } catch (e) { } try { if (SV.myCh) achCheck(); } catch (e) { } drawMe(); try { drawRank(); netProfile(); } catch (e) { } ['sTitle', 'sFinal', 'sShop', 'sReal', 'sClub'].forEach(i => $('#' + i).classList.remove('on')); $('#sMenu').classList.add('on'); G.phase = 'title'; { const dl = dailyLogin(); if (dl) setTimeout(() => { toast(dl, '#ffe08a'); beep(880, .12); }, pay ? 2600 : 300); try { drawDaily(); } catch (e) { } try { drawLoan(); } catch (e) { } } drawMe(); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 🎟 스탬프 ${SV.stamp | 0}개${stkVal() ? ` · 📈 주식 ${stkVal().toLocaleString()}밧` : ''}${SV.loan && SV.loan.amt ? ` · 🏦 빚 ${SV.loan.amt.toLocaleString()}밧` : ''} · 라운드 ${SV.rounds}회`; musicLabel(); bgmStart('menu'); const c = $('#logoCv').getContext('2d'); c.clearRect(0, 0, 96, 40); CH.forEach((ch, i) => drawSprite(c, ch, i % 2 ? 'back' : 'idle', i * 12 - 2, 12 + (i % 2) * 6, 1)); }
 const openStart = m => { $('#oMode').value = m; $('#oMode').onchange(); $('#modeTag').textContent = m === 'm' ? '🌐 멀티 모드 — 코스·구간을 고르고 방을 만들거나 입장하세요' : '▶ 싱글 모드'; $('#sMenu').classList.remove('on'); $('#sTitle').classList.add('on'); drawCards(); };
 $('#mStart').onclick = () => openStart('s');
 $('#mMulti').onclick = () => openStart('m');
