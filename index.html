@@ -224,12 +224,12 @@ tr.me td{background:rgba(255,182,39,.13)}
     <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
     <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="pcc">Stage 3 · 파타야 CC (파CC)</option><option value="scr">보너스 · 삼화 스크린골프장</option><option value="gv">보너스 · 그린밸리 (2포트 금지구장)</option></select></label>
     <button class="btn" id="rouBtn" type="button">🎡 조작 돌림판</button>
-    <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체 (핸디 없음)</option></select></label>
+    <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체</option></select></label>
     
     <label><input type="checkbox" id="oVoice" checked> 🔊 대사 음성</label>
     <label><input type="checkbox" id="oWx" checked> 🌦 실시간 날씨</label>
   </div><div class="help" id="wxNote" style="margin:0 0 8px"></div><div style="margin-bottom:10px">
-    <label><input type="checkbox" id="oHcp" checked> 슬기 핸디 10타 (싱글패 미보유 특혜)</label>
+    <input type="checkbox" id="oHcp" style="display:none">
   </div>
   <div class="help" id="feeNote" style="margin:0 0 8px;color:#ffe08a;opacity:1"></div>
   <div class="help" id="courseNote" style="margin:-6px 0 8px"></div>
@@ -1352,7 +1352,7 @@ window.__golf = { chat: (...a) => chat(...a), get MR() { return MR; }, get NET()
 
 const feeNote = () => { const k = $('#oCourse').value, n = $('#oPart').value === 'quick' ? 3 : $('#oPart').value === 'full' ? 18 : 9; $('#feeNote').textContent = $('#oMode').value !== 'm' ? '💳 싱글 모드: 비용 없음 · 내기 결과는 지갑에 반영 안 됨 (돈은 멀티 모드에서만 움직입니다)' : `💳 ${memLeft(k) >= n / 18 - 1e-9 ? `🎫 회원권 사용(남은 ${memLeft(k)}회) 그린피 0밧` : '그린피 ' + greenFee(k, n).toLocaleString() + '밧'} + 캐디팁 ${CADDIE_TIP}밧${$('#oCaddie').value === 'rand' ? '' : ' + 캐디 지정료 ' + CAD_FEE.toLocaleString() + '밧'} + 식사비 (지갑 ${SV.wallet.toLocaleString()}밧)`; };
 const cn = () => { feeNote(); const k = $('#oCourse').value; $('#courseNote').textContent = k === 'fan' ? '가상의 9홀 코스입니다.' : '📍 ' + COURSES[k].note; $('#oPart option[value=back]').disabled = k !== 'fan' && COURSES[k].par.length < 10; $('#oPart option[value=full]').disabled = k === 'fan' || COURSES[k].par.length < 18; if (($('#oPart').value === 'back' && $('#oPart option[value=back]').disabled) || ($('#oPart').value === 'full' && $('#oPart option[value=full]').disabled)) $('#oPart').value = 'front'; hcpUi(); };
-const hcpUi = () => { const f = $('#oPart').value === 'full'; $('#oHcp').disabled = f; if (f) $('#oHcp').checked = false; else if (!$('#oHcp').dataset.u) $('#oHcp').checked = true; };
+const hcpUi = () => { $('#oHcp').checked = false; };
 $('#oCourse').onchange = () => { cn(); wxNote(); }; cn(); $('#oWx').onchange = wxNote; wxNote(); $('#oPart').onchange = () => { feeNote(); hcpUi(); }; $('#oCaddie').onchange = feeNote;
 $('#rouBtn').onclick = () => { const opts = ['bpk', 'rls', 'pcc', 'scr', 'gv'], b = $('#rouBtn'); let i = 0; b.disabled = true; const res = R() < .8 ? 'bpk' : pick(opts); const iv = setInterval(() => { $('#oCourse').value = opts[i++ % opts.length]; cn(); beep(500 + (i % 5) * 60, .03); }, 90); setTimeout(() => { clearInterval(iv); $('#oCourse').value = res; cn(); b.disabled = false; wxNote(); b.textContent = res === 'bpk' ? '🎡 돌림판 결과는 리버사이드입니다' : '🎡 다시 돌리기 (조작 실패?)'; }, 1700); };
 $('#goBtn').addEventListener('click', () => { try { if (window.matchMedia('(pointer:coarse)').matches && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { }); } catch (e) { } }, true);
@@ -1400,7 +1400,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.26.0';
+const VERSION = 'v0.26.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1425,6 +1425,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.26.1', '2026-11-24', ['슬기 핸디캡(10타) 폐지 — 모든 구간에서 핸디 없이 동일 조건으로 진행']],
  ['v0.26.0', '2026-11-24', ['메뉴 맨 위에 💰 보유 금액을 크게 표시', '다른 기기에서 기록을 불러온 뒤 메뉴의 지갑·일퀘·대출 칸이 비어 보이던 오류 수정', '🔒 캐릭터 비밀번호(숫자 4자리): 처음 고를 때 정하고, 이미 주인이 있는 캐릭터는 비밀번호를 알아야 들어갈 수 있음 — 남의 캐릭터를 실수로 고르는 일 방지', '"누구세요?" 화면에 주인이 있는 캐릭터는 🔒 사용 중으로 표시', '이미 하던 사람은 접속하면 비밀번호를 한 번 정하라고 나옴 (평소에는 묻지 않고, 폰을 바꾸거나 다시 고를 때만 물음)']],
  ['v0.25.1', '2026-11-24', ['메뉴 맨 위에 "내 캐릭터: 이름 · 레벨"을 크게 표시 — 지금 누구로 접속했는지 바로 확인', '잘못 골랐으면 옆의 "내가 아니에요"를 두 번 눌러 다시 선택 (지금까지 기록은 그 캐릭터 이름으로 서버에 보관)']],
  ['v0.25.0', '2026-11-24', ['☁ 서버 저장: 지갑·레벨·장비·주식 등 진행 기록이 서버에 자동 보관됨. 폰을 바꾸거나 브라우저 기록이 지워져도 "누구세요?"에서 본인 이름을 누르면 그대로 이어짐', '📈 주식 종목 대폭 확대: 국장 시가총액 상위권 50종목 + 미장 상위권 50종목, 단톡방 언급 종목(한화비전·원익홀딩스·한국캐피탈·레이크머티리얼즈·제주반도체·지니뮤직) 추가', '주식 화면에 보유 / 국장 / 미장 / 단톡 종목 탭과 종목 검색 추가', '여러 기기에서 번갈아 해도 가장 최근에 저장된 기록으로 맞춰짐 (동시에 두 기기로 하면 나중에 저장한 쪽이 남음)']],
