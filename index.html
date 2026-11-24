@@ -783,7 +783,7 @@ const UPG = [
 const hasUp = (gid, uid) => !!((SV.up || {})[gid] || {})[uid];
 const durOf = id => (SV.dur && SV.dur[id] !== undefined) ? SV.dur[id] : 100;
 const sellPrice = g => Math.round(g.price * SELL_RATE * (.4 + .6 * durOf(g.id) / 100) / 10) * 10;
-const repairCost = g => Math.max(50, Math.round(g.price * (100 - durOf(g.id)) / 100 * .4 / 10) * 10);
+const repairCost = g => Math.max(30, Math.round(g.price * (100 - durOf(g.id)) / 100 * .15 / 10) * 10);
 function refreshGear() { if (!G.human) return; G.gear = gearFx(G.human.ch); if (G.cad) G.gear.putt *= 1 - .12 * G.cad.s.putt; }
 function wear(slot, amt) { const id = equipOf(G.human.ch, slot); if (!id) return; SV.dur = SV.dur || {}; const b = durOf(id); SV.dur[id] = clamp(b - amt, 0, 100); refreshGear(); const g = GEAR.find(x => x.id === id); if (b >= 30 && SV.dur[id] < 30) setTimeout(() => chat('📡 AI특파원', `${g.n} 내구도 ${Math.round(SV.dur[id])}% — 성능 저하! 상점에서 수리하세요`, '#ff7a7a'), 900); try { localStorage.setItem(SV_KEY, JSON.stringify(SV)); } catch (e) { } }
 
@@ -1085,7 +1085,7 @@ function shotDone() {
   const h = curHole(), st = G.human, A = G.A, res = A.res;
   const lieBefore = st.lie;
   applyResult(h, st, res); try { clubStat(res); } catch (e) { }
-  { const c = res.club, slot = c.putter ? 'putter' : (c.id === 'D' || c.id === 'W') ? 'driver' : c.id === 'SW' ? 'wedge' : 'iron'; let w = 0; if (res.ev.includes('drvdie')) w += 35; if (res.ev.includes('top')) w += 5; if (res.ev.includes('fat')) w += 4; if (!c.putter && Math.abs(G.acc) > .7) w += 2; if (lieBefore === 'bunker' && !c.putter) w += 1; if (w) wear(slot, w); if (res.tFin === 'water' || (res.tFin === 'ob' && !res.found && res.retry !== true)) wear('ball', 10); }
+  { const c = res.club, slot = c.putter ? 'putter' : (c.id === 'D' || c.id === 'W') ? 'driver' : c.id === 'SW' ? 'wedge' : 'iron'; let w = 0; if (res.ev.includes('drvdie')) w += 15; if (res.ev.includes('top')) w += 2; if (res.ev.includes('fat')) w += 1.5; if (!c.putter && Math.abs(G.acc) > .85) w += .7; if (lieBefore === 'bunker' && !c.putter) w += .5; if (w) wear(slot, w); if (res.tFin === 'water' || (res.tFin === 'ob' && !res.found && res.retry !== true)) wear('ball', 4); }
   const ev = res.ev; let msg = null, col = '#fff';
   if (res.holed) {
     const sc = st.strokes - h.par;
@@ -1450,7 +1450,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.5';
+const VERSION = 'v0.32.6';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1475,6 +1475,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.6', '2026-11-24', ['🔧 장비 내구도가 너무 빨리 닳던 것 완화: 드라이버 사망 -35→-15, 탑볼 -5→-2, 뒤땅 -4→-1.5, 심한 미스샷 -2→-0.7(기준도 더 큰 미스만), 벙커샷 -1→-0.5, 공 분실 -10→-4', '💸 수리비 약 60% 인하: 장비 가격 × 닳은 비율 × 40% → 15% (최소 50→30밧). 예) 2만밧 드라이버 30% 닳음: 2,400밧 → 900밧']],
  ['v0.32.5', '2026-11-24', ['🗺 코스 정확도 개선(방파콩 4번홀): 공개 코스 소개 기준 시그니처 파3 반영 — 왼쪽 큰 반달 호수가 페어웨이 안쪽까지 파고듦, 그린 벙커, 경사 큰 2단 그린']],
  ['v0.32.4', '2026-11-24', ['⛳ 짧은 퍼팅 게이지 개선: 게이지 끝이 항상 50야드였던 것을 거리에 따라 6 / 12 / 25 / 50야드로 자동 변경. 3야드 퍼팅이면 게이지 끝이 6야드라 표시선이 게이지 가운데쯤에 옴 (기존엔 왼쪽 끝 6% 지점). 클럽 칸에 "게이지 끝 Ny" 표시']],
  ['v0.32.3', '2026-11-24', ['🔍 그린에 올라가면 화면이 그린 전체·공·핀에 맞춰 크게 확대됨 (프린지에서 퍼터 잡을 때도 동일). 퍼팅 라인과 거리감 보기 쉬워짐']],
