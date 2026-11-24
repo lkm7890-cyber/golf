@@ -151,7 +151,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="mStart">▶ 싱글 모드 (CPU와 라운드)</button>
   <button class="go" id="mMulti" style="background:#12324a;color:#9fd8ff">🌐 멀티 모드 (온라인 대결)</button>
   <button class="go" id="mShop" style="background:#2a1f3d;color:#ffd98a">🛒 장비 상점</button>
-  <button class="go" id="mClub" style="background:#16302a;color:#9ff0d0">🏠 클럽하우스 (채팅)</button>
+  <button class="go" id="mClub" style="background:#16302a;color:#9ff0d0;position:relative">🏠 클럽하우스 (채팅)<span id="clubBadge" style="display:none;position:absolute;top:-7px;right:-5px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#ff3b3b;color:#fff;font-size:12px;line-height:20px;font-weight:bold;box-shadow:0 0 0 2px #000;animation:bdg 1s ease-in-out infinite alternate">N</span></button><style>@keyframes bdg{from{transform:scale(1)}to{transform:scale(1.15)}}</style>
   <button class="go" id="mStk" style="background:#3a1620;color:#ffb8c8">📈 주식 투자 · 국장+미장 (실제 종가)</button>
   <button class="go" id="mPrac" style="background:#22301a;color:#cfe8a8">🏌 연습장 · 프로 레슨</button>
   <button class="go" id="mReal" style="background:#1d2a3a;color:#bcd8ff">📝 실제 스코어</button>
@@ -171,6 +171,7 @@ tr.me td{background:rgba(255,182,39,.13)}
     <button class="go" id="mCreateBtn">방 만들기 (지금 고른 코스·구간으로)</button>
     <div style="display:flex;gap:6px;margin-top:10px"><input id="mCode" inputmode="numeric" maxlength="4" placeholder="방 코드 4자리" style="flex:1;background:#07090b;color:#fff;border:2px solid #e8d8a0;padding:12px;font:inherit;font-size:18px;text-align:center;user-select:text;-webkit-user-select:text"><button class="btn" id="mJoinBtn">입장</button></div>
   </div>
+  <div class="box" id="mOnlineBox"><h3 style="margin:0 0 6px">👥 지금 접속 상태</h3><div id="mOnline" style="font-size:13px;line-height:1.9"></div><div style="font-size:11px;opacity:.6;margin-top:4px">🟢 접속 중 · 🟡 방금 전(3분 이내) · ⚪ 미접속 — 약 1분마다 갱신</div></div>
   <div id="mLobby" style="display:none">
     <div class="box" style="text-align:center"><div style="font-size:12px;opacity:.8">방 코드 (단톡방에 알려 주세요)</div><div id="mCodeBig" style="font-size:44px;color:#ffb627;letter-spacing:8px"></div><div id="mCfg" style="font-size:12px;opacity:.85"></div></div>
     <div class="box"><h3>참가자</h3><div id="mPlayers"></div></div>
@@ -414,10 +415,11 @@ const COURSES = {
 };
 COURSES.scr = Object.assign({}, COURSES.bpk, { name: '삼화 스크린골프장', windMul: .0001, rain: 0, note: '바람·비 없음. 정b 우드 110야드·쓰리펏 디버프 (방파콩 데이터 기반)' });
 function mulb(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function buildCourse(key, part) { // part: 'front' | 'back' | 'quick'
+function buildCourse(key, part, seed) { // part: 'front' | 'back' | 'quick'(3홀 랜덤) | 'full'
   const C = COURSES[key], hasBack = C.par.length > 9, off = (part === 'back' && hasBack) ? 9 : 0, cnt = part === 'quick' ? 3 : (part === 'full' && hasBack) ? 18 : 9, out = [];
+  let sel = null; if (part === 'quick' && seed != null) { const rq = mulb(seed | 0), all = C.par.map((_, j) => j); sel = []; while (sel.length < 3 && all.length) sel.push(all.splice(Math.floor(rq() * all.length), 1)[0]); sel.sort((a, b) => a - b); }
   for (let k = 0; k < cnt; k++) {
-    const i = off + k, par = C.par[i], yd = C.yd[i], rr = mulb(7919 * (i + 1) + key.charCodeAt(0) * 31);
+    const i = sel ? sel[k] : off + k, par = C.par[i], yd = C.yd[i], rr = mulb(7919 * (i + 1) + key.charCodeAt(0) * 31);
     const dog = par === 5 ? (i % 2 ? 1 : -1) : (par === 4 && yd < 380 && i % 3 === 0 ? (i % 2 ? -1 : 1) : 0);
     let pts; if (!dog) pts = [[0, 0], [0, yd]]; else { const c = yd * .55, L2 = yd * .45, a = rad(28); pts = [[0, 0], [0, c], [dog * L2 * Math.sin(a), c + L2 * Math.cos(a)]]; }
     const fw = par === 3 ? Math.min(C.fw, 32) : C.fw;
@@ -601,7 +603,7 @@ function aiShot(h, st, wind) {
   };
   let best = null;
   const clubs = CLUBS.filter(c => {
-    if (c.putter) return (lie === 'green' || lie === 'fringe' || ((lie === 'fairway' || lie === 'tee') && dp < 30)) ;
+    if (c.putter) return canPutt(h, st);
     if (lie === 'green') return false;
     if (c.id === 'D' && !(lie === 'tee' || (lie === 'fairway' && dp > 215))) return false;
     if (lie === 'bunker' && (c.id === 'D' || c.id === 'W' || c.id === 'I5')) return false;
@@ -786,9 +788,11 @@ const MEMPRICE = { bpk: 11000, rls: 14000, pcc: 14500, gv: 14000, scr: 4000 };
 const memLeft = k => +(((SV.mem || {})[k]) || 0).toFixed(2);
 
 // ── 일일 접속 보상 · 싱글 일일 퀘스트 ──
-const DQ = { round: ['싱글 라운드 1회 완주', c => true], par: ['파 이하로 1홀 이상 마치기', c => c.ph.some(v => v <= 0)], birdie: ['버디 1개 잡기', c => c.st.birdie + c.st.eagle + c.st.ace > 0], noob: ['OB 없이 완주', c => c.st.ob === 0], nowater: ['물에 안 빠지고 완주', c => c.st.water === 0], top2: ['2위 안에 들기', c => c.n > 1 && c.rank <= 2], win: ['1위 하기', c => c.n > 1 && c.rank === 1], nopick: ['양파 없이 완주', c => c.st.pickup === 0], plus: ['내기 수익 플러스', c => c.money > 0] };
+const DQ = { round: ['싱글 라운드 1회 완주', c => true], prac: ['연습 또는 레슨 3회 받기', c => false], par: ['파 이하로 1홀 이상 마치기', c => c.ph.some(v => v <= 0)], birdie: ['버디 1개 잡기', c => c.st.birdie + c.st.eagle + c.st.ace > 0], noob: ['OB 없이 완주', c => c.st.ob === 0], nowater: ['물에 안 빠지고 완주', c => c.st.water === 0], top2: ['2위 안에 들기', c => c.n > 1 && c.rank <= 2], win: ['1위 하기', c => c.n > 1 && c.rank === 1], nopick: ['양파 없이 완주', c => c.st.pickup === 0], plus: ['내기 수익 플러스', c => c.money > 0] };
 const DQ_ST = 3, DQ_ALL = 5;
-function dqToday() { const t = today(); if (!SV.dq || SV.dq.day !== t) { let h = 7; for (const ch of String(t)) h = (h * 31 + ch.charCodeAt(0)) | 0; const r = mulb(h), pool = Object.keys(DQ).filter(k => k !== 'round'), ids = ['round']; while (ids.length < 3) { const k = pool.splice(Math.floor(r() * pool.length), 1)[0]; ids.push(k); } SV.dq = { day: t, ids, done: [] }; } return SV.dq; }
+function dqToday() { const t = today(); if (!SV.dq || SV.dq.day !== t) { let h = 7; for (const ch of String(t)) h = (h * 31 + ch.charCodeAt(0)) | 0; const r = mulb(h), pool = Object.keys(DQ).filter(k => k !== 'round' && k !== 'prac'), ids = ['round', 'prac']; while (ids.length < 4) { const k = pool.splice(Math.floor(r() * pool.length), 1)[0]; ids.push(k); } SV.dq = { day: t, ids, done: [] }; } if (!SV.dq.ids.includes('prac')) SV.dq.ids.splice(1, 0, 'prac'); return SV.dq; }
+// 연습·레슨 퀘스트: 연습장에서 오늘 3회 하면 바로 달성
+function dqPrac() { const q = dqToday(); if (q.done.includes('prac') || (SV.prN | 0) < 3) return ''; q.done.push('prac'); let got = DQ_ST, msg = `✅ ${DQ.prac[0]} +${DQ_ST}`; if (q.done.length === q.ids.length && !q.all) { q.all = true; got += DQ_ALL; msg += ` · 🎉 일퀘 올클리어 +${DQ_ALL}`; } SV.stamp = (SV.stamp | 0) + got; saveSV(); return msg; }
 function dqCheck(ctx) { const q = dqToday(), out = []; let got = 0; for (const k of q.ids) { if (q.done.includes(k) || !DQ[k]) continue; if (DQ[k][1](ctx)) { q.done.push(k); got += DQ_ST; out.push(`✅ ${DQ[k][0]} +${DQ_ST}`); } } if (got && q.done.length === q.ids.length && !q.all) { q.all = true; got += DQ_ALL; out.push(`🎉 일퀘 올클리어 +${DQ_ALL}`); } SV.stamp = (SV.stamp | 0) + got; return out.length ? `<br>📋 일일 퀘스트: ${out.join(' · ')} (스탬프 +${got})` : ''; }
 function dailyLogin() { const t = today(); if (SV.logDay === t) return null; const d0 = new Date(); d0.setDate(d0.getDate() - 1); const yst = d0.getFullYear() + '-' + (d0.getMonth() + 1) + '-' + d0.getDate(); SV.streak = SV.logDay === yst ? (SV.streak | 0) % 7 + 1 : 1; SV.logDay = t; const n = SV.streak === 7 ? 10 : 1 + SV.streak; SV.stamp = (SV.stamp | 0) + n; SV.wallet += DAILY_PAY; let divTxt = ''; { const wk = Math.floor((dayNum() + 3) / 7), kv = stkVal(); if (SV.divWk == null) SV.divWk = wk; else if (SV.divWk !== wk) { SV.divWk = wk; if (kv > 0) { const dv = Math.max(1, Math.round(kv * .002)); SV.wallet += dv; divTxt = ` · 💸 주간 배당 +${dv.toLocaleString()}밧`; } } } saveSV(); return `💵 오늘 접속 지원금 +${DAILY_PAY.toLocaleString()}밧${divTxt} · 🎁 접속 보상 ${SV.streak}일차: 스탬프 +${n}개`; }
 function drawDaily() { const q = dqToday(), el = $('#menuDaily'); if (!el) return; el.innerHTML = `<b style="color:#ffe08a">📋 오늘의 싱글 퀘스트</b> <span style="opacity:.7">(각 🎟${DQ_ST} · 전부 달성 +${DQ_ALL})</span><br>` + q.ids.map(k => `${q.done.includes(k) ? '✅' : '⬜'} ${DQ[k] ? DQ[k][0] : k}`).join('<br>') + `<br><span style="opacity:.7">🎁 연속 접속 ${SV.streak | 0}일차 (7일차 스탬프 10개) · 스탬프 1개 = 멀티 비용 100밧 할인</span>`; }
@@ -874,11 +878,11 @@ function drawCards() {
 }
 function syncNum() { const n = +$('#oNum').value; const ids = [G.me].concat(CH.map(c => c.id).filter(id => id !== G.me && G.on.has(id)), CH.map(c => c.id).filter(id => id !== G.me && !G.on.has(id))); G.on = new Set(ids.slice(0, n)); drawCards(); }
 $('#oNum').onchange = syncNum;
-$('#goBtn').onclick = () => { G.course = $('#oCourse').value; G.part = $('#oPart').value; G.hcp = $('#oHcp').checked && G.part !== 'full'; G.easy = false; G.voice = $('#oVoice').checked; try { if (G.voice) { const u = new SpeechSynthesisUtterance('주통배 시작합니다'); u.lang = 'ko-KR'; speechSynthesis.speak(u); } } catch (e) { } newGame(); };
+$('#goBtn').onclick = () => { G.course = $('#oCourse').value; G.part = $('#oPart').value; G.hcp = $('#oHcp').checked && G.part !== 'full'; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = Math.floor(Math.random() * 1e9); try { if (G.voice) { const u = new SpeechSynthesisUtterance('주통배 시작합니다'); u.lang = 'ko-KR'; speechSynthesis.speak(u); } } catch (e) { } newGame(); };
 
 function newGame() {
   G.gear = gearFx(CH.find(c => c.id === G.me)); G.rewarded = false; G.sta = 100; G.cad = pickCaddie(); G.cadHello = false; G.gear.putt *= 1 - .12 * G.cad.s.putt; G.costFee = 0; G.costPending = true; { const m = MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0]; G.meal = m; G.mealPow = m[3]; G.sta = 100 + (m[2] > 0 ? Math.min(10, Math.round(m[2] / 40)) : 0); G.pay = 'each'; G.mealBill = 0; G.mealPaid = 0; }
-  HOLES = G.course === 'fan' ? FANTASY.slice() : buildCourse(G.course, G.part); if (G.course === 'fan' && G.part === 'quick') HOLES = HOLES.slice(0, 3); G.nHoles = HOLES.length;
+  HOLES = G.course === 'fan' ? FANTASY.slice() : buildCourse(G.course, G.part, G.qSeed == null ? Math.floor(Math.random() * 1e9) : G.qSeed); if (G.course === 'fan' && G.part === 'quick') HOLES = HOLES.slice(0, 3); G.nHoles = HOLES.length;
   const eqCh = c => Object.assign({}, c, { mult: 1, acc: .7, putt: .7, top: .04, wild: undefined, ace: undefined, drvDie: undefined, caddie: undefined, hcp: undefined });
   G.pl = CH.filter(c => G.on.has(c.id)).map(c => newState(G.multi ? eqCh(c) : c, c.id === G.me)); G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
   G.human = G.pl.find(p => p.human); G.hi = 0; G.allNews = [];
@@ -1005,6 +1009,8 @@ function useSkill() {
   updateSkill();
 }
 function meme(title, sub) { speak('', title.replace(/\s/g, '')); $('#meme b').textContent = title; $('#memeT').textContent = sub; const m = $('#meme'); m.classList.add('on'); try { navigator.vibrate && navigator.vibrate([60, 40, 60]); } catch (e) { } setTimeout(() => m.classList.remove('on'), 1800); }
+function nearGreen(h, p) { const g = h.g; return ((p.x - g.x) / g.rx) ** 2 + ((p.y - g.y) / g.ry) ** 2 <= 1.9; } // 그린 엣지에서 약 5야드 이내
+function canPutt(h, st) { return st.lie === 'green' || st.lie === 'fringe' || (st.lie === 'fairway' && nearGreen(h, st.pos)); }
 function recClub(h, st) {
   if (st.lie === 'green' || st.lie === 'fringe') return 7;
   const dp = dist(st.pos, h.pinPos), ch = st.ch;
@@ -1034,7 +1040,7 @@ function updateAim() {
   $('#slopeTxt').textContent = st.lie === 'green' ? `경사 ${slopeText(h)}` : '';
 }
 function slopeText(h) { const sx = h.slope[0], sy = h.slope[1]; const m = Math.hypot(sx, sy); const a = Math.atan2(sx, sy); const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖']; const ar = arrows[Math.round(((a + TAU) % TAU) / (Math.PI / 4)) % 8]; return `${ar} ${(m * 10).toFixed(1)}`; }
-function changeClub(dv) { if (G.phase !== 'aim') return; G.ci = (G.ci + dv + CLUBS.length) % CLUBS.length; const st = G.human; if (G.ci === 0 && st.lie !== 'tee' && st.lie !== 'fairway') G.ci = dv > 0 ? 1 : 7; G.aimOff = 0; updateAim(); beep(520, .04); }
+function changeClub(dv) { if (G.phase !== 'aim') return; const st = G.human, h = curHole(), ok = i => !(i === 0 && st.lie !== 'tee' && st.lie !== 'fairway') && !(CLUBS[i].putter && !canPutt(h, st)); let n = G.ci; for (let q = 0; q < CLUBS.length; q++) { n = (n + dv + CLUBS.length) % CLUBS.length; if (ok(n)) break; } G.ci = n; G.aimOff = 0; updateAim(); beep(520, .04); }
 function adjAim(dd) { if (G.phase !== 'aim') return; G.aimOff = clamp(G.aimOff + dd, -45, 45); }
 
 // ---- 스윙 입력 ----
@@ -1373,7 +1379,7 @@ window.addEventListener('keyup', e => { if (e.code === 'ArrowLeft') keys.L = 0; 
 setInterval(() => { if (keys.L) adjAim(-.6); if (keys.R) adjAim(.6); }, 55);
 
 // ================= 테스트/디버그 훅 =================
-window.__golf = { chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -1427,7 +1433,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.32.0';
+const VERSION = 'v0.32.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1452,6 +1458,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.32.1', '2026-11-24', ['🌐 멀티 화면에 "지금 접속 상태" 추가: 8명 전원을 🟢 접속 중(싱글/멀티 중 표시) · 🟡 방금 전 · ⚪ 미접속(몇 분/시간 전)으로 표시. 방 참가자 목록에도 접속 표시', '📋 오늘의 싱글 퀘스트에 "연습 또는 레슨 3회 받기" 고정 추가 (퀘스트 4개로). 연습장에서 개인 연습·프로 레슨 등 아무거나 3번 하면 바로 달성, 성공/실패 상관없음. 멀티 시합을 한 날은 연습장이 닫혀 달성 불가', '🔴 클럽하우스에 안 읽은 새 메시지가 있으면 메뉴의 클럽하우스 버튼에 빨간 숫자 배지 표시. 메뉴 화면에 있을 때 새 메시지가 오면 알림 문구 + 짧은 진동. 클럽하우스를 열면 읽음 처리(다른 폰과는 별개)', '3홀(빠른 라운드) 선택 시 매번 1~3번홀이 아니라 그 구장 전체에서 3개 홀을 무작위로 뽑음 (멀티는 방 전원이 같은 홀)', '퍼터는 그린·프린지와 그린 엣지 약 5야드 이내 페어웨이에서만 선택 가능. 그 밖에서는 클럽을 넘겨도 퍼터가 건너뛰어짐 (동반자 AI도 동일)']],
  ['v0.32.0', '2026-11-24', ['코스 정확도 향상: 구글 지도 위성사진을 보고 구장별 특징 반영 — 방파콩은 홀 옆 라군(물)과 벙커가 많고 나무는 적게, 그린우드는 나무 빽빽하게, 그린밸리는 큰 연못, 파타야CC·로얄레이크사이드는 나무 중간', '🌳 나무가 장식이 아니라 실제 장애물로: 러프의 나무 밑에 공이 서면 "나무 밑" 라이(거리 약 60%, 정확도 저하)', '구장마다 나무 밀도가 다르게 그려짐. 홀 옆 라군 홀 추가(방파콩 약 60%, 그린밸리 약 50%)', '구찌 멘트 대폭 추가: 캐릭터별 5개씩 + 받아치는 대사 추가 + 상황별 구찌(퍼팅·나무 밑·벙커·물 있는 홀)', '참고: 홀별 정확한 도그렉·해저드 위치는 확인된 자료가 없어 구장 전체 특징만 반영(제미나이도 위성사진은 못 봄)']],
  ['v0.31.2', '2026-11-24', ['컨시드(OK) 거리를 약 60cm → 퍼터 한 자루 길이(약 87cm)로 확대. 그린 위에서 핀에 이 거리 안으로 붙으면 자동 OK(1타 추가)']],
  ['v0.31.1', '2026-11-24', ['💼 보유 주식 연동: 티업 전 "아침 주식 시황"에 내 보유 주식의 오늘 등락(실제 시세)이 표시되고 컨디션에 반영됨', '보유 주식이 +1.5% 이상이면 정확도 버프·심박수 안정, −1.5% 이하면 정확도 디버프·심박수 상승. 3홀마다 다시 계산', '주식이 없으면 기존 시황만 적용']],
@@ -1534,12 +1541,12 @@ let onl = {}, chatSeen = {}, chatInit = false;
 function netBeat(st) { if (NET.ok) nreq('PUT', '/on/' + SV.did, { ch: G.me, lv: lvOf(G.me), st: st || (G.multi ? 'multi' : ['aim', 'power', 'acc', 'fly', 'wait', 'result', 'stock'].includes(G.phase) ? 'play' : 'menu'), ts: Date.now() }).catch(() => { }); }
 async function netInit() { try { await nreq('GET', '/ping'); NET.ok = true; } catch (e) { NET.ok = false; return; } cfgLoad(); cloudSync(); stkLoad(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
   netBeat(); setInterval(() => netBeat(), 25000);
-  nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); });
-  nlisten('/chat', '?orderBy="$key"&limitToLast=30', d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; clubAdd(m.ch, m.t, chatInit ? '' : '이전', !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; });
+  nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnline(); if (MR && MR.data && !G.multi && $('#sMulti').classList.contains('on')) mUpdate(); } catch (e) { } });
+  nlisten('/chat', '?orderBy="$key"&limitToLast=30', d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; if (!clubOpen && m.ch !== G.me && m.did !== SV.did && (m.ts || 0) > (SV.clubRd || (SV.clubRd = Date.now() - 864e5))) { clubUnread++; clubBadge(); if (chatInit && G.phase === 'title') { try { navigator.vibrate && SV.vib !== false && navigator.vibrate(40); } catch (e) { } toast('💬 클럽하우스 새 메시지 · ' + CH.find(c => c.id === m.ch).short, '#9ff0d0'); } } clubAdd(m.ch, m.t, chatInit ? '' : '이전', !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; });
   if (clubOpen) clubPeers(); }
 // ---------- 멀티 플레이 방 ----------
 let MR = null;
-function mShow() { if (needCh()) return; ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mStat').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; }
+function mShow() { if (needCh()) return; ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mStat').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; netBeat('menu'); mOnline(); }
 function mErr(t) { $('#mStat').innerHTML = `<span style="color:#ff9a9a">${t}</span>`; }
 async function mCreate() { try { const code = String(1000 + Math.floor(Math.random() * 9000)), k = $('#oCourse').value, w = ($('#oWx').checked && WX[k]) ? WX[k] : null; const cfg = { course: k, part: $('#oPart').value, hcp: ($('#oHcp').checked && $('#oPart').value !== 'full') ? 1 : 0, pay: $('#oPay').value, seed: Math.floor(Math.random() * 1e9), wx: w ? { t: w.t, rain: w.rain, code: w.code, kmh: w.kmh, dir: w.dir, time: w.time } : null }; cfg.rain = w ? ((w.rain > 0 || w.code >= 51) ? 1 : 0) : (Math.random() < ((COURSES[k] || {}).rain || 0) ? 1 : 0);
   await nreq('PUT', '/room/' + code, { host: SV.did, cfg, st: 'lobby', ts: Date.now(), pl: { [G.me]: { did: SV.did, lv: lvOf(G.me), meal: (MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0])[2] } } }); mEnter(code); } catch (e) { mErr('방을 만들지 못했습니다. 다시 시도해 주세요.'); } }
@@ -1547,12 +1554,12 @@ async function mJoin() { const code = $('#mCode').value.trim(); if (!/^\d{4}$/.t
 function mEnter(code) { MR = { code, data: null, gu: {}, t0: Date.now() }; $('#mEntry').style.display = 'none'; $('#mLobby').style.display = 'block'; $('#mCodeBig').textContent = code; MR.unsub = nlisten('/room/' + code, '', d => { if (!MR) return; MR.data = d; mUpdate(); }); netBeat('multi'); }
 function mUpdate() { const d = MR.data; if (!d || !d.cfg) { if (!G.multi) { mLeave(true); mShow(); mErr('방이 닫혔습니다.'); } return; }
   if (!G.multi) { const C = COURSES[d.cfg.course] || {}, pl = d.pl || {}, ids = Object.keys(pl); $('#mCfg').textContent = `${C.name || ''} · ${({ front: '앞 9홀', back: '뒤 9홀', quick: '3홀' })[d.cfg.part]}${d.cfg.rain ? ' · ☔ 폭우' : ''}${d.cfg.wx ? ' · 실시간 날씨 공유' : ''} · 식사 ${({ each: '각자 계산', treat: '방장이 쏜다', loser: '꼴찌가 계산' })[d.cfg.pay || 'each']}`;
-    $('#mPlayers').innerHTML = CH.filter(c => pl[c.id]).map(c => `<span class="bub" style="color:${c.ink}">${c.name} Lv.${pl[c.id].lv | 0}${pl[c.id].did === d.host ? ' 👑방장' : ''}${c.id === G.me ? ' (나)' : ''}</span>`).join('');
+    $('#mPlayers').innerHTML = CH.filter(c => pl[c.id]).map(c => `<span class="bub" style="color:${c.ink}">${c.id === G.me ? '🟢' : onlMark(c.id)[0]} ${c.name} Lv.${pl[c.id].lv | 0}${pl[c.id].did === d.host ? ' 👑방장' : ''}${c.id === G.me ? ' (나)' : ''}</span>`).join('');
     const host = d.host === SV.did; $('#mStartBtn').style.display = host ? 'block' : 'none'; $('#mStartBtn').disabled = ids.length < 2; $('#mStartBtn').textContent = ids.length < 2 ? '2명 이상 모이면 시작할 수 있습니다' : `라운드 시작 (${ids.length}명)`; if (!host) $('#mStat').textContent = '방장이 시작하기를 기다리는 중...';
     if (d.st === 'play' && pl[G.me]) mStart(); return; }
   const gu = d.gu || {}; for (const k of Object.keys(gu).sort()) { if (MR.gu[k]) continue; MR.gu[k] = 1; const m = gu[k]; if (!m || m.ts < MR.t0 || typeof m.x !== 'string') continue; const f = CH.find(c => c.id === m.f), t = G.pl.find(p => p.ch.id === m.t); if (!f || !t) continue; chat(f.name, esc(m.x.slice(0, 80)), f.ink); if (m.t === G.me) { if (immune(t.ch)) setTimeout(() => chat(t.ch.name, t.ch.id === 'hw' ? '노노해 (구찌 무효)' : '인정 ㅎㅎ', t.ch.ink), 400); else { G.mGucciPending = true; toast(`🗣 ${f.name}의 구찌!`, '#ffb36b'); } } }
   if (G.mWaiting) mCheck(); }
-function mStart() { const d = MR.data; G.multi = true; G.course = d.cfg.course; G.part = d.cfg.part; G.hcp = !!d.cfg.hcp; G.on = new Set(Object.keys(d.pl)); G.easy = false; G.voice = $('#oVoice').checked; G.mWaiting = false; G.mGucciPending = false; $('#sMulti').classList.remove('on'); newGame(); bgmStart('play'); netBeat('multi'); }
+function mStart() { const d = MR.data; G.multi = true; G.course = d.cfg.course; G.part = d.cfg.part; G.hcp = !!d.cfg.hcp; G.on = new Set(Object.keys(d.pl)); G.easy = false; G.voice = $('#oVoice').checked; G.mWaiting = false; G.mGucciPending = false; G.qSeed = (d.cfg.seed | 0) || 1; $('#sMulti').classList.remove('on'); newGame(); bgmStart('play'); netBeat('multi'); }
 function mSetup() { const c = MR.data.cfg, r = mulb(c.seed), wm = ((COURSES[c.course] || {}).windMul || 1) * (c.rain ? 1.4 : 1); G.wx = c.wx || null; G.rain = !!c.rain; G.mWind = []; for (let i = 0; i < 10; i++) G.mWind.push(G.wx ? { s: clamp(G.wx.kmh / 3.5, .3, 11) * (.8 + r() * .4), a: rad(G.wx.dir + 180) + (r() - .5) * .5 } : { s: r() * 6.5 * wm, a: r() * TAU }); G.mStock = []; for (let i = 0; i < 5; i++) G.mStock.push(Math.floor(r() * STOCKS.length)); }
 function mHoleDone() { const me = G.human; G.phase = 'wait'; G.mWaiting = true; nreq('PUT', `/room/${MR.code}/sc/h${G.hi}/${G.me}`, { s: me.strokes, p: me.putts, ev: [...new Set(me.ev)].join(',') }).catch(() => { }); $('#top').style.display = 'none'; $('#bottom').style.display = 'none'; $('#sWait').classList.add('on'); mCheck(); }
 function mCheck() { const h = curHole(), sc = ((MR.data || {}).sc || {})['h' + G.hi] || {}; const done = p => p.human || !!sc[p.ch.id];
@@ -1581,11 +1588,11 @@ function drawPrac() { SV.tr = SV.tr || { d: 0, i: 0, p: 0 }; if (SV.prDay !== to
   $('#pracStat').innerHTML = `💰 지갑 <b style="color:#ffb627">${SV.wallet.toLocaleString()}밧</b><br>연습 포인트 — 드라이버 ${trPts('d')} · 아이언 ${trPts('i')} · 퍼팅 ${trPts('p')} (각 30점 만점)<br>${played ? '<span style="color:#ff9a9a">오늘은 멀티 시합을 한 날이라 연습할 수 없습니다. 내일 오세요.</span>' : `오늘 남은 연습 ${left}번`}`;
   const el = $('#pracBtns'); el.innerHTML = ''; PRAC.forEach(p => { const b = document.createElement('button'); b.className = 'go'; b.style.cssText = 'font-size:14px;padding:11px;background:#22301a;color:#cfe8a8'; b.innerHTML = `${p[1]} — ${p[2].toLocaleString()}밧 <small>(+${p[3]}점${p[4] < 1 ? ', 성공률 ' + Math.round(p[4] * 100) + '%' : ''})</small>`; b.disabled = played || left <= 0 || SV.wallet < p[2];
     b.onclick = () => { const k = $('#pracArea').value, nm = { d: '드라이버', i: '아이언', p: '퍼팅' }[k]; SV.wallet -= p[2]; SV.prN = (SV.prN || 0) + 1; const ok = R() < p[4], full = trPts(k) >= 30; if (ok && !full) SV.tr[k] = Math.min(30, (SV.tr[k] || 0) + p[3]); saveSV(); beep(ok ? 880 : 220, .12);
-      $('#pracLog').insertAdjacentHTML('afterbegin', `<div>${p[1]} · ${nm} — ${full ? '이미 만점입니다 (돈만 썼습니다)' : ok ? `감 잡았다! +${p[3]}점` : '오늘은 감이 안 온다... 효과 없음'}</div>`); drawPrac(); }; el.appendChild(b); }); }
+      $('#pracLog').insertAdjacentHTML('afterbegin', `<div>${p[1]} · ${nm} — ${full ? '이미 만점입니다 (돈만 썼습니다)' : ok ? `감 잡았다! +${p[3]}점` : '오늘은 감이 안 온다... 효과 없음'}</div>`); { const dm = dqPrac(); if (dm) { toast('📋 ' + dm, '#ffe08a'); $('#pracLog').insertAdjacentHTML('afterbegin', `<div style="color:#ffe08a">📋 일일 퀘스트 ${dm} (스탬프)</div>`); } } drawPrac(); }; el.appendChild(b); }); }
 $('#mStk').onclick = async () => { $('#stkLog').innerHTML = ''; drawStk(); $('#sStk').classList.add('on'); await stkLoad(); drawStk(); };
 $('#stkClose').onclick = () => { $('#sStk').classList.remove('on'); showMenu(); };
 $('#mPrac').onclick = () => { $('#pracLog').innerHTML = ''; drawPrac(); $('#sPrac').classList.add('on'); };
-$('#pracClose').onclick = () => { $('#sPrac').classList.remove('on'); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 라운드 ${SV.rounds}회`; };
+$('#pracClose').onclick = () => { $('#sPrac').classList.remove('on'); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 라운드 ${SV.rounds}회`; try { drawDaily(); drawMe(); } catch (e) { } };
 $('#mVoice').onclick = () => { const b = $('#mVoice'); if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { b.textContent = '🔇 이 브라우저는 음성을 지원하지 않습니다 (크롬으로 열어 주세요)'; return; }
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('굿샷 카! 음성이 잘 나옵니다'); u.lang = 'ko-KR'; u.volume = 1; let ok = false; u.onstart = () => { ok = true; b.textContent = '🔊 음성 나오는 중 (안 들리면 미디어 볼륨을 올려 주세요)'; }; u.onerror = e => { b.textContent = '🔇 음성 오류: ' + (e.error || '알 수 없음'); }; speechSynthesis.speak(u);
     setTimeout(() => { if (!ok) { const n = speechSynthesis.getVoices().length; b.textContent = n ? '🔇 음성이 시작되지 않습니다 (폰의 TTS 설정·미디어 볼륨 확인)' : '🔇 폰에 음성(TTS) 엔진이 없습니다 — 설정에서 한국어 TTS 설치 필요'; } }, 2500); } catch (e) { b.textContent = '🔇 음성 오류'; } };
@@ -1600,9 +1607,16 @@ $('#shopClose').addEventListener('click', () => { $('#menuWallet').innerHTML = `
 $('#againBtn').addEventListener('click', showMenu);
 $('#goBtn').addEventListener('click', () => bgmStart('play'));
 // ================= 클럽하우스 채팅 (온라인이면 실시간, 아니면 CPU 멤버와 대화) =================
-let room = null, clubOpen = false;
+let room = null, clubOpen = false, clubUnread = 0;
+function clubBadge() { const b = $('#clubBadge'); if (!b) return; b.style.display = clubUnread > 0 ? 'inline-block' : 'none'; b.textContent = clubUnread > 99 ? '99+' : String(clubUnread); }
+function clubMarkRead() { clubUnread = 0; SV.clubRd = Date.now(); saveSV(); clubBadge(); }
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function clubAdd(chId, text, tag, quiet) { const ch = CH.find(c => c.id === chId), el = $('#clubLog'), d = document.createElement('div'); d.innerHTML = `<b style="color:${ch ? ch.ink : '#ff7a7a'}">${ch ? ch.name : '📡 안내'}</b>${tag ? ` <small style="opacity:.6">${tag}</small>` : ''} ${esc(text).slice(0, 200)}`; el.appendChild(d); while (el.children.length > 80) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; if (clubOpen && ch && !quiet) speak(ch.name, text); }
+// 멀티: 멤버별 접속 여부 (/on 하트비트 기준)
+function onlState() { const r = {}; for (const v of Object.values(onl || {})) { if (!v || !v.ch || !v.ts) continue; if (!r[v.ch] || r[v.ch].ts < v.ts) r[v.ch] = v; } return r; }
+function onlMark(id, r) { const v = (r || onlState())[id]; if (!v) return ['⚪', '미접속', 0]; const ag = Date.now() - v.ts; if (ag < 90000) return ['🟢', v.st === 'play' ? '싱글 중' : v.st === 'multi' ? '멀티 중' : '접속 중', 2]; if (ag < 180000) return ['🟡', '방금 전', 1]; const m = Math.round(ag / 60000); return ['⚪', m < 60 ? m + '분 전' : m < 1440 ? Math.round(m / 60) + '시간 전' : Math.round(m / 1440) + '일 전', 0]; }
+function mOnline() { const el = $('#mOnline'); if (!el || !$('#sMulti').classList.contains('on')) return; if (!NET.ok) { el.innerHTML = '<span style="opacity:.7">서버 연결 안 됨</span>'; return; } const r = onlState(), rows = CH.map(c => ({ c, m: onlMark(c.id, r) })).sort((a, b) => b.m[2] - a.m[2]); const n = rows.filter(x => x.m[2] === 2).length; el.innerHTML = `<div style="color:#9fffb0;margin-bottom:2px">지금 ${n}명 접속 중</div>` + rows.map(x => `<span class="bub" style="color:${x.c.ink};opacity:${x.m[2] ? 1 : .55}">${x.m[0]} ${x.c.name}${x.c.id === G.me ? ' (나)' : ''} <small style="opacity:.75">${x.m[1]}</small></span>`).join(''); }
+setInterval(() => { try { mOnline(); } catch (e) { } }, 20000);
 function clubPeers() { const el = $('#clubPeers'); if (NET.ok) { const vs = Object.values(onl).filter(v => v && v.ts), mx = Math.max(0, ...vs.map(v => v.ts)), live0 = vs.filter(v => mx - v.ts < 70000 && Date.now() - v.ts < 180000), seen = {}, live = live0.sort((x, y) => y.ts - x.ts).filter(v => seen[v.ch] ? false : (seen[v.ch] = 1)); $('#clubStat').textContent = `🟢 온라인 · 접속 ${live.length}명`; el.innerHTML = live.map(v => { const ch = CH.find(c => c.id === v.ch); return ch ? `<span class="bub" style="color:${ch.ink}">${ch.name}${v.lv ? ' Lv.' + (v.lv | 0) : ''}${v.st === 'play' ? ' ⛳싱글 중' : v.st === 'multi' ? ' 🌐멀티 중' : ''}</span>` : ''; }).join(''); el.insertAdjacentHTML('beforeend', '<div id="clubRank" style="width:100%;font-size:12px;line-height:1.7;margin-top:4px"></div>'); drawRank(); return; } if (!room) { el.innerHTML = ''; $('#clubStat').textContent = '오프라인 모드 — CPU 멤버들이 대신 답합니다. 온라인 링크로 접속한 멤버끼리는 실시간으로 대화됩니다.'; return; } const ps = room.peers().filter(p => p.kind === 'viewer'); $('#clubStat').textContent = `🟢 온라인 · 접속 ${ps.length}명`; el.innerHTML = ps.map(p => { const ch = CH.find(c => c.id === (p.presence || {}).ch); return `<span class="bub" style="color:${ch ? ch.ink : '#fff'}">${ch ? ch.name : '입장 중'}${p.isMe ? ' (나)' : ''}${(p.presence || {}).lv ? ' Lv.' + (+p.presence.lv | 0) : ''}${(p.presence || {}).st === 'play' ? ' ⛳라운드 중' : ''}</span>`; }).join(''); }
 function setPres(st) { if (room) room.presence({ ch: G.me, lv: lvOf(G.me), st: st || 'club' }).catch(() => { }); }
 function clubSend(t) { t = String(t || '').trim().slice(0, 120); if (!t) return; clubAdd(G.me, t); $('#clubIn').value = '';
@@ -1610,9 +1624,9 @@ function clubSend(t) { t = String(t || '').trim().slice(0, 120); if (!t) return;
   else if (room && room.connected()) room.emit('chat', { ch: G.me, t }).catch(() => { });
   else { const others = CH.filter(c => c.id !== G.me), a = pick(others), me = { ch: CH.find(c => c.id === G.me) }; setTimeout(() => clubAdd(a.id, R() < .5 ? pick(REPLY[a.id]) : gucciLine({ ch: a }, me), 'CPU'), 700 + R() * 900); } }
 function needCh() { if (SV.myCh) return false; ['sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sTitle').classList.add('on'); drawCards(); return true; }
-function openClub() { if (needCh()) return; clubOpen = true; ['sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sClub').classList.add('on'); const me = CH.find(c => c.id === G.me), q = (SELF[G.me].start || []).concat(GUCCI[G.me].map(f => f('다들')), ['ㅋㅋㅋ', '한판 하시죠', '부럽']); $('#clubQuick').innerHTML = ''; q.slice(0, 8).forEach(t => { const b = document.createElement('button'); b.className = 'btn'; b.style.cssText = 'font-size:11px;padding:5px 8px;white-space:nowrap'; b.textContent = t; b.onclick = () => clubSend(t); $('#clubQuick').appendChild(b); }); clubPeers(); setPres('club'); if (!$('#clubLog').children.length) clubAdd(null, `${me.name}(으)로 입장했습니다. 캐릭터는 스타트 화면에서 바꿀 수 있습니다.`); }
+function openClub() { if (needCh()) return; clubOpen = true; clubMarkRead(); ['sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sClub').classList.add('on'); const me = CH.find(c => c.id === G.me), q = (SELF[G.me].start || []).concat(GUCCI[G.me].map(f => f('다들')), ['ㅋㅋㅋ', '한판 하시죠', '부럽']); $('#clubQuick').innerHTML = ''; q.slice(0, 8).forEach(t => { const b = document.createElement('button'); b.className = 'btn'; b.style.cssText = 'font-size:11px;padding:5px 8px;white-space:nowrap'; b.textContent = t; b.onclick = () => clubSend(t); $('#clubQuick').appendChild(b); }); clubPeers(); setPres('club'); if (!$('#clubLog').children.length) clubAdd(null, `${me.name}(으)로 입장했습니다. 캐릭터는 스타트 화면에서 바꿀 수 있습니다.`); }
 $('#mClub').onclick = openClub;
-$('#clubClose').onclick = () => { clubOpen = false; showMenu(); };
+$('#clubClose').onclick = () => { clubOpen = false; clubMarkRead(); showMenu(); };
 $('#clubSend').onclick = () => clubSend($('#clubIn').value);
 $('#clubIn').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') clubSend($('#clubIn').value); });
 (async () => { try { if (!window.claude || !window.claude.use) return; const r = await window.claude.use('room'); if (!r) return; room = r;
