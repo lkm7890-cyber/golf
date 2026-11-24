@@ -693,35 +693,63 @@ const SLOTS = [['driver', '드라이버'], ['iron', '아이언'], ['wedge', '웨
 // 드라이버: 헤드 체적·MOI가 클수록 편차↓, 초경량 헤드는 스윙이 느린 캐릭터일수록 비거리 이득
 const ironDist = loft7 => 1 + (33 - loft7) * .012;
 const GEAR = [
- { id: 'd1', slot: 'driver', n: '핑 G400 (2017, 중고 명품)', price: 5000, spec: '445cc · 로프트 9/10.5° · 45.75" · MOI 9,263', fx: ch => ({ drv: 1.02, dAcc: .93 }) },
- { id: 'd2', slot: 'driver', n: '핑 G400 MAX', price: 7000, spec: '460cc · MOI 9,902 (G400 중 최대 관용성)', fx: ch => ({ drv: 1.02, dAcc: .9 }) },
- { id: 'd3', slot: 'driver', n: '타이틀리스트 GT1', price: 16000, spec: '460cc · 로프트 9/10/12° · 45.5" · 초경량 고탄도', fx: ch => ({ drv: ch.mult < 1 ? 1.07 : 1.02, dAcc: .93 }) },
- { id: 'd4', slot: 'driver', n: '핑 G440 MAX ("드라이버는 핑이죠")', price: 18000, spec: '460cc · 헤드 203g · 로프트 9/10.5/12° · 46"', fx: ch => ({ drv: 1.06, dAcc: .88 }) },
- { id: 'd5', slot: 'driver', n: '미즈노 JPX 850 9.5° (2014)', price: 4000, spec: '정슬기 실사용 · 로프트 9.5° · 구형 저탄도 장타 세팅', fx: ch => ({ drv: 1.03, dAcc: 1.04 }) },
- { id: 'd6', slot: 'driver', n: '테일러메이드 Qi10 9°', price: 17000, spec: '신현욱 실사용 · 460cc · 로프트 9° · 저탄도 장타 세팅', fx: ch => ({ drv: 1.06, dAcc: .93 }) },
- { id: 'd7', slot: 'driver', n: '핑 G425 MAX', price: 12000, spec: '안유태 실사용 · 460cc · 관용성 모델', fx: ch => ({ drv: 1.04, dAcc: .89 }) },
- { id: 'd8', slot: 'driver', n: '타이틀리스트 GT2', price: 19000, spec: '이규만 실사용 · 460cc · 관용성+비거리 균형 모델', fx: ch => ({ drv: 1.05, dAcc: .9 }) },
- { id: 'd0', slot: 'driver', n: '타이틀리스트 드라이버 (모델 미확인)', price: 9000, spec: '안경용 실사용 · 모델 확인되면 제원 반영', fx: ch => ({ drv: 1.03, dAcc: .95 }) },
- { id: 'i4', slot: 'iron', n: '다이와 온오프 AKA', price: 14000, spec: '안유태 실사용 · 비거리·관용성형', fx: ch => ({ iron: 1.04, iAcc: .9 }) },
- { id: 'i0', slot: 'iron', n: '타이틀리스트 713/714 (세부 모델 미확인)', price: 8000, spec: '안경용 실사용 · 2013~14년식 · 모델 확인되면 제원 반영', fx: ch => ({ iAcc: .94 }) },
- { id: 'i1', slot: 'iron', n: '타이틀리스트 T350 (2025)', price: 15000, spec: '7번 29° · 게임 임프루브먼트(최대 관용성)', fx: ch => ({ iron: ironDist(29), iAcc: .86 }) },
- { id: 'i2', slot: 'iron', n: '타이틀리스트 T250 (2025)', price: 17000, spec: '7번 30.5° · 플레이어스 디스턴스', fx: ch => ({ iron: ironDist(30.5), iAcc: ch.acc >= .6 ? .92 : 1.0 }) },
- { id: 'i3', slot: 'iron', n: '테일러메이드 P770 (2024)', price: 16000, spec: '7번 33° · PW 45° · 모던 플레이어스(상급자용)', fx: ch => ({ iron: ironDist(33), iAcc: ch.acc >= .7 ? .9 : 1.08 }) },
- { id: 'w1', slot: 'wedge', n: '타이틀리스트 보키 SM5 웨지', price: 4000, spec: '투어 웨지 · 러프·벙커 탈출 특화', fx: ch => ({ lie: .65 }) },
- { id: 'w4', slot: 'wedge', n: '타이틀리스트 보키 SM11 (SW·LW) + 클리블랜드 RTX6 (AW)', price: 9000, spec: '이규만 실사용 · 웨지 3개 구성 · 최신 그루브', fx: ch => ({ lie: .6 }) },
- { id: 'w3', slot: 'wedge', n: '클리블랜드 웨지 52·56·60', price: 6000, spec: '안유태 실사용 · 웨지 3개 구성', fx: ch => ({ lie: .6 }) },
- { id: 'w2', slot: 'wedge', n: '녹슨 타이틀리스트 웨지 (by 아제아제 사장님)', price: 500, spec: '정체불명 싱글의 혼이 녹아 있음', fx: ch => ({ lie: .8 }) },
- { id: 'p9', slot: 'putter', n: '가품 핑 블레이드 퍼터', price: 300, spec: '검색해도 안 나옴 · "장비는 거들 뿐"', fx: ch => ({ putt: 1.0 }) },
- { id: 'p3', slot: 'putter', n: '핑 앤서 블레이드 퍼터', price: 7000, spec: '안유태 실사용 · 블레이드형', fx: ch => ({ putt: .85 }) },
- { id: 'p0', slot: 'putter', n: '타이틀리스트(스카티 카메론) 퍼터 (모델 미확인)', price: 9000, spec: '안경용 실사용', fx: ch => ({ putt: .85 }) },
- { id: 'p1', slot: 'putter', n: '오디세이 말렛 퍼터', price: 5000, spec: '말렛형 · 직진성', fx: ch => ({ putt: .88 }) },
- { id: 'p2', slot: 'putter', n: '스카티 카메론 팬텀 5.5', price: 12000, spec: '이규만 실사용 · 말렛형 · 정밀 밀링 페이스', fx: ch => ({ putt: .78 }) },
+ { id: 'd1', old: 1, slot: 'driver', n: '핑 G400 (2017, 중고 명품)', price: 5000, spec: '445cc · 로프트 9/10.5° · 45.75" · MOI 9,263', fx: ch => ({ drv: 1.02, dAcc: .93 }) },
+ { id: 'd2', old: 1, slot: 'driver', n: '핑 G400 MAX', price: 7000, spec: '460cc · MOI 9,902 (G400 중 최대 관용성)', fx: ch => ({ drv: 1.02, dAcc: .9 }) },
+ { id: 'd3', old: 1, slot: 'driver', n: '타이틀리스트 GT1', price: 16000, spec: '460cc · 로프트 9/10/12° · 45.5" · 초경량 고탄도', fx: ch => ({ drv: ch.mult < 1 ? 1.07 : 1.02, dAcc: .93 }) },
+ { id: 'd4', old: 1, slot: 'driver', n: '핑 G440 MAX ("드라이버는 핑이죠")', price: 18000, spec: '460cc · 헤드 203g · 로프트 9/10.5/12° · 46"', fx: ch => ({ drv: 1.06, dAcc: .88 }) },
+ { id: 'd5', old: 1, slot: 'driver', n: '미즈노 JPX 850 9.5° (2014)', price: 4000, spec: '정슬기 실사용 · 로프트 9.5° · 구형 저탄도 장타 세팅', fx: ch => ({ drv: 1.03, dAcc: 1.04 }) },
+ { id: 'd6', old: 1, slot: 'driver', n: '테일러메이드 Qi10 9°', price: 17000, spec: '신현욱 실사용 · 460cc · 로프트 9° · 저탄도 장타 세팅', fx: ch => ({ drv: 1.06, dAcc: .93 }) },
+ { id: 'd7', old: 1, slot: 'driver', n: '핑 G425 MAX', price: 12000, spec: '안유태 실사용 · 460cc · 관용성 모델', fx: ch => ({ drv: 1.04, dAcc: .89 }) },
+ { id: 'd8', old: 1, slot: 'driver', n: '타이틀리스트 GT2', price: 19000, spec: '이규만 실사용 · 460cc · 관용성+비거리 균형 모델', fx: ch => ({ drv: 1.05, dAcc: .9 }) },
+ { id: 'd0', old: 1, slot: 'driver', n: '타이틀리스트 드라이버 (모델 미확인)', price: 9000, spec: '안경용 실사용 · 모델 확인되면 제원 반영', fx: ch => ({ drv: 1.03, dAcc: .95 }) },
+ { id: 'i4', old: 1, slot: 'iron', n: '다이와 온오프 AKA', price: 14000, spec: '안유태 실사용 · 비거리·관용성형', fx: ch => ({ iron: 1.04, iAcc: .9 }) },
+ { id: 'i0', old: 1, slot: 'iron', n: '타이틀리스트 713/714 (세부 모델 미확인)', price: 8000, spec: '안경용 실사용 · 2013~14년식 · 모델 확인되면 제원 반영', fx: ch => ({ iAcc: .94 }) },
+ { id: 'i1', old: 1, slot: 'iron', n: '타이틀리스트 T350 (2025)', price: 15000, spec: '7번 29° · 게임 임프루브먼트(최대 관용성)', fx: ch => ({ iron: ironDist(29), iAcc: .86 }) },
+ { id: 'i2', old: 1, slot: 'iron', n: '타이틀리스트 T250 (2025)', price: 17000, spec: '7번 30.5° · 플레이어스 디스턴스', fx: ch => ({ iron: ironDist(30.5), iAcc: ch.acc >= .6 ? .92 : 1.0 }) },
+ { id: 'i3', old: 1, slot: 'iron', n: '테일러메이드 P770 (2024)', price: 16000, spec: '7번 33° · PW 45° · 모던 플레이어스(상급자용)', fx: ch => ({ iron: ironDist(33), iAcc: ch.acc >= .7 ? .9 : 1.08 }) },
+ { id: 'w1', old: 1, slot: 'wedge', n: '타이틀리스트 보키 SM5 웨지', price: 4000, spec: '투어 웨지 · 러프·벙커 탈출 특화', fx: ch => ({ lie: .65 }) },
+ { id: 'w4', old: 1, slot: 'wedge', n: '타이틀리스트 보키 SM11 (SW·LW) + 클리블랜드 RTX6 (AW)', price: 9000, spec: '이규만 실사용 · 웨지 3개 구성 · 최신 그루브', fx: ch => ({ lie: .6 }) },
+ { id: 'w3', old: 1, slot: 'wedge', n: '클리블랜드 웨지 52·56·60', price: 6000, spec: '안유태 실사용 · 웨지 3개 구성', fx: ch => ({ lie: .6 }) },
+ { id: 'w2', old: 1, slot: 'wedge', n: '녹슨 타이틀리스트 웨지 (by 아제아제 사장님)', price: 500, spec: '정체불명 싱글의 혼이 녹아 있음', fx: ch => ({ lie: .8 }) },
+ { id: 'p9', old: 1, slot: 'putter', n: '가품 핑 블레이드 퍼터', price: 300, spec: '검색해도 안 나옴 · "장비는 거들 뿐"', fx: ch => ({ putt: 1.0 }) },
+ { id: 'p3', old: 1, slot: 'putter', n: '핑 앤서 블레이드 퍼터', price: 7000, spec: '안유태 실사용 · 블레이드형', fx: ch => ({ putt: .85 }) },
+ { id: 'p0', old: 1, slot: 'putter', n: '타이틀리스트(스카티 카메론) 퍼터 (모델 미확인)', price: 9000, spec: '안경용 실사용', fx: ch => ({ putt: .85 }) },
+ { id: 'p1', old: 1, slot: 'putter', n: '오디세이 말렛 퍼터', price: 5000, spec: '말렛형 · 직진성', fx: ch => ({ putt: .88 }) },
+ { id: 'p2', old: 1, slot: 'putter', n: '스카티 카메론 팬텀 5.5', price: 12000, spec: '이규만 실사용 · 말렛형 · 정밀 밀링 페이스', fx: ch => ({ putt: .78 }) },
  { id: 'b9', slot: 'ball', n: '로스트볼 (250밧에 40개)', price: 250, spec: '레이크사이드에서 물에 빠졌는데 둥둥 뜸', fx: ch => ({ miss: 1.1, float: 1 }) },
- { id: 'b4', slot: 'ball', n: '테일러메이드 볼', price: 1800, spec: '신현욱 실사용', fx: ch => ({ miss: .9 }) },
- { id: 'b1', slot: 'ball', n: '본사 정품 로트 볼', price: 1500, spec: '"우리 건 다 본사 정품만 써"', fx: ch => ({ miss: .75 }) },
+ { id: 'b4', old: 1, slot: 'ball', n: '테일러메이드 볼', price: 1800, spec: '신현욱 실사용', fx: ch => ({ miss: .9 }) },
+ { id: 'b1', old: 1, slot: 'ball', n: '본사 정품 로트 볼', price: 1500, spec: '"우리 건 다 본사 정품만 써"', fx: ch => ({ miss: .75 }) },
  { id: 'b2', slot: 'ball', n: '레인장갑 + 수건 3장', price: 1200, spec: '폭우 지옥훈련 준비물', fx: ch => ({ rain: 1 }) },
  { id: 'b3', slot: 'ball', n: '레이저 거리측정기', price: 4000, spec: '핀까지 정확한 거리', fx: ch => ({ miss: .85, iAcc: .94 }) },
-];
+
+ // ===== 2026 최신 4대 브랜드 (타이틀리스트·테일러메이드·핑·캘러웨이) · 실제 가격(밧) =====
+ { id: 'nd1', slot: 'driver', n: '타이틀리스트 GTS2 (2026)', price: 28000, spec: '460cc · 고탄도·중스핀 · GTS 중 최대 관용성 · $699 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.06, dAcc: .87 }) },
+ { id: 'nd2', slot: 'driver', n: '타이틀리스트 GTS3 (2026)', price: 28000, spec: '460cc · 무게 트랙 조절 · 중저스핀 · $699 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.07, dAcc: ch.acc >= .6 ? .9 : 1.0 }) },
+ { id: 'nd3', slot: 'driver', n: '테일러메이드 Qi4D (2026)', price: 26000, spec: '460cc · 60X 카본 페이스 · 무게 4개 조절 · $649 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.07, dAcc: .88 }) },
+ { id: 'nd4', slot: 'driver', n: '테일러메이드 Qi4D Max (2026)', price: 26000, spec: '최대 관용성 · 슬라이스 방지 · $649 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.05, dAcc: .84 }) },
+ { id: 'nd5', slot: 'driver', n: '핑 G440 K (2026)', price: 26000, spec: '핑 역대 최고 MOI · 가장 똑바로 · $649 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.05, dAcc: .82 }) },
+ { id: 'nd6', slot: 'driver', n: '캘러웨이 퀀텀 맥스 (2026)', price: 26000, spec: '트라이포스 페이스 · 비거리 최강 · $649 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ drv: 1.08, dAcc: .9 }) },
+ { id: 'ni1', slot: 'iron', n: '타이틀리스트 T150 (2025) 세트', price: 56000, spec: '7번 31° · 플레이어스 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ iron: ironDist(31), iAcc: ch.acc >= .6 ? .9 : 1.0 }) },
+ { id: 'ni2', slot: 'iron', n: '테일러메이드 P790 (2025) 세트', price: 56000, spec: '7번 30.5° · 중공 비거리형 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ iron: ironDist(30.5), iAcc: .88 }) },
+ { id: 'ni3', slot: 'iron', n: '핑 G440 아이언 세트', price: 44000, spec: '7번 28.5° · 최대 관용성 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ iron: ironDist(28.5), iAcc: .85 }) },
+ { id: 'ni4', slot: 'iron', n: '캘러웨이 엘리트 아이언 세트', price: 40000, spec: '7번 28° · 비거리·고탄도 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ iron: ironDist(28), iAcc: .87 }) },
+ { id: 'nw1', slot: 'wedge', n: '타이틀리스트 보키 SM11', price: 8000, spec: '투어 웨지 1개 기준 · $199 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ lie: .62 }) },
+ { id: 'nw2', slot: 'wedge', n: '테일러메이드 MG5', price: 7600, spec: '스핀 그루브 · $189 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ lie: .64 }) },
+ { id: 'nw3', slot: 'wedge', n: '핑 s159', price: 8000, spec: '그라인드 다양 · $199 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ lie: .63 }) },
+ { id: 'nw4', slot: 'wedge', n: '캘러웨이 오퍼스', price: 7200, spec: '스핀 페이스 · $179 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ lie: .65 }) },
+ { id: 'np1', slot: 'putter', n: '스카티 카메론 스튜디오 스타일', price: 20000, spec: '정밀 밀링 · $499 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ putt: .78 }) },
+ { id: 'np2', slot: 'putter', n: '테일러메이드 스파이더 투어', price: 16000, spec: '고관성 말렛 · $399 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ putt: .82 }) },
+ { id: 'np3', slot: 'putter', n: '핑 앤서 (2024 퍼터)', price: 13000, spec: '블레이드 · $329 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ putt: .84 }) },
+ { id: 'np4', slot: 'putter', n: '오디세이 Ai-ONE 말렛', price: 14000, spec: 'Ai 인서트 · 직진성 · $349 · 가격: 미국 정가×40 환산 추정', fx: ch => ({ putt: .83 }) },
+ // 공: 피스가 많을수록 스핀·컨트롤↑, 가격↑ (1더즌 기준)
+ { id: 'nb1', slot: 'ball', n: '캘러웨이 슈퍼소프트 (2피스)', price: 1000, spec: '2피스 · 저압축 · 비거리·부드러움 · 1더즌', fx: ch => ({ drv: 1.02, miss: .97 }) },
+ { id: 'nb2', slot: 'ball', n: '타이틀리스트 벨로시티 (2피스)', price: 1400, spec: '2피스 · 고탄도 비거리볼 · 1더즌', fx: ch => ({ drv: 1.03, miss: .96 }) },
+ { id: 'nb3', slot: 'ball', n: '테일러메이드 투어 리스폰스 (3피스)', price: 1800, spec: '3피스 우레탄 · 1더즌', fx: ch => ({ drv: 1.01, iAcc: .97, putt: .97, miss: .92 }) },
+ { id: 'nb4', slot: 'ball', n: '타이틀리스트 Pro V1 (3피스)', price: 2650, spec: '3피스 우레탄 · 태국 정가 2,650밧 · 1더즌', fx: ch => ({ drv: 1.01, iAcc: .95, putt: .96, lie: .96, miss: .9 }) },
+ { id: 'nb5', slot: 'ball', n: '캘러웨이 크롬 투어 (4피스)', price: 2700, spec: '4피스 우레탄 · 1더즌', fx: ch => ({ drv: 1.02, iAcc: .93, putt: .95, lie: .94, miss: .88 }) },
+ { id: 'nb6', slot: 'ball', n: '타이틀리스트 Pro V1x (4피스)', price: 2750, spec: '4피스 · 고탄도·고스핀 · 1더즌', fx: ch => ({ drv: 1.02, iAcc: .93, putt: .95, lie: .93, miss: .88 }) },
+ { id: 'nb7', slot: 'ball', n: '테일러메이드 TP5 (5피스)', price: 2900, spec: '5피스 우레탄 · 1더즌', fx: ch => ({ drv: 1.02, iAcc: .91, putt: .94, lie: .92, miss: .86 }) },
+ { id: 'nb8', slot: 'ball', n: '테일러메이드 TP5x (5피스)', price: 2950, spec: '5피스 · 단단한 고속볼 · 1더즌', fx: ch => ({ drv: 1.03, iAcc: .91, putt: .95, lie: .92, miss: .86 }) },];
 // 멤버가 실제로 쓰는 장비 (대화·기획서 기준) — 그 캐릭터로 칠 때 기본 장착
 const REALGEAR = { sg: { driver: 'd5', iron: 'i3', wedge: 'w2', putter: 'p9', ball: 'b9' }, gy: { driver: 'd0', iron: 'i0', wedge: 'w1', putter: 'p0' }, gm: { driver: 'd8', iron: 'i2', wedge: 'w4', putter: 'p2' }, hw: { driver: 'd6', iron: 'i1', wedge: 'w1', putter: 'p1', ball: 'b4' }, jt: { driver: 'd1' }, yt: { driver: 'd7', iron: 'i4', wedge: 'w3', putter: 'p3' } };
 function equipOf(ch, slot) { const v = SV.equip[slot]; if (v === undefined) return (REALGEAR[ch.id] || {})[slot] || null; return v; }
@@ -1303,12 +1331,12 @@ function finalScreen() {
   if (!G.rewarded) { G.rewarded = true; const me = T.find(t => t.p.human), hm = me.p, id = hm.ch.id; const lv0 = lvOf(id);
     const fee = 0, rank = order.indexOf(me) + 1, prize = rank === 1 ? 1000 : rank === 2 ? 400 : 0;
     const xp = 30 + G.nHoles * 12 + hm.st.birdie * 25 + hm.st.eagle * 60 + hm.st.ace * 200 + (rank === 1 ? 60 : 0);
-    const w0 = SV.wallet; let mealTxt = ''; if (G.multi && G.pay === 'loser' && G.mealBill) { const last = order[order.length - 1]; if (last === me) { SV.wallet -= G.mealBill; mealTxt = ` · 🍽 꼴찌라서 식사 계산 -${G.mealBill.toLocaleString()}밧`; } else mealTxt = ` · 🍽 식사는 꼴찌 ${last.p.ch.name}이(가) 계산`; } if (G.multi) { SV.wallet = SV.wallet + me.tot + fee + prize; SV.mr = (SV.mr | 0) + 1; if (rank === 1) SV.mw = (SV.mw | 0) + 1; SV.mm = (SV.mm | 0) + me.tot; } let stTxt = ''; if (!G.multi) { if (SV.stDay !== today()) { SV.stDay = today(); SV.stN = 0; } const raw = G.nHoles + (rank === 1 && order.length > 1 ? 3 : 0) + hm.st.birdie + hm.st.eagle * 2 + hm.st.ace * 5, got = Math.max(0, Math.min(raw, 20 - (SV.stN | 0))); SV.stN = (SV.stN | 0) + got; SV.stamp = (SV.stamp | 0) + got; stTxt = `<br>🎟 연습 스탬프 +${got}개 (보유 ${SV.stamp}개 · 오늘 ${SV.stN}/20) — 멀티 모드 체크인 때 1개당 100밧 자동 할인${got < raw ? ' · 오늘 한도 도달' : ''}` + dqCheck({ rank, n: order.length, st: hm.st, ph: hm.parHist, money: me.tot }); } cadSay('tip'); SV.xp[id] = (SV.xp[id] || 0) + xp; SV.rounds++; if (G.multi) SV.lastRound = today(); try { achRound(hm, rank, order.length); } catch (e) { }
+    const w0 = SV.wallet; let mealTxt = ''; if (G.multi && G.pay === 'loser' && G.mealBill) { const last = order[order.length - 1]; if (last === me) { SV.wallet -= G.mealBill; mealTxt = ` · 🍽 꼴찌라서 식사 계산 -${G.mealBill.toLocaleString()}밧`; } else mealTxt = ` · 🍽 식사는 꼴찌 ${last.p.ch.name}이(가) 계산`; } G.sgRw = 0; if (!G.multi && me.tot > 0) { G.sgRw = Math.round(me.tot * .1); SV.wallet += G.sgRw; } if (G.multi) { SV.wallet = SV.wallet + me.tot + fee + prize; SV.mr = (SV.mr | 0) + 1; if (rank === 1) SV.mw = (SV.mw | 0) + 1; SV.mm = (SV.mm | 0) + me.tot; } let stTxt = ''; if (!G.multi) { if (SV.stDay !== today()) { SV.stDay = today(); SV.stN = 0; } const raw = G.nHoles + (rank === 1 && order.length > 1 ? 3 : 0) + hm.st.birdie + hm.st.eagle * 2 + hm.st.ace * 5, got = Math.max(0, Math.min(raw, 20 - (SV.stN | 0))); SV.stN = (SV.stN | 0) + got; SV.stamp = (SV.stamp | 0) + got; stTxt = `<br>🎟 연습 스탬프 +${got}개 (보유 ${SV.stamp}개 · 오늘 ${SV.stN}/20) — 멀티 모드 체크인 때 1개당 100밧 자동 할인${got < raw ? ' · 오늘 한도 도달' : ''}` + dqCheck({ rank, n: order.length, st: hm.st, ph: hm.parHist, money: me.tot }); } cadSay('tip'); SV.xp[id] = (SV.xp[id] || 0) + xp; SV.rounds++; if (G.multi) SV.lastRound = today(); try { achRound(hm, rank, order.length); } catch (e) { }
     let stHTML = ''; { SV.story = SV.story || {}; const ci = chapOf(id), c = STORY[id][ci], done = storyDone(id); const ok = GOAL[c[2]][1]({ rank, n: order.length, money: me.tot, st: hm.st, worst: Math.max(...hm.parHist) }); const bonus = ok && !done ? 800 * (ci + 1) : 0;
       if (ok && !done) { SV.story[id] = ci + 1; SV.wallet += bonus; }
       stHTML = `<div class="story" style="box-shadow:inset 0 0 0 2px ${hm.ch.color}"><div style="color:${hm.ch.ink};font-weight:800">📖 ${hm.ch.name} 스토리 ${ci + 1}장 — ${c[0]}</div><div style="margin-top:4px;color:${ok ? '#7fe09a' : '#ff9a9a'}">${ok ? '✅ 목표 달성' : '❌ 목표 실패'}: ${GOAL[c[2]][0]}</div><div class="nar" style="margin-top:4px">${ok ? c[3] : c[4]}</div>${bonus ? `<div style="margin-top:4px;color:#ffb627">스토리 보상 +${bonus.toLocaleString()}밧${ci + 1 < STORY[id].length ? ' · 다음 장 해금!' : ' · 스토리 완결!'}</div>` : (ok ? '' : '<div style="margin-top:4px;opacity:.8">같은 장에 다시 도전할 수 있습니다.</div>')}</div>`; }
     saveSV();
-    G.rewardHTML = stHTML + `<div class="box" style="box-shadow:inset 0 0 0 2px #ffb627"><h3>💼 내 정산 · 성장</h3><div style="font-size:13px;line-height:1.8">내기 ${me.tot >= 0 ? '+' : ''}${me.tot.toLocaleString()}밧${G.multi ? '' : ' (싱글 모드는 연습이라 지갑에 반영 안 됨)'}${mealTxt}${G.multi ? ` · 그린피 -${(G.costFee || 0).toLocaleString()}밧 · 캐디 -${(G.cadFee || 0).toLocaleString()}밧(시작 때 차감)` : ' · 싱글 모드라 비용 없음'}${prize && G.multi ? ' · 순위 상금 +' + prize.toLocaleString() + '밧' : ''}<br>지갑 ${w0.toLocaleString()} → <b style="color:#ffb627">${SV.wallet.toLocaleString()}밧</b><br>${hm.ch.name} 경험치 +${xp} · Lv.${lv0}${lvOf(id) > lv0 ? ' → <b style="color:#7fe09a">Lv.' + lvOf(id) + ' 레벨업!</b>' : ''} (레벨당 편차 -0.8%, 비거리 +0.4%)${stTxt}</div></div>`; }
+    G.rewardHTML = stHTML + `<div class="box" style="box-shadow:inset 0 0 0 2px #ffb627"><h3>💼 내 정산 · 성장</h3><div style="font-size:13px;line-height:1.8">내기 ${me.tot >= 0 ? '+' : ''}${me.tot.toLocaleString()}밧${G.multi ? '' : (G.sgRw ? ` → 싱글 보상: 딴 돈의 10% <b style="color:#7fe09a">+${G.sgRw.toLocaleString()}밧</b> 지갑 입금` : ' (잃은 돈은 지갑에서 안 빠짐)')}${mealTxt}${G.multi ? ` · 그린피 -${(G.costFee || 0).toLocaleString()}밧 · 캐디 -${(G.cadFee || 0).toLocaleString()}밧(시작 때 차감)` : ' · 싱글 모드라 비용 없음'}${prize && G.multi ? ' · 순위 상금 +' + prize.toLocaleString() + '밧' : ''}<br>지갑 ${w0.toLocaleString()} → <b style="color:#ffb627">${SV.wallet.toLocaleString()}밧</b><br>${hm.ch.name} 경험치 +${xp} · Lv.${lv0}${lvOf(id) > lv0 ? ' → <b style="color:#7fe09a">Lv.' + lvOf(id) + ' 레벨업!</b>' : ''} (레벨당 편차 -0.8%, 비거리 +0.4%)${stTxt}</div></div>`; }
   $('#fRank').insertAdjacentHTML('beforeend', G.rewardHTML || '');
   $('#fAward').innerHTML = aw.map(s => `<span>${s}</span>`).join('');
   $('#fNews').innerHTML = G.allNews.slice(-14).map(s => `· ${s}`).join('<br>') || '·';
@@ -1448,7 +1476,7 @@ function drawShop() {
   for (const [slot, label] of SLOTS) {
     const cur = equipOf(ch, slot);
     html += `<div class="box"><h3>${label}</h3><div class="gear ${cur ? '' : 'eq'}"><div>기본 ${label}<small>효과 없음</small></div><button class="btn" data-eq="${slot}:">${cur ? '장착' : '장착중'}</button></div>`;
-    for (const g of GEAR.filter(x => x.slot === slot)) { const isReal = real[slot] === g.id, own = SV.owned.includes(g.id) || isReal, eq = cur === g.id;
+    for (const g of GEAR.filter(x => x.slot === slot && (!x.old || SV.owned.includes(x.id) || real[slot] === x.id))) { const isReal = real[slot] === g.id, own = SV.owned.includes(g.id) || isReal, eq = cur === g.id;
       const du = Math.round(durOf(g.id)); html += `<div class="gear ${eq ? 'eq' : ''}"><div>${g.n}${isReal ? ' <span style="color:#7fe8d2">★실제 보유</span>' : own ? ' ✔' : ''}<small>${g.spec}</small><small style="color:#ffe08a;opacity:1">${fxText(g, ch)}</small>${own ? `<small style="color:${du < 30 ? '#ff9a9a' : du < 60 ? '#ffd27a' : '#7fe09a'};opacity:1">내구도 ${du}%${du < 60 ? ' (성능 저하 중)' : ''} ${!isReal && SV.owned.includes(g.id) ? `<button class="btn" data-sell="${g.id}" style="font-size:11px;padding:3px 7px">중고판매 ${sellPrice(g).toLocaleString()}</button> ` : ''}${du < 100 ? ` <button class="btn" data-fix="${g.id}" style="font-size:11px;padding:3px 7px" ${SV.wallet < repairCost(g) ? 'disabled' : ''}>수리 ${repairCost(g).toLocaleString()}밧</button>` : ''}</small>` : ''}${own ? UPG.filter(u => u.slot === g.slot).map(u => `<small style="opacity:1">🔧 ${u.n} — ${u.d} ${hasUp(g.id, u.id) ? '<span style="color:#7fe09a">완료</span>' : `<button class="btn" data-up="${g.id}:${u.id}" style="font-size:11px;padding:3px 7px" ${SV.wallet < u.price ? 'disabled' : ''}>${u.price.toLocaleString()}밧</button>`}</small>`).join('') : ''}</div>${own ? `<button class="btn" data-eq="${slot}:${g.id}">${eq ? '장착중' : '장착'}</button>` : `<button class="btn" data-buy="${g.id}" ${SV.wallet < g.price ? 'disabled' : ''}>${g.price.toLocaleString()}밧</button>`}</div>`; }
     html += '</div>';
   }
@@ -1485,7 +1513,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.33.3';
+const VERSION = 'v0.34.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1510,6 +1538,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.34.0', '2026-11-24', ['💰 싱글 보상: 싱글에서 딴 돈의 10%를 지갑에 입금 (상한 없음, 잃은 돈은 안 빠짐)', '🛒 상점 장비를 2026 최신 4대 브랜드로 교체: 드라이버 GTS2·GTS3·Qi4D·Qi4D Max·G440 K·퀀텀 맥스, 아이언 T150·P790·G440·엘리트, 웨지 보키 SM11·MG5·s159·오퍼스, 퍼터 스카티 스튜디오 스타일·스파이더 투어·핑 앤서·Ai-ONE. 가격은 실제가(밧)', '⛳ 공 2~5피스 8종: 피스가 많을수록 비싸고 정확도·퍼팅·러프 탈출이 좋아짐 (2피스는 비거리 위주로 저렴)', '예전 장비는 이미 산 것·멤버 실사용 장비만 계속 표시']],
  ['v0.33.3', '2026-11-24', ['⚡ 8명 전원 고유 스킬, 9홀마다 1번 사용 (18홀이면 전반·후반 각 1번). 새 스킬: 신현욱 🍱 노노해 도시락(체력+25·정확도 버프) / 윤대욱 🐍 어휴 뱀이다(상대 전원 정확도 -15%) / 김정태 📈 장투 존버(다음 샷 바람 무시)', '정슬기 공중부양·안유태 융단 폭격은 매 홀 → 9홀마다 1번으로 변경, 이규만·안경용·권어진은 라운드 1번 → 9홀마다 1번으로 늘어남', '스킬 버튼을 길게 누르면 효과 설명. 멀티에서는 남에게 영향 주는 스킬(융단폭격·파마·감봉·캐스팅보트·뱀)은 꺼짐']],
  ['v0.33.2', '2026-11-24', ['🎲 랜덤 캐디: 능력치(그린·거리·공찾기·구찌방어) 전부 랜덤 + 외모(별 1~5개)·나이(20~52세) 랜덤. 외모 별 2개 이하이거나 능력치가 낮으면 그날 컨디션 하락(정확도 디버프), 외모 별 4개 이상에 능력치도 좋으면 컨디션 상승', '⭐ 지정 캐디(지정료 내는 캐디)는 항상 컨디션 상승 + 목소리는 섹시한 또는 귀여운 (캐디 번호별 고정)', '체크인 화면 캐디 소개에 외모·나이·컨디션 표시']],
  ['v0.33.1', '2026-11-24', ['📰 속보 멘트 대폭 추가: 물·OB·탑볼·뒤땅·드라이버 사망·벙커·양파 등 상황마다 2~5개씩 늘려 같은 멘트 반복 줄임', '🗣 캐디 목소리 6가지(귀여운·애교·섹시한·시원시원·차분한·엄마 같은): 옵션에서 고르거나 "자동"이면 캐디 번호마다 다르게. 캐디마다 높낮이·말 빠르기도 조금씩 다름 + 굿샷·버디 땐 들뜬 목소리, 물·OB 땐 가라앉은 목소리. 폰에 태국어 음성이 여러 개 깔려 있으면 캐디마다 다른 음성 사용']],
