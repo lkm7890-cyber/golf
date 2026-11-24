@@ -153,6 +153,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="mShop" style="background:#2a1f3d;color:#ffd98a">🛒 장비 상점</button>
   <button class="go" id="mClub" style="background:#16302a;color:#9ff0d0;position:relative">🏠 클럽하우스 (채팅)<span id="clubBadge" style="display:none;position:absolute;top:-7px;right:-5px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#ff3b3b;color:#fff;font-size:12px;line-height:20px;font-weight:bold;box-shadow:0 0 0 2px #000;animation:bdg 1s ease-in-out infinite alternate">N</span></button><style>@keyframes bdg{from{transform:scale(1)}to{transform:scale(1.15)}}</style>
   <button class="go" id="mStk" style="background:#3a1620;color:#ffb8c8">📈 주식 투자 · 국장+미장 (실제 종가)</button>
+  <button class="go" id="mDaily" style="background:#3b2a12;color:#ffd27a">🎯 데일리 챌린지 · 🏆 월례 주통배</button>
   <button class="go" id="mPrac" style="background:#22301a;color:#cfe8a8">🏌 연습장 · 프로 레슨</button>
   <button class="go" id="mReal" style="background:#1d2a3a;color:#bcd8ff">📝 실제 스코어</button>
   <button class="go" id="mRank" style="background:#2a2208;color:#ffe08a">🏆 실시간 랭킹 (자산 · 능력치 · 대결)</button>
@@ -168,7 +169,17 @@ tr.me td{background:rgba(255,182,39,.13)}
   <h1 style="font-size:22px">🌐 멀티 플레이</h1>
   <div class="sub" id="mStat"></div>
   <div id="mEntry">
-    <button class="go" id="mCreateBtn">방 만들기 (지금 고른 코스·구간으로)</button>
+    <div class="box" id="mRules" style="font-size:13px;line-height:2"><h3 style="margin:0 0 4px">📜 방 규칙 (방장이 정함)</h3>
+      <label>코스 <select id="rCourse"></select></label><br>
+      <label>구간 <select id="rPart"></select></label><br>
+      <label>내기 <select id="rBet"></select></label><br>
+      <label>판돈 <select id="rUnit"><option value="50">타당 50밧</option><option value="100" selected>타당 100밧</option><option value="200">타당 200밧</option><option value="500">타당 500밧</option><option value="1000">타당 1,000밧</option></select></label><br>
+      <label>배판 <select id="rBp"><option value="1">버디 이상·양파 나오면 그 홀 ×2</option><option value="0">배판 없음</option></select></label><br>
+      <label>식사 <select id="rPay"></select></label><br>
+      <label>티타임 <select id="rTod"></select></label><br>
+      <label><input type="checkbox" id="rWx" checked> 🌦 실시간 날씨</label>
+    </div>
+    <button class="go" id="mCreateBtn">이 규칙으로 방 만들기</button>
     <div style="display:flex;gap:6px;margin-top:10px"><input id="mCode" inputmode="numeric" maxlength="4" placeholder="방 코드 4자리" style="flex:1;background:#07090b;color:#fff;border:2px solid #e8d8a0;padding:12px;font:inherit;font-size:18px;text-align:center;user-select:text;-webkit-user-select:text"><button class="btn" id="mJoinBtn">입장</button></div>
   </div>
   <div class="box" id="mOnlineBox"><h3 style="margin:0 0 6px">👥 지금 접속 상태</h3><div id="mOnline" style="font-size:13px;line-height:1.9"></div><div style="font-size:11px;opacity:.6;margin-top:4px">🟢 접속 중 · 🟡 방금 전(3분 이내) · ⚪ 미접속 — 약 1분마다 갱신</div></div>
@@ -231,6 +242,7 @@ tr.me td{background:rgba(255,182,39,.13)}
     <label>캐디 <select id="oCaddie"><option value="rand">랜덤 배정 (지정료 없음)</option><option value="241">241번 지정 (그린 리딩 · 멀티 +1,000밧)</option><option value="276">276번 지정 +1,000밧 (거리)</option><option value="304">304번 지정 +1,000밧 (공 찾기)</option><option value="234">234번 지정 +1,000밧 (구찌 방어)</option><option value="261">261번 지정 +1,000밧 (만능형)</option></select></label>
     <label>캐디 목소리 <select id="oCadVoice"><option value="auto">캐디마다 다르게 (자동)</option><option value="cute">귀여운 (높고 통통)</option><option value="aegyo">애교 (높고 느릿)</option><option value="sexy">섹시한 (낮고 나긋)</option><option value="cool">시원시원 (빠르고 또렷)</option><option value="calm">차분한 (낮고 느긋)</option><option value="mom">엄마 같은 (푸근)</option></select></label>
     <label>식사 <select id="oMeal"></select></label>
+    <label>내기 <select id="oBet"><option value="tadang">타당 (홀 1등이 판돈씩 받음)</option><option value="skins">스킨스 (무승부면 판돈 이월)</option><option value="jopok">조폭 (1등이 타수 차이만큼 수금)</option><option value="vegas">라스베이거스 (2:2 팀, 4·6·8명)</option></select></label>
     <label id="payLab">계산 <select id="oPay"><option value="each">각자 계산</option><option value="treat">방장(나)이 쏜다</option><option value="loser">라운드 꼴찌가 계산</option></select></label>
     <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
     <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="pcc">Stage 3 · 파타야 CC (파CC)</option><option value="scr">보너스 · 삼화 스크린골프장</option><option value="gv">보너스 · 그린밸리 (2포트 금지구장)</option></select></label>
@@ -239,6 +251,8 @@ tr.me td{background:rgba(255,182,39,.13)}
     
     <label><input type="checkbox" id="oVib" checked> 📳 심박 진동</label> <label><input type="checkbox" id="oVoice" checked> 🔊 대사 음성</label>
     <label><input type="checkbox" id="oWx" checked> 🌦 실시간 날씨</label>
+    <label>티타임 <select id="oTod"><option value="auto">지금 시간대</option><option value="dawn">🌅 새벽 (바람 약, 이슬로 런 감소)</option><option value="day">☀ 한낮</option><option value="after">🌤 오후 (바람 강)</option><option value="squall">⛈ 스콜 (비·돌풍)</option><option value="night">🌙 야간 (라이트, 시야↓)</option></select></label>
+    <label><input type="checkbox" id="oIns"> 🛡 홀인원 보험 (300밧/라운드, 홀인원 시 30,000밧)</label>
   </div><div class="help" id="wxNote" style="margin:0 0 8px"></div><div style="margin-bottom:10px">
     <input type="checkbox" id="oHcp" style="display:none">
   </div>
@@ -292,6 +306,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <div class="box"><h3>속보 모음</h3><div id="fNews" style="font-size:12.5px;line-height:1.6"></div></div>
   <div class="scroll" id="fTable"></div>
   <button class="go" id="copyBtn" style="background:#2c6b44;color:#fff">결과 복사 (카톡 붙여넣기용)</button>
+  <button class="go" id="cardBtn" style="background:#3a2c6b;color:#fff">🖼 결과 카드 이미지 공유</button>
   <button class="go" id="againBtn">다시 하기</button>
 </div></div>
 
@@ -519,7 +534,7 @@ const rainImm = ch => ['gm', 'du', 'yt'].includes(ch.id) || (isMe(ch) && G.gear.
 const immune = ch => ch.id === 'hw' || ch.id === 'jt';
 const moodF = st => { const m = (st.mood || 0) + (st.bonus || 0) + (st.cond || 0); return (m > 0 ? .88 : m < 0 ? 1.12 : 1) * clamp(1 - .06 * (st.beer || 0), .7, 1.4); };
 const jtF = ch => (ch.id === 'jt' ? clamp(1.15 - .07 * G.hi, .75, 1.15) : 1) * ((G.rain && !rainImm(ch)) ? 1.15 : 1) * ((COURSES[G.course] || {}).hard && ch.port === 2 ? 1.2 : 1);
-function clubMax(ch, club, lie) { if (club.putter) return 50; const gm_ = isMe(ch) ? ((club.id === 'D' || club.id === 'W') ? G.gear.drv : G.gear.iron) * (lvDistF(lvOf(ch.id))) * (1 + (G.mealPow || 0) + ((G.human && G.human.snackPow) || 0)) * staD() : 1; return gm_ * club.base * ch.mult * lieOf(ch, lie).d * ((lie === 'rough' && club.id === 'D') ? .8 : 1); }
+function clubMax(ch, club, lie) { if (club.putter) return 50; const gm_ = isMe(ch) ? ((club.id === 'D' || club.id === 'W') ? G.gear.drv : G.gear.iron) * (lvDistF(lvOf(ch.id))) * (1 + .01 * rebOf(ch.id)) * (G.tod === 'dawn' ? .98 : 1) * (1 + (G.mealPow || 0) + ((G.human && G.human.snackPow) || 0)) * staD() : 1; return gm_ * club.base * ch.mult * lieOf(ch, lie).d * ((lie === 'rough' && club.id === 'D') ? .8 : 1); }
 function zoneOf(ch, human) { return (.04 + .07 * ch.acc) * ((human && G.easy) ? 1.6 : 1) * (human ? (G.zmod || 1) : 1); } // 이 범위 안이면 '나이스샷' (오차 0)
 
 const SHAPEN = { fade: '↪ 페이드 (살짝 오른쪽으로 휨)', draw: '↩ 드로우 (살짝 왼쪽, 더 굴러감)', slice: '🍌 슬라이스! 오른쪽으로 크게 휨', hook: '🪝 훅! 왼쪽으로 감겨 굴러감', bigslice: '💥 바나나 슬라이스... 옆 홀 방향', duckhook: '🦆 덕훅! 왼쪽으로 꽂힘' };
@@ -767,7 +782,8 @@ const xpFor = lv => lv <= 20 ? 60 * (lv - 1) * (lv - 1) : XP20 + (lv - 20) * XP_
 const lvAccF = lv => lv <= 20 ? 1 - .008 * (lv - 1) : 1 - .008 * 19 - .002 * (lv - 20);
 const lvDistF = lv => lv <= 20 ? 1 + .004 * (lv - 1) : 1 + .004 * 19 + .0006 * (lv - 20);
 const isMe = ch => !!(G.human && G.human.ch === ch && G.phase !== 'title');
-const lvF = ch => isMe(ch) ? lvAccF(lvOf(ch.id)) : 1;      // 레벨당 편차 -0.8%
+const lvF = ch => (isMe(ch) ? lvAccF(lvOf(ch.id)) * (1 - .01 * rebOf(ch.id)) : 1) * (G.tod === 'night' ? 1.12 : 1);
+const rebOf = id => Math.min(5, ((SV.reb || {})[id]) || 0);      // 레벨당 편차 -0.8%
 // 실제 스코어 반영: 최근 3회 평균과 기준 타수의 차이로 실력 보정
 const BASE18 = { sg: 99, yt: 86, gy: 84, gm: 86, hw: 98, du: 92, jt: 90, ej: 96 };
 const REAL_SEED = { sg: [{ d: '2026-11-21', s: 100 }, { d: '2026-11-22', s: 101 }, { d: '2026-11-23', s: 87 }], gy: [{ d: '2026-11-23', s: 95 }], gm: [{ d: '2026-11-01', s: 96 }, { d: '2026-11-08', s: 104 }, { d: '2026-11-15', s: 104 }] };
@@ -915,7 +931,7 @@ const CADDIES = { 241: 'putt', 276: 'dist', 304: 'find', 234: 'guard', 261: 'all
 function pickCaddie() { const v = $('#oCaddie').value, ks = Object.keys(CADK), s = {}; let no, des = false, d;
   let look, age, cm = 0;
   if (v === 'rand') { no = pick([207, 219, 228, 245, 252, 263, 271, 288, 293, 301]); ks.forEach(k => s[k] = +(R() * .9).toFixed(2)); if (R() < .35) s[pick(ks)] = 1; look = 1 + Math.floor(R() * 5); age = 20 + Math.floor(R() * 33); const avg = ks.reduce((a, k) => a + s[k], 0) / ks.length; cm = (look <= 2 || avg < .33) ? -1 : (look >= 4 && avg >= .5) ? 1 : 0; d = `랜덤 캐디 — 능력치·외모·나이 모두 랜덤`; }
-  else { no = +v; des = true; look = 4 + (no % 2); age = 24 + (no % 9); cm = 1; const sp = CADDIES[no]; ks.forEach(k => s[k] = sp === 'all' ? .55 : (k === sp ? .7 : .4)); d = sp === 'all' ? '지정 캐디 — 전 능력 고르게 좋음' : `지정 캐디 — ${CADK[sp]} 전문, 나머지도 안정적`; }
+  else { no = +v; des = true; look = 4 + (no % 2); age = 24 + (no % 9); cm = 1; const sp = CADDIES[no]; ks.forEach(k => s[k] = sp === 'all' ? .55 : (k === sp ? .7 : .4)); const af = ((SV.cadAff || {})[no]) || 0; ks.forEach(k => s[k] = +Math.min(1, s[k] + af / 1000).toFixed(2)); d = (sp === 'all' ? '지정 캐디 — 전 능력 고르게 좋음' : `지정 캐디 — ${CADK[sp]} 전문, 나머지도 안정적`) + ` · 💗 호감도 ${((SV.cadAff || {})[no]) || 0}/100`; }
   const stars = '★'.repeat(look) + '☆'.repeat(5 - look), cmT = cm > 0 ? '▲ 오늘 컨디션 상승 (정확도 버프)' : cm < 0 ? '▼ 오늘 컨디션 하락 (정확도 디버프)' : '— 컨디션 영향 없음';
   return { no, des, look, age, cm, v: des ? CADPER[no] : pick(['A', 'B', 'C', 'D', 'E']), s, d: d + ` · 외모 ${stars} · ${age}세 · ${cmT}` + ` · 목소리 ${(CADVS[(($('#oCadVoice') || {}).value && $('#oCadVoice').value !== 'auto') ? $('#oCadVoice').value : cadVoiceAuto(no, des)] || [0, 0, ''])[2]}` + ` (그린 ${s.putt} · 거리 ${s.dist} · 공찾기 ${s.find} · 구찌방어 ${s.guard})` }; }
 const CADSAY = { hello: ['사왓디 카~ 오늘 잘 부탁해요 카', '사왓디 카~ 볼 몇 개 가져왔어요 카?'], nice: ['굿샷 카~!', '나이스 샷 카!', '쑤어이 막 카~'], on: ['나이스 온 카~', '온 그린 카!'], water: ['남(물) 카...', '아이고 남 카... 볼 하나 더 카'], ob: ['오비 카...', '뽀~올! 옆 홀 카...'], bunker: ['벙커 카...'], top: ['마이 뻰 라이 카~ (괜찮아요)', '천천히 카~'], birdie: ['버디 카!! 깽 막 카~ (최고예요)', '버디 팁 주세요 카~ ㅎㅎ'], par: ['파 카~ 굿 카'], bad: ['마이 뻰 라이 카~', '다음 홀 잘 쳐요 카'], ok: ['오케이 카~ 은갈치 카'], found: ['볼 찾았어요 카!! 여기 카~'], tip: ['컵쿤 카~ (감사합니다)'] };
@@ -938,7 +954,7 @@ const CLUBPX = { none: [], idle: [[10, 9], [11, 10], [12, 11], [13, 12], [14, 13
 function shade(hex, f) { const n = parseInt(hex.slice(1), 16); const r = Math.round((n >> 16 & 255) * f), g = Math.round((n >> 8 & 255) * f), b = Math.round((n & 255) * f); return `rgb(${r},${g},${b})`; }
 function drawSprite(c, ch, frame, ox, oy, sc = 1) {
   if (ch.afro) { c.fillStyle = ch.hair; c.fillRect(ox + 4 * sc, oy - 2 * sc, 8 * sc, 3 * sc); c.fillRect(ox + 3 * sc, oy, 10 * sc, 2 * sc); c.fillRect(ox + 3 * sc, oy + 2 * sc, 2 * sc, 2 * sc); c.fillRect(ox + 11 * sc, oy + 2 * sc, 2 * sc, 2 * sc); }
-  const col = { H: ch.hair, S: '#f1c79b', C: ch.color, D: shade(ch.color, .6), P: '#262b36', B: '#0a0a0a' };
+  const cs = (ch.id === SV.myCh && SV.cos && COS.find(x => x[0] === SV.cos)) || null; const cc = cs && cs[3] ? cs[3] : ch.color; const col = { H: ch.hair, S: '#f1c79b', C: cc, D: shade(cc, .6), P: cs && cs[4] ? cs[4] : '#262b36', B: '#0a0a0a' };
   for (let y = 0; y < SPR.length; y++) for (let x = 0; x < 12; x++) { const k = SPR[y][x]; if (k === '.') continue; c.fillStyle = col[k]; c.fillRect(ox + (x + 2) * sc, oy + y * sc, sc, sc); }
   c.fillStyle = '#d5dae0'; for (const p of (CLUBPX[frame] || CLUBPX.idle)) c.fillRect(ox + (p[0] + 2) * sc, oy + p[1] * sc, sc, sc);
 }
@@ -966,13 +982,14 @@ function drawCards() {
 }
 function syncNum() { const n = +$('#oNum').value; const ids = [G.me].concat(CH.map(c => c.id).filter(id => id !== G.me && G.on.has(id)), CH.map(c => c.id).filter(id => id !== G.me && !G.on.has(id))); G.on = new Set(ids.slice(0, n)); drawCards(); }
 $('#oNum').onchange = syncNum;
-$('#goBtn').onclick = () => { G.course = $('#oCourse').value; G.part = $('#oPart').value; G.hcp = $('#oHcp').checked && G.part !== 'full'; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = Math.floor(Math.random() * 1e9); try { if (G.voice) { const u = new SpeechSynthesisUtterance('주통배 시작합니다'); u.lang = 'ko-KR'; speechSynthesis.speak(u); } } catch (e) { } newGame(); };
+$('#goBtn').onclick = () => { G.daily = null; G.course = $('#oCourse').value; G.part = $('#oPart').value; G.hcp = $('#oHcp').checked && G.part !== 'full'; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = Math.floor(Math.random() * 1e9); try { if (G.voice) { const u = new SpeechSynthesisUtterance('주통배 시작합니다'); u.lang = 'ko-KR'; speechSynthesis.speak(u); } } catch (e) { } newGame(); };
 
 function newGame() {
-  G.gear = gearFx(CH.find(c => c.id === G.me)); G.rewarded = false; G.sta = 100; G.cad = pickCaddie(); G.cadHello = false; G.gear.putt *= 1 - .12 * G.cad.s.putt; G.costFee = 0; G.costPending = true; G.tipTot = 0; { const m = MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0]; G.meal = m; G.mealPow = m[3]; G.sta = 100 + (m[2] > 0 ? Math.min(10, Math.round(m[2] / 40)) : 0); G.pay = 'each'; G.mealBill = 0; G.mealPaid = 0; }
+  G.gear = gearFx(CH.find(c => c.id === G.me)); G.rewarded = false; G.sta = 100; G.cad = pickCaddie(); G.cadHello = false; G.gear.putt *= 1 - .12 * G.cad.s.putt; G.costFee = 0; G.costPending = true; G.tipTot = 0; G.bet = G.multi ? ((MR && MR.data && MR.data.cfg && MR.data.cfg.bet) || 'tadang') : (($('#oBet') || {}).value || 'tadang'); G.skinCarry = 0; G.teams = null; { const mc = (G.multi && MR && MR.data && MR.data.cfg) || {}; G.unit = +mc.unit || 100; G.noBp = mc.bp === 0; G.mTod = mc.tod; } { const m = MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0]; G.meal = m; G.mealPow = m[3]; G.sta = 100 + (m[2] > 0 ? Math.min(10, Math.round(m[2] / 40)) : 0); G.pay = 'each'; G.mealBill = 0; G.mealPaid = 0; }
   HOLES = G.course === 'fan' ? FANTASY.slice() : buildCourse(G.course, G.part, G.qSeed == null ? Math.floor(Math.random() * 1e9) : G.qSeed); if (G.course === 'fan' && G.part === 'quick') HOLES = HOLES.slice(0, 3); G.nHoles = HOLES.length;
   const eqCh = c => Object.assign({}, c, { mult: 1, acc: .7, putt: .7, top: .04, wild: undefined, ace: undefined, drvDie: undefined, caddie: undefined, hcp: undefined });
-  G.pl = CH.filter(c => G.on.has(c.id)).map(c => newState(G.multi ? eqCh(c) : c, c.id === G.me)); G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
+  G.pl = CH.filter(c => G.on.has(c.id)).map(c => newState(G.multi ? eqCh(c) : c, c.id === G.me));
+  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); G.ins = !G.multi && $('#oIns').checked; if (G.ins) { SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
   G.human = G.pl.find(p => p.human); G.hi = 0; G.allNews = [];
   $('#sTitle').classList.remove('on'); $('#sFinal').classList.remove('on');
   $('#top').style.display = 'flex'; $('#bottom').style.display = 'flex';
@@ -1038,7 +1055,7 @@ async function fetchWx(k) { const p = WXPOS[k]; if (!p) return null; if (WX[k] &
     WX[k] = { at: Date.now(), t: c.temperature_2m, rain: c.precipitation || 0, code: c.weather_code, kmh: c.wind_speed_10m, dir: c.wind_direction_10m, time: String(c.time || '').slice(11, 16) }; return WX[k]; } catch (e) { return null; } }
 function wxText(w) { return `${w.t}°C · 바람 ${w.kmh}km/h · ${w.rain > 0 || w.code >= 51 ? '비 ' + w.rain + 'mm ☔' : w.code >= 3 ? '흐림 ☁' : '맑음 ☀'} (${w.time} 기준)`; }
 async function wxNote() { const k = $('#oCourse').value, el = $('#wxNote'); if (!$('#oWx').checked) { el.textContent = ''; return; } if (!WXPOS[k]) { el.textContent = '🏠 실내 스크린이라 날씨 영향 없음'; return; } el.textContent = '🌦 현지 날씨 불러오는 중...'; const w = await fetchWx(k); if ($('#oCourse').value !== k) return; el.textContent = w ? '🌦 현지 실시간 날씨: ' + wxText(w) : '🌦 날씨를 불러오지 못했습니다 — 랜덤 날씨로 진행'; }
-function genWind() { if (G.wx) { const w = G.wx; return { s: clamp(w.kmh / 3.5, .3, 11) * (.8 + R() * .4), a: rad(w.dir + 180) + (R() - .5) * .5 }; } const wm = ((COURSES[G.course] || {}).windMul || 1) * (G.rain ? 1.4 : 1); return { s: R() * 6.5 * wm, a: R() * TAU }; }
+function genWind() { if (G.daily) { const r = mulb(G.qSeed + G.hi * 977); return { s: r() * 6.5, a: r() * TAU }; } if (G.wx) { const w = G.wx; return { s: clamp(w.kmh / 3.5, .3, 11) * (.8 + R() * .4), a: rad(w.dir + 180) + (R() - .5) * .5 }; } const wm = ((COURSES[G.course] || {}).windMul || 1) * (G.rain ? 1.4 : 1); return { s: R() * 6.5 * wm * TODW[G.tod || 'day'], a: R() * TAU }; }
 const ARR = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
 function hudSub() { const h = curHole(); $('#hsub').textContent = `PAR ${h.par} · ${Math.round(h.len)}y${h.estimated ? ' ✱' : ''}${G.mult > 1 ? ' · 배판 ×' + G.mult : ''}`; }
 function startHole() {
@@ -1162,7 +1179,7 @@ function setupMeter() {
 function launch() {
   const h = curHole(), st = G.human, c = curClub();
   let pwv = clamp(G.pw, 0, 1); if (G.easy) { const dp = dist(st.pos, h.pinPos), mx = clubMax(st.ch, c, st.lie), gp = c.putter ? (dp + .35) / ((st.ptier || 50) * (st.lie === 'green' ? 1 : .9)) : (dp <= mx ? dp / mx : null); if (gp != null && Math.abs(pwv - gp) < (.05 + (G.cad ? .06 * G.cad.s.dist : 0))) pwv = gp; if (!c.putter && pwv > .94) pwv = 1; }
-  G.lastAim = aimAngle(); G.lastPw = pwv; const res = takeShot(h, st, c, G.lastAim, pwv, G.acc, st.noWind ? { x: 0, y: 0 } : G.wind); st.noWind = false;
+  G.lastAim = aimAngle(); G.lastPw = pwv; const dp0 = dist(st.pos, h.pinPos), tee0 = st.strokes === 0; const res = takeShot(h, st, c, G.lastAim, pwv, G.acc, st.noWind ? { x: 0, y: 0 } : G.wind); st.noWind = false; if (c.id === 'D' && tee0 && !res.ob && res.tFin !== 'water' && res.tFin !== 'ob') G.myLong = Math.max(G.myLong || 0, Math.round(dist(st.pos, res.fin || st.pos))); if (c.putter && res.holed) G.myPutt = Math.max(G.myPutt || 0, Math.round(dp0 * 10) / 10);
   G.A = { res, t: 0, tf: c.putter ? .25 : .55 + res.carry / 210 * 1.3, tr: c.putter ? .5 + res.carry / 30 : .6, ph: 'fly' };
   G.phase = 'fly'; G.pw0 = G.pw; $('#swing').textContent = '...';
   beep(c.putter ? 300 : 200, .09, 'triangle', .09);
@@ -1175,7 +1192,7 @@ function shotDone() {
   const ev = res.ev; let msg = null, col = '#fff';
   if (res.holed) {
     const sc = st.strokes - h.par;
-    if (ev.includes('ace')) { msg = '🎯 홀인원!!!'; col = '#ffd54a'; } else if (sc <= -2) { msg = '🦅 이글!'; col = '#ffd54a'; } else if (sc === -1) { msg = '🐦 버디!'; col = '#ffd54a'; } else if (sc === 0) msg = '파!'; else if (sc === 1) msg = '보기'; else msg = `${st.strokes}타`;
+    if (ev.includes('ace')) { msg = '🎯 홀인원!!!'; col = '#ffd54a'; if (st.human && !G.multi) { if (G.ins) { SV.wallet += 30000; setTimeout(() => toast('🛡 홀인원 보험금 +30,000밧 지급! (기념식수·한턱 비용 충당)', '#9fffb0'), 1500); } else { SV.wallet -= 5000; setTimeout(() => toast('🎉 홀인원 축하 한턱·기념식수 비용 -5,000밧 (보험 미가입)', '#ffd27a'), 1500); } saveSV(); } } else if (sc <= -2) { msg = '🦅 이글!'; col = '#ffd54a'; } else if (sc === -1) { msg = '🐦 버디!'; col = '#ffd54a'; } else if (sc === 0) msg = '파!'; else if (sc === 1) msg = '보기'; else msg = `${st.strokes}타`;
     if (ev.includes('concede')) msg += ' (은갈치 OK)'; beep(880, .2, 'sine', .1); setTimeout(() => beep(1175, .25, 'sine', .1), 140);
   } else if (res.tFin === 'water') { msg = res.floated ? '🛟 로스트볼이 둥둥 떴다! 무벌타' : '💦 풍덩! +1벌타'; col = '#8ec8ff'; G.fx.push({ x: res.fin.x, y: res.fin.y, t: 0, k: 'ripple' }); beep(180, .3, 'sawtooth', .05); }
   else if (res.tFin === 'ob') { msg = res.found ? '🧢 캐디가 공을 찾았다! 무벌타' : res.retry === true ? '🔁 총무 하야 선언! OB 무효 리트라이' : res.retry === 'fail' ? '이제 3회인데...🚫 OB +1벌타' : '🚫 OB! +1벌타, 다시 치세요'; col = '#ff9a9a'; beep(150, .3, 'sawtooth', .05); }
@@ -1228,6 +1245,13 @@ const NEWS = {
  bug: [n => `${n} 14번홀 오른쪽 나무 밑 벌레 테러 당해, 다음 샷 흔들`, n => `${n} 14번홀 벌레와 재회, 스윙 리듬 붕괴`, n => `[현장] ${n} 나무 밑 개미떼 습격… 샷 흔들`],
 };
 Object.assign(NEWS, { bigslice: [n => `${n} 바나나 슬라이스, 공이 옆 홀 관광`, n => `[속보] ${n} 슬라이스 각도 90도 돌파`], duckhook: [n => `${n} 덕훅 작렬, 공이 왼쪽 숲으로 다이빙`, n => `[단독] ${n} 훅 구질, 오리도 놀라 날아가`], slice: [n => `${n} 슬라이스, 바람 탓이라 주장`], hook: [n => `${n} 훅 걸려 데굴데굴, 런은 많이 나옴`] });
+// ===== 내기 방식 (타당 외): 스킨스·조폭·라스베이거스 =====
+const BETN = { tadang: '타당', skins: '스킨스', jopok: '조폭', vegas: '라스베이거스' };
+function betHole(h, wi, n, mult) { const bm = G.bet || 'tadang'; if (bm === 'tadang') return false; const amt = (G.unit || 100) * mult;
+  if (bm === 'skins') { if (wi.length === 1) { const w = G.pl[wi[0]], k = (G.skinCarry || 0) + 1; w.holeWins = (w.holeWins || 0) + 1; G.pl.forEach((q, i) => { if (i !== wi[0]) { q.money -= amt * k; w.money += amt * k; } }); G.holeWin = `🏆 ${w.ch.name} 스킨 획득 +${(amt * k * (n - 1)).toLocaleString()}바트${k > 1 ? ` (이월 ${k - 1}홀 포함)` : ''}`; G.skinCarry = 0; G.lastWinner = w.ch.id; } else { G.skinCarry = (G.skinCarry || 0) + 1; G.holeWin = `🔁 무승부 → 스킨 이월 (다음 홀 ${G.skinCarry + 1}홀치 걸림)`; G.lastWinner = null; } return true; }
+  if (bm === 'jopok') { const mn = Math.min(...G.pl.map(p => p.strokes)), ws = G.pl.filter(p => p.strokes === mn); let tot = 0; G.pl.forEach(p => { const d = p.strokes - mn; if (d > 0) { p.money -= amt * d; tot += amt * d; } }); if (!tot) { G.holeWin = '🤝 조폭: 전원 같은 타수'; G.lastWinner = null; return true; } ws.forEach(w => { w.money += tot / ws.length; if (ws.length === 1) w.holeWins = (w.holeWins || 0) + 1; }); G.holeWin = `💰 조폭: ${ws.map(w => w.ch.short).join('·')} 타수 차이만큼 수금 +${Math.round(tot / ws.length).toLocaleString()}바트`; G.lastWinner = ws.length === 1 ? ws[0].ch.id : null; return true; }
+  if (bm === 'vegas' && G.teams) { const T = G.teams, num = t => { const s = t.map(p => p.strokes).sort((a, b) => a - b); return s[1] >= 10 ? s[0] * 100 + s[1] : s[0] * 10 + s[1]; }, sc = T.map(num), best = Math.min(...sc), win = T.filter((t, i) => sc[i] === best); if (win.length === T.length) { G.holeWin = `🤝 라스베이거스 무승부 (${sc.join(' vs ')})`; return true; } let pot = 0; T.forEach((t, i) => { const d = sc[i] - best; if (d > 0) { const pay = d * 10 * mult; t.forEach(p => p.money -= pay); pot += pay * t.length; } }); win.forEach(t => t.forEach(p => { p.money += pot / (win.length * t.length); })); G.holeWin = `🎰 라스베이거스: ${win.map(t => t.map(p => p.ch.short).join('+')).join(', ')} 팀 승 (${T.map((t, i) => t.map(p => p.ch.short).join('+') + ' ' + sc[i]).join(' vs ')}) · 차이×10밧×${mult}`; G.lastWinner = null; return true; }
+  return false; }
 function newsFor(st, e, h) { const f = NEWS[e]; if (!f) return null; return pick(f)(st.ch.short); }
 // 대사 음성 (기기 내장 한국어 TTS). 캐릭터마다 높낮이·속도를 달리함
 const VOICE = { '정슬기': [1.1, 1.08], '안유태': [1.0, 1.05], '안경용': [.9, .98], '이규만': [.95, 1.0], '신현욱': [1.05, 1.05], '윤대욱': [.98, 1.0], '김정태': [.92, .98], '권어진': [1.12, 1.08] };
@@ -1258,7 +1282,7 @@ function finishHoleCore() {
   const h = curHole(); G.phase = 'result';
   const lines = [];
   for (const p of G.pl) {
-    p.scores.push(p.strokes);
+    p.scores.push(p.strokes); if (G.daily && p.human && G.ghost) { const gs = G.ghost.c.slice(0, p.scores.length).reduce((a, b) => a + b, 0), ms = p.scores.reduce((a, b) => a + b, 0); setTimeout(() => toast(`👻 고스트 ${G.ghost.n} 대비 ${ms === gs ? '동타' : ms < gs ? (gs - ms) + '타 앞섬' : (ms - gs) + '타 뒤짐'} (${ms} vs ${gs})`, ms <= gs ? '#9fffb0' : '#ff9a9a'), 1200); }
     const sc = p.strokes - h.par; const aceHit = p.ev.includes('ace');
     if (p.ev.includes('trip')) { /* 이미 기록 */ }
     else if (aceHit) { p.st.ace++; lines.push(`${p.ch.short} 홀인원, 판돈 싹쓸이 · 2포트 전원 디폴트 선언`); }
@@ -1275,9 +1299,9 @@ function finishHoleCore() {
     const n = G.pl.length, nets = G.pl.map(p => p.strokes - ((G.hcp && p.ch.hcp && G.hi < Math.round(p.ch.hcp * G.nHoles / 18)) ? 1 : 0)); const mn = Math.min(...nets);
     const wi = nets.map((v, i) => v === mn ? i : -1).filter(i => i >= 0); let nm = 1;
     // 버디 이상 또는 양파가 나오면 그 홀 바로 배판 ×2
-    const bdP = G.pl.filter(p => p.strokes > 0 && p.strokes - h.par <= -1 && !p.ev.includes('trip')), onP = G.pl.filter(p => !p.ev.includes('trip') && (p.ev.includes('pickup') || p.strokes >= h.par * 2)), bpan = bdP.length || onP.length, mult = G.mult * (bpan ? 2 : 1); G.bpanTxt = bpan ? ` · 🎲 이 홀 배판 ×${mult} (${[bdP.length ? bdP.map(p => p.ch.short).join('·') + ' 버디 이상' : '', onP.length ? onP.map(p => p.ch.short).join('·') + ' 양파' : ''].filter(Boolean).join(', ')})` : '';
+    const bdP = G.pl.filter(p => p.strokes > 0 && p.strokes - h.par <= -1 && !p.ev.includes('trip')), onP = G.pl.filter(p => !p.ev.includes('trip') && (p.ev.includes('pickup') || p.strokes >= h.par * 2)), bpan = G.noBp ? 0 : (bdP.length || onP.length), mult = G.mult * (bpan ? 2 : 1); G.bpanTxt = bpan ? ` · 🎲 이 홀 배판 ×${mult} (${[bdP.length ? bdP.map(p => p.ch.short).join('·') + ' 버디 이상' : '', onP.length ? onP.map(p => p.ch.short).join('·') + ' 양파' : ''].filter(Boolean).join(', ')})` : '';
     G.holeQuotes = [];
-    if (wi.length === 1) { const w = G.pl[wi[0]]; w.holeWins = (w.holeWins || 0) + 1; const amt = 100 * mult * (G.paycut === w.ch.id ? .8 : 1); w.money += amt * (n - 1); G.pl.forEach((q, i) => { if (i !== wi[0]) q.money -= amt; }); G.holeWin = `🏆 ${w.ch.name} 홀 승리 +${(amt * (n - 1)).toLocaleString()}바트 (×${mult})`; G.lastWinner = w.ch.id; const t = SELF[w.ch.id]; if (t && t.win) G.holeQuotes.push([w.ch, pick(t.win)]); }
+    if (betHole(h, wi, n, mult)) { } else if (wi.length === 1) { const w = G.pl[wi[0]]; w.holeWins = (w.holeWins || 0) + 1; const amt = (G.unit || 100) * mult * (G.paycut === w.ch.id ? .8 : 1); w.money += amt * (n - 1); G.pl.forEach((q, i) => { if (i !== wi[0]) q.money -= amt; }); G.holeWin = `🏆 ${w.ch.name} 홀 승리 +${(amt * (n - 1)).toLocaleString()}바트 (×${mult})`; G.lastWinner = w.ch.id; const t = SELF[w.ch.id]; if (t && t.win) G.holeQuotes.push([w.ch, pick(t.win)]); }
     else { G.holeWin = wi.length === n ? '🤝 전원 무승부! 다음 홀 따당 ×4' : '🤝 공동 선두 무승부, 다음 홀 배판'; nm = Math.max(nm, wi.length === n ? 4 : 2); G.lastWinner = null; }
     if (G.pl.some(p => p.ch.id === 'gy' && p.strokes - h.par <= -1)) nm = 4;
     if (G.bpanTxt) G.holeWin = (G.holeWin || '') + G.bpanTxt;
@@ -1370,8 +1394,17 @@ function finalScreen() {
   $('#fNews').innerHTML = G.allNews.slice(-14).map(s => `· ${s}`).join('<br>') || '·';
   $('#fTable').innerHTML = scoreTable(G.nHoles);
   G.summary = `[판통 느와르: 주통배 골프 ${VERSION}] ⛳ ${G.course === 'fan' ? '주통방 가상 코스' : COURSES[G.course].name} (${G.nHoles}홀)\n` + order.map((t, i) => `${i + 1}위 ${t.p.ch.name} ${t.g}타${t.hd ? '(핸디-' + t.hd + ')' : ''} ${fmtPar(t.g - t.par)} / 홀승 ${t.wins} / ${t.tot >= 0 ? '+' : ''}${t.tot.toLocaleString()}바트`).join('\n') + '\n' + aw.join('\n');
+  try { boardSave(order); endExtras(); } catch (e) { }
   $('#sFinal').classList.add('on'); $('#top').style.display = 'none'; $('#bottom').style.display = 'none';
 }
+// 결과 카드: 결과 요약을 도트 느낌 이미지로 그려 카톡 등으로 공유 (지원 안 되면 이미지 저장)
+function cardMake() { const lines = String(G.summary || '').split('\n').filter(Boolean), W = 720, H = 140 + lines.length * 40 + 60, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d1a12'); g.addColorStop(1, '#1d3a24'); x.fillStyle = g; x.fillRect(0, 0, W, H); x.strokeStyle = '#ffb627'; x.lineWidth = 6; x.strokeRect(10, 10, W - 20, H - 20);
+  x.fillStyle = '#ffb627'; x.font = 'bold 40px sans-serif'; x.fillText('판통 느와르 · 주통배 골프', 36, 70); x.fillStyle = '#9fe0ff'; x.font = '22px sans-serif'; x.fillText(new Date().toLocaleString('ko-KR') + ' · ' + VERSION, 36, 104);
+  lines.slice(1).forEach((l, i) => { x.fillStyle = i === 0 ? '#ffe08a' : /^1위/.test(l) ? '#7fe09a' : /^[2-9]위/.test(l) ? '#e8efe6' : '#cfd8e0'; x.font = (/^\d위/.test(l) ? 'bold ' : '') + '26px sans-serif'; x.fillText(l.slice(0, 42), 36, 150 + i * 40); });
+  x.fillStyle = '#7fb8ff'; x.font = '20px sans-serif'; x.fillText('lkm7890-cyber.github.io/golf', 36, H - 30); return c; }
+async function cardShare() { const c = cardMake(); const blob = await new Promise(r => c.toBlob(r, 'image/png')); const f = new File([blob], '주통배_결과.png', { type: 'image/png' }); try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: '주통배 골프 결과' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '주통배_결과.png'; document.body.appendChild(a); a.click(); a.remove(); toast('🖼 결과 카드 이미지를 저장했어요 (카톡에 사진으로 보내세요)', '#9fffb0'); }
+$('#cardBtn').onclick = () => cardShare().catch(() => toast('이미지 공유 실패', '#ff9a9a'));
 $('#copyBtn').onclick = () => { const t = G.summary; const ok = () => { $('#copyBtn').textContent = '복사됨 ✓'; setTimeout(() => $('#copyBtn').textContent = '결과 복사 (카톡 붙여넣기용)', 1500); }; try { navigator.clipboard.writeText(t).then(ok, fb); } catch (e) { fb(); } function fb() { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); ok(); } catch (e) { } ta.remove(); } };
 $('#againBtn').onclick = () => {  $('#sFinal').classList.remove('on'); $('#sTitle').classList.add('on'); G.phase = 'title'; drawCards(); };
 
@@ -1544,7 +1577,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.36.1';
+const VERSION = 'v0.37.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1569,6 +1602,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.37.1', '2026-11-24', ['📜 멀티 방 규칙: 방장이 코스·구간·내기 방식·판돈(50~1,000밧)·배판 여부·식사 계산·티타임·실시간 날씨를 직접 정함', '참가자 화면에 방 규칙이 그대로 표시됨']],
+ ['v0.37.0', '2026-11-24', ['🎲 내기 방식 선택: 타당 · 스킨스(무승부 이월) · 조폭(타수 차이만큼 수금) · 라스베이거스(2:2 팀, 4·6·8명)', '🖼 결과 카드 이미지 공유 (카톡에 사진으로 바로)', '🎯 데일리 챌린지: 매일 같은 코스·같은 3홀·같은 바람, 하루 2회, 1등 2,000밧 (다음날 지급)', '👻 고스트 대결: 데일리 1등 기록과 홀마다 타수 비교', '🏆 월례 주통배: 이번 달 싱글 18홀 최저타 1~3위 상금 10,000/5,000/2,000밧 + 트로피 칭호', '🕐 티타임: 새벽(바람 약·런 감소)·한낮·오후(바람 강)·스콜·야간(시야↓) — 기본은 지금 시간대', '🛡 홀인원 보험 300밧 → 홀인원 시 30,000밧 / 미가입 시 축하비 -5,000밧', '💗 지정 캐디 호감도: 라운드·팁으로 상승, 능력치 최대 +0.1', '🚀 롱기스트·🎯 퍼팅 챌린지 랭킹, 👕 코스튬 7종, 🔁 Lv.100 환생(최대 5회, 회당 비거리+1%·편차-1%)']],
  ['v0.36.1', '2026-11-24', ['⬆ 만렙 Lv.20 → Lv.100. Lv.20까지는 그대로(경험치 21,660), 그 뒤로는 레벨당 경험치 800 (만렙 경험치 85,660 · 18홀 약 320판)', 'Lv.21부터 레벨당 편차 -0.2% · 비거리 +0.06% 추가 → Lv.100이면 편차 -31% · 비거리 +12.4%', '기존 레벨·경험치는 그대로 유지']],
  ['v0.36.0', '2026-11-24', ['🎫 회원권 현실화(태국 실제 방식): 10회권 → 정회원권. 한 번 사면 그 골프장 그린피 무료(캐디피·카트비는 별도), 1년마다 연회비 자동 차감, 팔 때는 시세의 90%', '시세: 파타야CC 18만 · 로얄레이크사이드 30만밧(태국 회원권 거래소 공시가), 방파콩 25만 · 그린밸리 40만 · 그린우드 15만 · 스크린 연간권 3만밧(추정 ✱). 연회비 1만~1.5만밧', '예전 10회권 남은 횟수는 그대로 쓸 수 있음']],
  ['v0.35.2', '2026-11-24', ['🏌 골프장 가격 현실화: 삼화 스크린골프장 = 실제 투자비 약 1억원(≈220만밧) 기준. 그린우드 1,000만 · 그린밸리 1,500만 · 파타야CC 2,000만 · 방파콩·로얄레이크사이드 3,000만밧']],
@@ -1688,20 +1723,20 @@ async function netInit() { try { await nreq('GET', '/ping'); NET.ok = true; } ca
   if (clubOpen) clubPeers(); }
 // ---------- 멀티 플레이 방 ----------
 let MR = null;
-function mShow() { if (needCh()) return; ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mStat').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; netBeat('menu'); mOnline(); }
+function mShow() { if (needCh()) return; try { [['rCourse', 'oCourse'], ['rPart', 'oPart'], ['rBet', 'oBet'], ['rPay', 'oPay'], ['rTod', 'oTod']].forEach(([a, b]) => { if (!$('#' + a).options.length) { $('#' + a).innerHTML = $('#' + b).innerHTML; $('#' + a).value = $('#' + b).value; } }); } catch (e) { } ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mStat').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; netBeat('menu'); mOnline(); }
 function mErr(t) { $('#mStat').innerHTML = `<span style="color:#ff9a9a">${t}</span>`; }
-async function mCreate() { try { const code = String(1000 + Math.floor(Math.random() * 9000)), k = $('#oCourse').value, w = ($('#oWx').checked && WX[k]) ? WX[k] : null; const cfg = { course: k, part: $('#oPart').value, hcp: ($('#oHcp').checked && $('#oPart').value !== 'full') ? 1 : 0, pay: $('#oPay').value, seed: Math.floor(Math.random() * 1e9), wx: w ? { t: w.t, rain: w.rain, code: w.code, kmh: w.kmh, dir: w.dir, time: w.time } : null }; cfg.rain = w ? ((w.rain > 0 || w.code >= 51) ? 1 : 0) : (Math.random() < ((COURSES[k] || {}).rain || 0) ? 1 : 0);
+async function mCreate() { try { const code = String(1000 + Math.floor(Math.random() * 9000)), k = $('#rCourse').value, w = ($('#rWx').checked && WX[k]) ? WX[k] : null; const cfg = { course: k, part: $('#rPart').value, bet: $('#rBet').value || 'tadang', unit: +$('#rUnit').value || 100, bp: +$('#rBp').value, tod: $('#rTod').value, hcp: ($('#oHcp').checked && $('#rPart').value !== 'full') ? 1 : 0, pay: $('#rPay').value, seed: Math.floor(Math.random() * 1e9), wx: w ? { t: w.t, rain: w.rain, code: w.code, kmh: w.kmh, dir: w.dir, time: w.time } : null }; cfg.rain = w ? ((w.rain > 0 || w.code >= 51) ? 1 : 0) : (Math.random() < ((COURSES[k] || {}).rain || 0) ? 1 : 0);
   await nreq('PUT', '/room/' + code, { host: SV.did, cfg, st: 'lobby', ts: Date.now(), pl: { [G.me]: { did: SV.did, lv: lvOf(G.me), meal: (MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0])[2] } } }); mEnter(code); } catch (e) { mErr('방을 만들지 못했습니다. 다시 시도해 주세요.'); } }
 async function mJoin() { const code = $('#mCode').value.trim(); if (!/^\d{4}$/.test(code)) return mErr('방 코드 4자리를 입력해 주세요.'); try { const r = await nreq('GET', '/room/' + code); if (!r) return mErr('그 코드의 방이 없습니다.'); if (r.st !== 'lobby') return mErr('이미 시작한 방입니다.'); if (r.pl && r.pl[G.me] && r.pl[G.me].did !== SV.did) return mErr(`${CH.find(c => c.id === G.me).name}은(는) 이미 다른 사람이 골랐습니다. 스타트 화면에서 본인 캐릭터를 골라 주세요.`); if (Object.keys(r.pl || {}).length >= 8) return mErr('방이 가득 찼습니다.'); await nreq('PUT', `/room/${code}/pl/${G.me}`, { did: SV.did, lv: lvOf(G.me), meal: (MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0])[2] }); mEnter(code); } catch (e) { mErr('입장하지 못했습니다. 다시 시도해 주세요.'); } }
 function mEnter(code) { MR = { code, data: null, gu: {}, t0: Date.now() }; $('#mEntry').style.display = 'none'; $('#mLobby').style.display = 'block'; $('#mCodeBig').textContent = code; MR.unsub = nlisten('/room/' + code, '', d => { if (!MR) return; MR.data = d; mUpdate(); }); netBeat('multi'); }
 function mUpdate() { const d = MR.data; if (!d || !d.cfg) { if (!G.multi) { mLeave(true); mShow(); mErr('방이 닫혔습니다.'); } return; }
-  if (!G.multi) { const C = COURSES[d.cfg.course] || {}, pl = d.pl || {}, ids = Object.keys(pl); $('#mCfg').textContent = `${C.name || ''} · ${({ front: '앞 9홀', back: '뒤 9홀', quick: '3홀' })[d.cfg.part]}${d.cfg.rain ? ' · ☔ 폭우' : ''}${d.cfg.wx ? ' · 실시간 날씨 공유' : ''} · 식사 ${({ each: '각자 계산', treat: '방장이 쏜다', loser: '꼴찌가 계산' })[d.cfg.pay || 'each']}`;
+  if (!G.multi) { const C = COURSES[d.cfg.course] || {}, pl = d.pl || {}, ids = Object.keys(pl); $('#mCfg').textContent = `${C.name || ''} · ${({ front: '앞 9홀', back: '뒤 9홀', quick: '3홀' })[d.cfg.part]}${d.cfg.rain ? ' · ☔ 폭우' : ''}${d.cfg.wx ? ' · 실시간 날씨 공유' : ''} · 식사 ${({ each: '각자 계산', treat: '방장이 쏜다', loser: '꼴찌가 계산' })[d.cfg.pay || 'each']} · 내기 ${BETN[d.cfg.bet || 'tadang']} ${(d.cfg.unit || 100).toLocaleString()}밧 · 배판 ${d.cfg.bp === 0 ? '없음' : '있음'}${d.cfg.tod && d.cfg.tod !== 'auto' ? ' · ' + TODN[d.cfg.tod] : ''}`;
     $('#mPlayers').innerHTML = CH.filter(c => pl[c.id]).map(c => `<span class="bub" style="color:${c.ink}">${c.id === G.me ? '🟢' : onlMark(c.id)[0]} ${c.name} Lv.${pl[c.id].lv | 0}${pl[c.id].did === d.host ? ' 👑방장' : ''}${c.id === G.me ? ' (나)' : ''}</span>`).join('');
     const host = d.host === SV.did; $('#mStartBtn').style.display = host ? 'block' : 'none'; $('#mStartBtn').disabled = ids.length < 2; $('#mStartBtn').textContent = ids.length < 2 ? '2명 이상 모이면 시작할 수 있습니다' : `라운드 시작 (${ids.length}명)`; if (!host) $('#mStat').textContent = '방장이 시작하기를 기다리는 중...';
     if (d.st === 'play' && pl[G.me]) mStart(); return; }
   const gu = d.gu || {}; for (const k of Object.keys(gu).sort()) { if (MR.gu[k]) continue; MR.gu[k] = 1; const m = gu[k]; if (!m || m.ts < MR.t0 || typeof m.x !== 'string') continue; const f = CH.find(c => c.id === m.f), t = G.pl.find(p => p.ch.id === m.t); if (!f || !t) continue; chat(f.name, esc(m.x.slice(0, 80)), f.ink); if (m.t === G.me) { if (immune(t.ch)) setTimeout(() => chat(t.ch.name, t.ch.id === 'hw' ? '노노해 (구찌 무효)' : '인정 ㅎㅎ', t.ch.ink), 400); else { G.mGucciPending = true; toast(`🗣 ${f.name}의 구찌!`, '#ffb36b'); } } }
   if (G.mWaiting) mCheck(); }
-function mStart() { const d = MR.data; G.multi = true; G.course = d.cfg.course; G.part = d.cfg.part; G.hcp = !!d.cfg.hcp; G.on = new Set(Object.keys(d.pl)); G.easy = false; G.voice = $('#oVoice').checked; G.mWaiting = false; G.mGucciPending = false; G.qSeed = (d.cfg.seed | 0) || 1; $('#sMulti').classList.remove('on'); newGame(); bgmStart('play'); netBeat('multi'); }
+function mStart() { const d = MR.data; G.multi = true; G.course = d.cfg.course; G.part = d.cfg.part; G.hcp = !!d.cfg.hcp; G.on = new Set(Object.keys(d.pl)); G.easy = false; G.voice = $('#oVoice').checked; G.mWaiting = false; G.mGucciPending = false; G.qSeed = (d.cfg.seed | 0) || 1; G.daily = null; $('#sMulti').classList.remove('on'); newGame(); bgmStart('play'); netBeat('multi'); }
 function mSetup() { const c = MR.data.cfg, r = mulb(c.seed), wm = ((COURSES[c.course] || {}).windMul || 1) * (c.rain ? 1.4 : 1); G.wx = c.wx || null; G.rain = !!c.rain; G.mWind = []; for (let i = 0; i < 10; i++) G.mWind.push(G.wx ? { s: clamp(G.wx.kmh / 3.5, .3, 11) * (.8 + r() * .4), a: rad(G.wx.dir + 180) + (r() - .5) * .5 } : { s: r() * 6.5 * wm, a: r() * TAU }); G.mStock = []; for (let i = 0; i < 5; i++) G.mStock.push(Math.floor(r() * STOCKS.length)); }
 function mHoleDone() { const me = G.human; G.phase = 'wait'; G.mWaiting = true; nreq('PUT', `/room/${MR.code}/sc/h${G.hi}/${G.me}`, { s: me.strokes, p: me.putts, ev: [...new Set(me.ev)].join(',') }).catch(() => { }); $('#top').style.display = 'none'; $('#bottom').style.display = 'none'; $('#sWait').classList.add('on'); mCheck(); }
 function mCheck() { const h = curHole(), sc = ((MR.data || {}).sc || {})['h' + G.hi] || {}; const done = p => p.human || !!sc[p.ch.id];
@@ -1720,11 +1755,11 @@ $('#oMeal').innerHTML = MEALS.map(m => `<option value="${m[0]}">${m[1]}${m[2] ? 
 $('#oMode').onchange = () => { const m = $('#oMode').value === 'm'; setTimeout(feeNote, 0); $('#payLab').style.display = m ? '' : 'none'; $('#numLab').style.display = m ? 'none' : ''; $('#goBtn').textContent = m ? '멀티 방 만들기 · 입장' : '라운드 시작'; };
 $('#againBtn').addEventListener('click', () => mLeave(true));
 // ================= 메뉴 =================
-function drawMe() { const mc = CH.find(c => c.id === SV.myCh); $('#menuMe').innerHTML = mc ? `🏌 내 캐릭터: <b style="color:${mc.ink};font-size:17px">${mc.name}</b> <small>${SV.title ? '「' + SV.title + '」 ' : ''}Lv.${lvOf(mc.id)} · ${mc.port}포트</small> <button id="chSw" style="font:inherit;font-size:11.5px;padding:4px 8px;margin-left:6px;border:0;background:#2a3440;color:#cfd8e0">내가 아니에요</button><div style="font-size:19px;margin-top:4px">💰 보유 금액 <b style="color:#ffb627">${Math.round(SV.wallet).toLocaleString()}밧</b></div>` : ''; const sw = $('#chSw'); if (sw) sw.onclick = () => switchCh(sw); }
+function drawMe() { const mc = CH.find(c => c.id === SV.myCh); $('#menuMe').innerHTML = mc ? `🏌 내 캐릭터: <b style="color:${mc.ink};font-size:17px">${mc.name}</b> <small>${SV.title ? '「' + SV.title + '」 ' : ''}Lv.${lvOf(mc.id)}${rebOf(mc.id) ? ' ★' + rebOf(mc.id) + '환생' : ''} · ${mc.port}포트</small>${lvOf(mc.id) >= LV_MAX && rebOf(mc.id) < 5 ? ' <button id="rebBtn" style="font:inherit;font-size:11.5px;padding:4px 8px;border:0;background:#6b2c5a;color:#fff">🔁 환생</button>' : ''} <button id="chSw" style="font:inherit;font-size:11.5px;padding:4px 8px;margin-left:6px;border:0;background:#2a3440;color:#cfd8e0">내가 아니에요</button><div style="font-size:19px;margin-top:4px">💰 보유 금액 <b style="color:#ffb627">${Math.round(SV.wallet).toLocaleString()}밧</b></div>` : ''; const sw = $('#chSw'); if (sw) sw.onclick = () => switchCh(sw); const rb = $('#rebBtn'); if (rb) rb.onclick = () => { if (rb.dataset.arm) rebirth(); else { rb.dataset.arm = 1; rb.textContent = '정말 Lv.1로? 다시 누르기'; } }; }
 // 1회성 보상: v0.32.6 수리비 인하 전 비싼 수리비 낸 것 (이규만 5,000밧). 서버 저장본 동기화가 끝난 뒤(메뉴 진입 시) 지급
 const COMP = [{ id: 'fix0326', ch: 'gm', amt: 5000, msg: '🔧 수리비 인하 전 비싼 수리비 보상' }];
 function grantComp() { if (!SV.myCh) return; SV.comp = SV.comp || {}; for (const c of COMP) { if (c.ch !== SV.myCh || SV.comp[c.id]) continue; SV.comp[c.id] = Date.now(); SV.wallet = (SV.wallet | 0) + c.amt; saveSV(); setTimeout(() => toast(`${c.msg} +${c.amt.toLocaleString()}밧`, '#9fffb0'), 600); } }
-function showMenu() { const pay = null; try { grantComp(); membDue(); } catch (e) { } try { if (SV.myCh) achCheck(); } catch (e) { } drawMe(); try { drawRank(); netProfile(); } catch (e) { } ['sTitle', 'sFinal', 'sShop', 'sReal', 'sClub'].forEach(i => $('#' + i).classList.remove('on')); $('#sMenu').classList.add('on'); G.phase = 'title'; { const dl = dailyLogin(); if (dl) setTimeout(() => { toast(dl, '#ffe08a'); beep(880, .12); }, pay ? 2600 : 300); try { drawDaily(); } catch (e) { } try { drawLoan(); } catch (e) { } } drawMe(); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 🎟 스탬프 ${SV.stamp | 0}개${stkVal() ? ` · 📈 주식 ${stkVal().toLocaleString()}밧` : ''}${SV.loan && SV.loan.amt ? ` · 🏦 빚 ${SV.loan.amt.toLocaleString()}밧` : ''} · 라운드 ${SV.rounds}회`; musicLabel(); bgmStart('menu'); const c = $('#logoCv').getContext('2d'); c.clearRect(0, 0, 96, 40); CH.forEach((ch, i) => drawSprite(c, ch, i % 2 ? 'back' : 'idle', i * 12 - 2, 12 + (i % 2) * 6, 1)); }
+function showMenu() { const pay = null; try { grantComp(); membDue(); boardPrize(); } catch (e) { } try { if (SV.myCh) achCheck(); } catch (e) { } drawMe(); try { drawRank(); netProfile(); } catch (e) { } ['sTitle', 'sFinal', 'sShop', 'sReal', 'sClub'].forEach(i => $('#' + i).classList.remove('on')); $('#sMenu').classList.add('on'); G.phase = 'title'; { const dl = dailyLogin(); if (dl) setTimeout(() => { toast(dl, '#ffe08a'); beep(880, .12); }, pay ? 2600 : 300); try { drawDaily(); } catch (e) { } try { drawLoan(); } catch (e) { } } drawMe(); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 🎟 스탬프 ${SV.stamp | 0}개${stkVal() ? ` · 📈 주식 ${stkVal().toLocaleString()}밧` : ''}${SV.loan && SV.loan.amt ? ` · 🏦 빚 ${SV.loan.amt.toLocaleString()}밧` : ''} · 라운드 ${SV.rounds}회`; musicLabel(); bgmStart('menu'); const c = $('#logoCv').getContext('2d'); c.clearRect(0, 0, 96, 40); CH.forEach((ch, i) => drawSprite(c, ch, i % 2 ? 'back' : 'idle', i * 12 - 2, 12 + (i % 2) * 6, 1)); }
 const openStart = m => { $('#oMode').value = m; $('#oMode').onchange(); $('#modeTag').textContent = m === 'm' ? '🌐 멀티 모드 — 코스·구간을 고르고 방을 만들거나 입장하세요' : '▶ 싱글 모드'; $('#sMenu').classList.remove('on'); $('#sTitle').classList.add('on'); drawCards(); };
 $('#mStart').onclick = () => openStart('s');
 $('#mMulti').onclick = () => openStart('m');
@@ -1736,6 +1771,40 @@ function drawPrac() { SV.tr = SV.tr || { d: 0, i: 0, p: 0 }; if (SV.prDay !== to
       $('#pracLog').insertAdjacentHTML('afterbegin', `<div>${p[1]} · ${nm} — ${full ? '이미 만점입니다 (돈만 썼습니다)' : ok ? `감 잡았다! +${p[3]}점` : '오늘은 감이 안 온다... 효과 없음'}</div>`); { const dm = dqPrac(); if (dm) { toast('📋 ' + dm, '#ffe08a'); $('#pracLog').insertAdjacentHTML('afterbegin', `<div style="color:#ffe08a">📋 일일 퀘스트 ${dm} (스탬프)</div>`); } } drawPrac(); }; el.appendChild(b); }); }
 $('#mStk').onclick = async () => { $('#stkLog').innerHTML = ''; drawStk(); $('#sStk').classList.add('on'); await stkLoad(); drawStk(); };
 $('#stkClose').onclick = () => { $('#sStk').classList.remove('on'); showMenu(); };
+// ===== 티타임(시간대·날씨), 코스튬, 캐디 호감도, 미니게임 기록, 환생 =====
+const TODW = { dawn: .5, day: 1, after: 1.3, squall: 1.7, night: .8 }, TODN = { dawn: '🌅 새벽', day: '☀ 한낮', after: '🌤 오후', squall: '⛈ 스콜', night: '🌙 야간' };
+function todPick() { const v = (G.multi ? G.mTod : ($('#oTod') || {}).value) || 'auto'; if (G.daily) return 'day'; if (v !== 'auto') return v; const h = new Date().getHours(); return h < 8 ? 'dawn' : h < 13 ? 'day' : h < 18 ? 'after' : 'night'; }
+function todFx() { const f = { dawn: 'sepia(.25) brightness(.92)', day: '', after: 'saturate(1.1) sepia(.1)', squall: 'brightness(.78) saturate(.7)', night: 'brightness(.55) saturate(.8) hue-rotate(-10deg)' }[G.tod] || ''; $('#cv').style.filter = f; if (G.tod !== 'day') setTimeout(() => toast(TODN[G.tod] + ' 라운드' + (G.tod === 'night' ? ' — 라이트 켜짐, 정확도 소폭 하락' : G.tod === 'dawn' ? ' — 이슬로 런 감소, 바람 약함' : G.tod === 'squall' ? ' — 비와 돌풍 주의' : ' — 바람 강해짐'), '#cfe8ff'), 900); }
+const COS = [['base', '기본 복장', 0], ['red', '선데이 레드', 3000, '#c81e1e', '#111111'], ['navy', '네이비 프로', 1500, '#1f3a7a', '#d8d8d8'], ['pink', '핑크 패셔니스타', 2500, '#ff7fb0', '#ffffff'], ['white', '올화이트 신사', 2000, '#f2f2f2', '#f2f2f2'], ['gold', '골드 챔피언', 8000, '#ffcc33', '#262b36'], ['jacket', '우승 그린 재킷', 20000, '#1f7a3a', '#e8e0c8']];
+function endExtras() { if (G.cad && G.cad.des) { SV.cadAff = SV.cadAff || {}; const a = (SV.cadAff[G.cad.no] || 0) + 5 + Math.floor((G.tipTot || 0) / 100); SV.cadAff[G.cad.no] = Math.min(100, a); setTimeout(() => toast(`💗 ${G.cad.no}번 캐디 호감도 ${SV.cadAff[G.cad.no]}/100 (높을수록 능력 상승, 팁 주면 더 올라요)`, '#ffb0d0'), 2200); }
+  saveSV(); if (!NET.ok || !SV.myCh) return; const nm = (CH.find(c => c.id === SV.myCh) || {}).name;
+  [['long', G.myLong], ['putt', G.myPutt]].forEach(async ([k, v]) => { if (!v) return; const path = '/mini/' + k + '/' + SV.myCh, old = await nreq('GET', path).catch(() => null); if (!old || v > old.v) { await nreq('PUT', path, { v, n: nm, t: Date.now() }); toast(k === 'long' ? `🚀 롱기스트 개인 최고 ${v}야드!` : `🎯 최장 퍼트 성공 개인 최고 ${v}야드!`, '#ffd27a'); } }); }
+async function miniRows(k) { try { const d = await nreq('GET', '/mini/' + k); return Object.entries(d || {}).map(([id, v]) => Object.assign({ id }, v)).sort((a, b) => b.v - a.v).slice(0, 8).map((r, i) => `<div style="display:flex;gap:8px;${r.id === SV.myCh ? 'color:#ffd27a;font-weight:800' : ''}"><span style="width:26px">${['🥇', '🥈', '🥉'][i] || (i + 1)}</span><span style="flex:1">${r.n}</span><b>${r.v}야드</b></div>`).join('') || '<div style="color:#8aa">아직 기록 없음</div>'; } catch (e) { return ''; } }
+function cosHTML() { SV.cosOwn = SV.cosOwn || ['base']; return COS.map(c => { const own = SV.cosOwn.includes(c[0]), on = (SV.cos || 'base') === c[0]; return `<button data-cos="${c[0]}" style="font:inherit;font-size:12px;margin:2px;padding:6px 8px;border:0;background:${on ? '#ffb627' : '#2a3440'};color:${on ? '#111' : '#dde'}"><span style="display:inline-block;width:10px;height:10px;background:${c[3] || '#888'};margin-right:4px"></span>${c[1]}${own ? (on ? ' ✓' : '') : ` ${c[2].toLocaleString()}밧`}</button>`; }).join(''); }
+function cosBind(o) { o.querySelectorAll('[data-cos]').forEach(b => b.onclick = () => { const c = COS.find(x => x[0] === b.dataset.cos); SV.cosOwn = SV.cosOwn || ['base']; if (!SV.cosOwn.includes(c[0])) { if (SV.wallet < c[2]) { toast('돈이 부족해요', '#ff9a9a'); return; } SV.wallet -= c[2]; SV.cosOwn.push(c[0]); toast(`👕 ${c[1]} 구매 -${c[2].toLocaleString()}밧`, '#9fffb0'); } SV.cos = c[0]; saveSV(); try { drawMe(); drawCards(); } catch (e) { } $('#cosBox').innerHTML = cosHTML(); cosBind(o); }); }
+function rebirth() { const id = SV.myCh; if (!id || lvOf(id) < LV_MAX) return; SV.reb = SV.reb || {}; if ((SV.reb[id] || 0) >= 5) { toast('환생은 최대 5회까지', '#ffd27a'); return; } SV.reb[id] = (SV.reb[id] || 0) + 1; SV.xp[id] = 0; saveSV(); toast(`🔁 환생 ${SV.reb[id]}회! Lv.1부터 다시 — 영구 보너스 비거리 +${SV.reb[id]}% · 편차 -${SV.reb[id]}%`, '#ffd27a'); drawMe(); }
+// ===== 데일리 챌린지 · 월례 주통배 · 고스트 대결 =====
+const DAILY_TRY = 2, DAILY_PRIZE = 2000, CUP_PRIZE = [10000, 5000, 2000];
+const dKey = (d = new Date()) => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+const mKey = (d = new Date()) => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
+function dailyCfg(k) { let h = 0; for (const c of 'jutong' + k) h = Math.imul(h ^ c.charCodeAt(0), 2654435761) >>> 0; const cs = Object.keys(COURSES); return { course: cs[h % cs.length], seed: (h % 1e9) | 0 }; }
+async function boardGet(path) { try { const d = await nreq('GET', path); return Object.entries(d || {}).map(([id, v]) => Object.assign({ id }, v)).sort((a, b) => a.s - b.s || a.t - b.t); } catch (e) { return []; } }
+async function boardSave(order) { const me = order.find(t => t.p.ch.id === G.me); if (!me || G.multi) return; const sc = me.g - me.par, rec = { s: sc, g: me.g, n: me.p.ch.name, t: Date.now(), c: me.p.scores.slice() };
+  if (G.daily) { const path = '/daily/' + G.daily + '/' + G.me, old = await nreq('GET', path).catch(() => null); if (!old || sc < old.s) { await nreq('PUT', path, rec); toast('🎯 데일리 챌린지 기록 갱신 ' + fmtPar(sc), '#ffd27a'); } }
+  else if (G.part === 'full' && G.course !== 'fan' && !G.hcp) { const path = '/cup/' + mKey() + '/' + G.me, old = await nreq('GET', path).catch(() => null); rec.co = COURSES[G.course].name; if (!old || sc < old.s) { await nreq('PUT', path, rec); toast('🏆 월례 주통배 기록 갱신 ' + fmtPar(sc) + ' (' + rec.co + ')', '#ffd27a'); } } }
+async function boardPrize() { if (!SV.myCh || !NET.ok) return; SV.bpaid = SV.bpaid || {}; const y = new Date(); y.setDate(y.getDate() - 1); const yk = dKey(y), pm = new Date(); pm.setDate(1); pm.setMonth(pm.getMonth() - 1); const mk = mKey(pm);
+  if (!SV.bpaid['d' + yk]) { const b = await boardGet('/daily/' + yk); if (b.length) { SV.bpaid['d' + yk] = 1; const top = b.filter(r => r.s === b[0].s); if (top.some(r => r.id === SV.myCh)) { const amt = Math.round(DAILY_PRIZE / top.length); SV.wallet += amt; toast(`🎯 어제 데일리 챌린지 1등! 상금 +${amt.toLocaleString()}밧`, '#9fffb0'); } saveSV(); } }
+  if (!SV.bpaid['m' + mk]) { const b = await boardGet('/cup/' + mk); if (b.length) { SV.bpaid['m' + mk] = 1; const i = b.findIndex(r => r.id === SV.myCh); if (i >= 0 && i < 3) { SV.wallet += CUP_PRIZE[i]; SV.titles = SV.titles || []; SV.titles.push(`${mk.slice(0, 4)}.${mk.slice(4)} 주통배 ${i + 1}위`); toast(`🏆 지난달 월례 주통배 ${i + 1}위! 상금 +${CUP_PRIZE[i].toLocaleString()}밧 · 트로피 획득`, '#ffd27a'); } saveSV(); } } }
+function bRows(b) { return b.length ? b.map((r, i) => `<div style="display:flex;gap:8px;padding:3px 0;${r.id === SV.myCh ? 'color:#ffd27a;font-weight:800' : ''}"><span style="width:26px">${['🥇', '🥈', '🥉'][i] || (i + 1)}</span><span style="flex:1">${r.n}${r.co ? ` <small style="color:#8aa">${r.co}</small>` : ''}</span><b>${fmtPar(r.s)}</b><small style="color:#8aa">${r.g}타</small></div>`).join('') : '<div style="color:#8aa">아직 기록 없음</div>'; }
+async function showBoards() { const o = document.getElementById('oBoard') || mkOverlay('oBoard'), k = dKey(), dc = dailyCfg(k), mine = (SV.dTry || {})[k] || 0;
+  o.innerHTML = '<div class="box" style="max-width:420px;width:100%">불러오는 중…</div>'; o.style.display = 'flex';
+  const [db, cb] = await Promise.all([boardGet('/daily/' + k), boardGet('/cup/' + mKey())]);
+  o.innerHTML = `<div class="box" style="max-width:420px;width:100%;font-size:13px;line-height:1.6"><h3>🎯 오늘의 데일리 챌린지</h3><div>${COURSES[dc.course].name} · 랜덤 3홀 · 모두 같은 홀·같은 바람<br>하루 ${DAILY_TRY}회 도전 (남은 ${Math.max(0, DAILY_TRY - mine)}회) · 1등 상금 ${DAILY_PRIZE.toLocaleString()}밧 (다음날 지급)<br>👻 1등 기록이 고스트로 따라와 홀마다 비교해 줍니다</div><div style="margin:6px 0">${bRows(db)}</div><button class="go" id="bDGo" ${mine >= DAILY_TRY || !SV.myCh ? 'disabled' : ''}>도전하기</button>
+  <h3 style="margin-top:12px">🏆 ${mKey().slice(4)}월 월례 주통배</h3><div>이번 달 싱글 18홀(핸디 없음) 최저타 · 어느 코스든 기록<br>1위 ${CUP_PRIZE[0].toLocaleString()} · 2위 ${CUP_PRIZE[1].toLocaleString()} · 3위 ${CUP_PRIZE[2].toLocaleString()}밧 + 트로피 칭호 (다음 달 지급)</div><div style="margin:6px 0">${bRows(cb)}</div>${(SV.titles || []).length ? `<div style="color:#ffd27a">🏅 내 트로피: ${SV.titles.join(', ')}</div>` : ''}<h3 style="margin-top:12px">🚀 롱기스트 (티샷 드라이버 최장)</h3>${await miniRows('long')}<h3 style="margin-top:12px">🎯 퍼팅 챌린지 (성공한 최장 퍼트)</h3>${await miniRows('putt')}<h3 style="margin-top:12px">👕 코스튬 (내 캐릭터 복장)</h3><div id="cosBox">${cosHTML()}</div><button class="go" id="bClose" style="background:#333;color:#ddd">닫기</button></div>`;
+  $('#bClose').onclick = () => o.style.display = 'none'; cosBind(o);
+  $('#bDGo').onclick = () => { o.style.display = 'none'; SV.dTry = SV.dTry || {}; Object.keys(SV.dTry).forEach(x => { if (x !== k) delete SV.dTry[x]; }); SV.dTry[k] = mine + 1; saveSV(); const lead = db.find(r => r.id !== SV.myCh) || db[0];
+    G.daily = k; G.ghost = lead && lead.c ? lead : null; G.course = dc.course; G.part = 'quick'; G.hcp = false; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = dc.seed; G.multi = false; if (G.ghost) setTimeout(() => toast(`👻 고스트: ${G.ghost.n} ${fmtPar(G.ghost.s)} 기록과 대결`, '#cfe8ff'), 1500); newGame(); }; }
+$('#mDaily').onclick = () => showBoards();
 $('#mPrac').onclick = () => { $('#pracLog').innerHTML = ''; drawPrac(); $('#sPrac').classList.add('on'); };
 $('#pracClose').onclick = () => { $('#sPrac').classList.remove('on'); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 라운드 ${SV.rounds}회`; try { drawDaily(); drawMe(); } catch (e) { } };
 $('#mVoice').onclick = () => { const b = $('#mVoice'); if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { b.textContent = '🔇 이 브라우저는 음성을 지원하지 않습니다 (크롬으로 열어 주세요)'; return; }
