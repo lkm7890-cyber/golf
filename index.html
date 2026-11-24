@@ -501,7 +501,9 @@ function inWater(w, p) { if (w.t === 'e') return ((p.x - w.x) / w.rx) ** 2 + ((p
 // 나무: 코스별 밀도(td 0~3, 위성사진 기준)로 러프에 배치. 공이 나무 밑(반경 5.5)에 서면 '나무 밑' 라이
 const TREE_TH = [.12, .3, .48, .68];
 function treeCell(h, ix, iy) { const r = hsh(ix + 91, iy + 17); if (r > TREE_TH[h.td == null ? 2 : h.td]) return null; return { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; }
-function nearTree(h, p) { if (h.pinPos && dist(p, h.pinPos) < 30) return false; const cx = Math.floor(p.x / 24), cy = Math.floor(p.y / 24); for (let iy = cy - 1; iy <= cy + 1; iy++) for (let ix = cx - 1; ix <= cx + 1; ix++) { const t = treeCell(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5.5) return true; } return false; }
+const TLINE = { bpk: .78, rls: .6, pcc: .5, gv: .45, grn: .5, scr: .35 };
+function lineTree(h, ix, iy) { const dn = TLINE[G.course] || 0; if (!dn || h.noLine) return null; const r = hsh(ix * 3 + 7, iy * 5 + 53); if (r > dn) return null; const wp = { x: (ix + .2 + hsh(iy + 11, ix) * .6) * 12, y: (iy + .2 + hsh(ix + 13, iy) * .6) * 12 }, d = pathInfo(h, wp).d, a = h.fw / 2 + 13, b = h.ob - 2; if (d < a || d > b) return null; if (h.pinPos && dist(wp, h.pinPos) < 30) return null; if (Math.hypot(wp.x, wp.y) < 18) return null; return wp; }
+function nearTree(h, p) { if (h.pinPos && dist(p, h.pinPos) < 30) return false; const cx = Math.floor(p.x / 24), cy = Math.floor(p.y / 24); for (let iy = cy - 1; iy <= cy + 1; iy++) for (let ix = cx - 1; ix <= cx + 1; ix++) { const t = treeCell(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5.5) return true; } const lx = Math.floor(p.x / 12), ly = Math.floor(p.y / 12); for (let iy = ly - 1; iy <= ly + 1; iy++) for (let ix = lx - 1; ix <= lx + 1; ix++) { const t = lineTree(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5) return true; } return false; }
 function terr(h, p) {
   for (const w of h.water) if (inWater(w, p)) return 'water';
   const g = h.g, gv = ((p.x - g.x) / g.rx) ** 2 + ((p.y - g.y) / g.ry) ** 2;
@@ -1472,7 +1474,8 @@ function render() {
   }
   // 나무 (장식)
   { const cs = 24, x0 = Math.floor((cam.x - BW / 2 / k) / cs) - 1, x1 = Math.ceil((cam.x + BW / 2 / k) / cs) + 1, y0 = Math.floor((cam.y - BH * .54 / k) / cs) - 1, y1 = Math.ceil((cam.y + BH * .46 / k) / cs) + 1;
-    for (let iy = y1; iy >= y0; iy--) for (let ix = x0; ix <= x1; ix++) { let wp = treeCell(h, ix, iy), ob = false; if (!wp) { if (hsh(ix + 91, iy + 17) > .72) continue; wp = { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; ob = true; } { const tt2 = terr(h, wp); if (ob ? tt2 !== 'ob' : (tt2 !== 'rough' && tt2 !== 'trees' && tt2 !== 'ob')) continue; } if (pathInfo(h, wp).d < h.fw / 2 + 9) continue; if (dist(wp, h.pinPos) < 26) continue; { const ps = Math.max(1, Math.round(k * .85)); drawTree(R_(X(wp.x)) - 4 * ps, R_(Y(wp.y)) - 8 * ps, ps); } } }
+    for (let iy = y1; iy >= y0; iy--) for (let ix = x0; ix <= x1; ix++) { let wp = treeCell(h, ix, iy), ob = false; if (!wp) { if (hsh(ix + 91, iy + 17) > .72) continue; wp = { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; ob = true; } { const tt2 = terr(h, wp); if (ob ? tt2 !== 'ob' : (tt2 !== 'rough' && tt2 !== 'trees' && tt2 !== 'ob')) continue; } if (pathInfo(h, wp).d < h.fw / 2 + 9) continue; if (dist(wp, h.pinPos) < 26) continue; { const ps = Math.max(1, Math.round(k * .85)); drawTree(R_(X(wp.x)) - 4 * ps, R_(Y(wp.y)) - 8 * ps, ps); } }
+    if (TLINE[G.course]) { const ls = 12, lx0 = Math.floor(x0 * 2), lx1 = Math.ceil(x1 * 2), ly0 = Math.floor(y0 * 2), ly1 = Math.ceil(y1 * 2), ps = Math.max(1, Math.round(k * .85)); for (let iy = ly1; iy >= ly0; iy--) for (let ix = lx0; ix <= lx1; ix++) { const wp = lineTree(h, ix, iy); if (wp && terr(h, wp) === 'trees') drawTree(R_(X(wp.x)) - 4 * ps, R_(Y(wp.y)) - 8 * ps, ps); } } }
   // 핀 + 깃발
   const pn = h.pinPos, px = R_(X(pn.x)), py = R_(Y(pn.y)); bx.fillStyle = '#111'; bx.fillRect(px - 2, py - 1, 4, 2); bx.fillStyle = '#fff'; bx.fillRect(px, py - 14, 1, 14);
   const fw = Math.floor(G.t * 4) % 2; bx.fillStyle = '#e33'; bx.fillRect(px + 1, py - 14, 5 + fw, 2); bx.fillRect(px + 1, py - 12, 4 - fw, 2); bx.fillRect(px + 1, py - 10, 3 + fw, 1);
@@ -1578,7 +1581,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.37.5';
+const VERSION = 'v0.37.6';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1603,6 +1606,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.37.6', '2026-11-24', ['🌳 가민 맵처럼 홀과 홀 사이 나무 줄 추가 — 페어웨이 양옆 OB 직전 구간에 나무가 촘촘히 (방파콩이 가장 빽빽, 로얄레이크사이드·파타야 등도 반영)', '나무 줄에 들어가면 "나무 밑" 라이 — 탈출 샷 필요']],
  ['v0.37.5', '2026-11-24', ['💬 클럽하우스 채팅은 서버에 접속한 사람끼리만 — 연결이 끊기면 입력창·빠른 문구 잠김', '🚫 CPU 자동 대답 완전 제거']],
  ['v0.37.4', '2026-11-24', ['🐞 처음 접속 때 서버 확인이 한 번 실패하면 끝까지 오프라인(CPU 대화)으로 남던 문제 수정 — 3회 재시도, 이후 10초마다 자동 재연결, 화면 복귀·인터넷 복구 시에도 재연결', '🏠 클럽하우스에 연결 끊김 표시와 "지금 다시 연결" 버튼', '🚫 클럽하우스 CPU 대답 완전 제거 — 서버에 접속한 사람끼리만 채팅, 연결이 끊기면 입력창 잠김']],
  ['v0.37.3', '2026-11-24', ['🐞 멀티 입장 실패 시 오류 문구가 안 보이던 문제 수정 ("방이 없습니다" 등 이제 화면에 표시)', '🚪 열려 있는 방 목록 — 코드 입력 없이 눌러서 바로 입장', '🔢 방 만들 때 코드 칸에 원하는 번호(예: 1111)를 넣으면 그 번호로 방 생성, 비우면 자동 번호']],
