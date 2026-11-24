@@ -1578,7 +1578,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.37.3';
+const VERSION = 'v0.37.4';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1603,6 +1603,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.37.4', '2026-11-24', ['🐞 처음 접속 때 서버 확인이 한 번 실패하면 끝까지 오프라인(CPU 대화)으로 남던 문제 수정 — 3회 재시도, 이후 10초마다 자동 재연결, 화면 복귀·인터넷 복구 시에도 재연결', '🏠 클럽하우스에 연결 끊김 표시와 "지금 다시 연결" 버튼', '🚫 클럽하우스 CPU 가짜 대답 제거 — 실제 접속한 사람끼리만 대화 (끊겼을 때 쓴 메시지는 연결되면 자동 전송)']],
  ['v0.37.3', '2026-11-24', ['🐞 멀티 입장 실패 시 오류 문구가 안 보이던 문제 수정 ("방이 없습니다" 등 이제 화면에 표시)', '🚪 열려 있는 방 목록 — 코드 입력 없이 눌러서 바로 입장', '🔢 방 만들 때 코드 칸에 원하는 번호(예: 1111)를 넣으면 그 번호로 방 생성, 비우면 자동 번호']],
  ['v0.37.2', '2026-11-24', ['🏠 클럽하우스에 8명 전원 접속 상태 표시 (🟢 접속 중 · 🟡 방금 전 · ⚪ 미접속)', '⚔ 접속 중인 멤버에게 대결 신청 → 방장이 규칙 정해 방 생성, 상대 폰에 알림(소리·진동) → 수락하면 바로 입장', '거절하면 클럽하우스 채팅에 거절 메시지, 10분 지난 신청은 자동 삭제']],
  ['v0.37.1', '2026-11-24', ['📜 멀티 방 규칙: 방장이 코스·구간·내기 방식·판돈(50~1,000밧)·배판 여부·식사 계산·티타임·실시간 날씨를 직접 정함', '참가자 화면에 방 규칙이 그대로 표시됨']],
@@ -1718,7 +1719,7 @@ function rankHTML(sep, noTitle) { sep = sep || ' · '; const R_ = RANK || {}, al
 function drawRank() { for (const id of ['rankBody', 'clubRank']) { const e = $('#' + id); const h = id === 'rankBody' ? rankHTML('<br>', 1) : rankHTML(); if (e) { e.innerHTML = h; e.style.display = h ? 'block' : 'none'; e.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { RKT = b.dataset.rk; drawRank(); }); } } }
 let onl = {}, chatSeen = {}, chatInit = false;
 function netBeat(st) { if (NET.ok) nreq('PUT', '/on/' + SV.did, { ch: G.me, lv: lvOf(G.me), st: st || (G.multi ? 'multi' : ['aim', 'power', 'acc', 'fly', 'wait', 'result', 'stock'].includes(G.phase) ? 'play' : 'menu'), ts: Date.now() }).catch(() => { }); }
-async function netInit() { try { await nreq('GET', '/ping'); NET.ok = true; } catch (e) { NET.ok = false; return; } cfgLoad(); cloudSync(); stkLoad(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
+async function netInit() { if (NET.ok || NET.busy) return; NET.busy = true; let ok = false; for (let i = 0; i < 3 && !ok; i++) { try { await Promise.race([nreq('GET', '/ping'), new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), 8000))]); ok = true; } catch (e) { await new Promise(r => setTimeout(r, 1500)); } } NET.busy = false; if (!ok) { NET.ok = false; setTimeout(netInit, 10000); return; } NET.ok = true; try { (NET.q || []).splice(0).forEach(m => nreq('POST', '/chat', m).catch(() => { })); } catch (e) { } try { if (clubOpen) { clubPeers(); toast('🟢 서버 연결됨 — 실시간 대화 가능', '#9fffb0'); } } catch (e) { } cfgLoad(); cloudSync(); stkLoad(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
   netBeat(); setInterval(() => netBeat(), 25000);
   try { nlisten('/own', '', d => { OWN = d || {}; if ($('#sShop') && $('#sShop').classList.contains('on')) drawShop(); }); if (SV.myCh) nlisten('/pay/' + SV.myCh, '', d => payClaim(d)); } catch (e) { }
   { let invOff = null, invCh = null; setInterval(() => { if (SV.myCh && NET.ok && invCh !== SV.myCh) { if (invOff) invOff(); invCh = SV.myCh; invOff = nlisten('/inv/' + SV.myCh, '', duelCheck); } }, 3000); }
@@ -1843,12 +1844,12 @@ setInterval(() => { try { mOnline(); } catch (e) { } }, 20000);
 function clubPeers() { const el = $('#clubPeers'); if (NET.ok) { const r = onlState(), rows = CH.map(c => ({ c, m: c.id === G.me ? ['🟢', '접속 중', 3] : onlMark(c.id, r), v: r[c.id] })).sort((a, b) => b.m[2] - a.m[2]), n = rows.filter(x => x.m[2] >= 2).length; $('#clubStat').textContent = `🟢 온라인 · 지금 ${n}명 접속 중`;
   el.innerHTML = rows.map(x => { const me = x.c.id === G.me, can = !me && x.m[2] >= 1 && !(x.v && x.v.st === 'multi'); return `<span class="bub" style="color:${x.c.ink};opacity:${x.m[2] ? 1 : .5};display:inline-flex;align-items:center;gap:4px">${x.m[0]} ${x.c.name}${me ? ' (나)' : ''}${x.v && x.v.lv ? ' Lv.' + (x.v.lv | 0) : ''} <small style="opacity:.75">${x.m[1]}</small>${can ? `<button data-duel="${x.c.id}" style="font:inherit;font-size:11px;padding:2px 6px;border:0;background:#b8322a;color:#fff">⚔ 대결 신청</button>` : ''}</span>`; }).join('');
   el.querySelectorAll('[data-duel]').forEach(b => b.onclick = () => duelSend(b.dataset.duel, b));
-  el.insertAdjacentHTML('beforeend', '<div id="clubRank" style="width:100%;font-size:12px;line-height:1.7;margin-top:4px"></div>'); drawRank(); return; } if (!room) { el.innerHTML = ''; $('#clubStat').textContent = '오프라인 모드 — CPU 멤버들이 대신 답합니다. 온라인 링크로 접속한 멤버끼리는 실시간으로 대화됩니다.'; return; } const ps = room.peers().filter(p => p.kind === 'viewer'); $('#clubStat').textContent = `🟢 온라인 · 접속 ${ps.length}명`; el.innerHTML = ps.map(p => { const ch = CH.find(c => c.id === (p.presence || {}).ch); return `<span class="bub" style="color:${ch ? ch.ink : '#fff'}">${ch ? ch.name : '입장 중'}${p.isMe ? ' (나)' : ''}${(p.presence || {}).lv ? ' Lv.' + (+p.presence.lv | 0) : ''}${(p.presence || {}).st === 'play' ? ' ⛳라운드 중' : ''}</span>`; }).join(''); }
+  el.insertAdjacentHTML('beforeend', '<div id="clubRank" style="width:100%;font-size:12px;line-height:1.7;margin-top:4px"></div>'); drawRank(); return; } if (!room) { el.innerHTML = ''; $('#clubStat').innerHTML = '🔴 서버 연결 끊김 — 접속한 멤버끼리만 대화합니다. 자동으로 다시 연결 중… <button id="netRetry" style="font:inherit;font-size:12px;padding:3px 8px;border:0;background:#2c6b44;color:#fff">지금 다시 연결</button>'; const nb = $('#netRetry'); if (nb) nb.onclick = () => { nb.textContent = '연결 중…'; netInit(); }; return; } const ps = room.peers().filter(p => p.kind === 'viewer'); $('#clubStat').textContent = `🟢 온라인 · 접속 ${ps.length}명`; el.innerHTML = ps.map(p => { const ch = CH.find(c => c.id === (p.presence || {}).ch); return `<span class="bub" style="color:${ch ? ch.ink : '#fff'}">${ch ? ch.name : '입장 중'}${p.isMe ? ' (나)' : ''}${(p.presence || {}).lv ? ' Lv.' + (+p.presence.lv | 0) : ''}${(p.presence || {}).st === 'play' ? ' ⛳라운드 중' : ''}</span>`; }).join(''); }
 function setPres(st) { if (room) room.presence({ ch: G.me, lv: lvOf(G.me), st: st || 'club' }).catch(() => { }); }
 function clubSend(t) { t = String(t || '').trim().slice(0, 120); if (!t) return; clubAdd(G.me, t); $('#clubIn').value = '';
   if (NET.ok) nreq('POST', '/chat', { ch: G.me, t, did: SV.did, ts: Date.now() }).catch(() => { });
   else if (room && room.connected()) room.emit('chat', { ch: G.me, t }).catch(() => { });
-  else { const others = CH.filter(c => c.id !== G.me), a = pick(others), me = { ch: CH.find(c => c.id === G.me) }; setTimeout(() => clubAdd(a.id, R() < .5 ? pick(REPLY[a.id]) : gucciLine({ ch: a }, me), 'CPU'), 700 + R() * 900); } }
+  else { NET.q = (NET.q || []).concat([{ ch: G.me, t, did: SV.did, ts: Date.now() }]); clubAdd('sys', '⏳ 서버 연결 중 — 연결되면 자동 전송됩니다'); netInit(); } }
 function needCh() { if (SV.myCh) return false; ['sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sTitle').classList.add('on'); drawCards(); return true; }
 // ===== 대결 신청: 접속 중인 멤버에게 방을 만들어 초대 → 상대는 알림 받고 수락하면 바로 입장 =====
 let duelSeen = {};
@@ -1951,7 +1952,7 @@ const NAVMAP = [['sMulti', 'mLeaveBtn'], ['sStk', 'stkClose'], ['sPrac', 'pracCl
 function navBtn() { if ($('#statBox')) return $('#statClose'); if ($('#rankBox')) return $('#rankClose'); if ($('#achBox')) return $('#achClose'); if ($('#bagBox')) return $('#bagClose'); if ($('#profBox')) return $('#profClose'); if ($('#whoBox') || $('#pinSet')) return null; for (const [sc, b] of NAVMAP) { const e = $('#' + sc); if (e && e.classList.contains('on')) return $('#' + b); } return null; }
 { const nb = document.createElement('button'); nb.id = 'navBack'; nb.textContent = '← 메뉴'; nb.style.cssText = 'position:fixed;right:10px;top:max(10px,env(safe-area-inset-top));z-index:100;font:inherit;font-size:14px;padding:9px 13px;border:0;background:#ffb627;color:#111;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,.6);display:none'; document.body.appendChild(nb); nb.onclick = () => { const b = navBtn(); if (b) b.click(); }; setInterval(() => { nb.style.display = navBtn() ? 'block' : 'none'; }, 250);
   try { history.pushState({ g: 1 }, ''); window.addEventListener('popstate', () => { const b = navBtn(); if (b) { b.click(); history.pushState({ g: 1 }, ''); } else if (['aim', 'power', 'acc', 'fly', 'wait', 'result'].includes(G.phase) || $('#whoBox') || $('#pinSet')) { history.pushState({ g: 1 }, ''); if (!$('#whoBox') && !$('#pinSet')) toast('라운드 중입니다. 나가려면 뒤로 가기를 한 번 더 누르지 말고 라운드를 마쳐 주세요', '#ffe08a'); } }); } catch (e) { } }
-netInit();
+netInit(); document.addEventListener('visibilitychange', () => { if (!document.hidden && !NET.ok) netInit(); }); window.addEventListener('online', () => { if (!NET.ok) netInit(); });
 drawCards(); requestAnimationFrame(frame);
 })();
 </script>
