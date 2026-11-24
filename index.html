@@ -452,7 +452,7 @@ function buildCourse(key, part, seed) { // part: 'front' | 'back' | 'quick'(3홀
     const dOv = C.dogs && C.dogs[i + 1]; const dog = dOv ? ({ L: -1, R: 1, S: 0, LR: 0 })[dOv] : par === 5 ? (i % 2 ? 1 : -1) : (par === 4 && yd < 380 && i % 3 === 0 ? (i % 2 ? -1 : 1) : 0);
     let pts; if (dOv === 'LR') { const a = rad(24), L1 = yd * .3, L2 = yd * .35; pts = [[0, 0], [0, L1], [-L2 * Math.sin(a), L1 + L2 * Math.cos(a)], [0, L1 + 2 * L2 * Math.cos(a)]]; } else if (!dog) pts = [[0, 0], [0, yd]]; else { const c = yd * .55, L2 = yd * .45, a = rad(28); pts = [[0, 0], [0, c], [dog * L2 * Math.sin(a), c + L2 * Math.cos(a)]]; }
     const spF = C.special[i + 1] || {}, fw = (par === 3 ? Math.min(C.fw, 32) : C.fw) * (spF.fwMul || 1);
-    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 40, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1), (rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1)], td: spF.td != null ? spF.td : C.td, estimated: key === 'grn' || key === 'gv' };
+    const h = { name: '', no: i + 1, par, yd, pts, fw, ob: fw / 2 + 32, pin: [(rr() - .5) * 8, (rr() - .5) * 6], water: [], bunk: [], slope: [(rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1), (rr() - .5) * .9 * C.slopeMul * (spF.slopeK || 1)], td: spF.td != null ? spF.td : C.td, estimated: key === 'grn' || key === 'gv' };
     prep(h); h.g.rx = C.greenR[0]; h.g.ry = C.greenR[1];
     const at = (s, lat) => { const p = pathPoint(h, s), q = pathPoint(h, Math.min(h.len, s + 2)), r2 = pathPoint(h, Math.max(0, s - 2)); let tx = q.x - r2.x, ty = q.y - r2.y; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l; return { x: p.x + ty * lat, y: p.y - tx * lat }; };
     const bm = C.bunkMul || 1;
@@ -522,6 +522,8 @@ const jtF = ch => (ch.id === 'jt' ? clamp(1.15 - .07 * G.hi, .75, 1.15) : 1) * (
 function clubMax(ch, club, lie) { if (club.putter) return 50; const gm_ = isMe(ch) ? ((club.id === 'D' || club.id === 'W') ? G.gear.drv : G.gear.iron) * (1 + .004 * (lvOf(ch.id) - 1)) * (1 + (G.mealPow || 0) + ((G.human && G.human.snackPow) || 0)) * staD() : 1; return gm_ * club.base * ch.mult * lieOf(ch, lie).d * ((lie === 'rough' && club.id === 'D') ? .8 : 1); }
 function zoneOf(ch, human) { return (.04 + .07 * ch.acc) * ((human && G.easy) ? 1.6 : 1) * (human ? (G.zmod || 1) : 1); } // 이 범위 안이면 '나이스샷' (오차 0)
 
+const SHAPEN = { fade: '↪ 페이드 (살짝 오른쪽으로 휨)', draw: '↩ 드로우 (살짝 왼쪽, 더 굴러감)', slice: '🍌 슬라이스! 오른쪽으로 크게 휨', hook: '🪝 훅! 왼쪽으로 감겨 굴러감', bigslice: '💥 바나나 슬라이스... 옆 홀 방향', duckhook: '🦆 덕훅! 왼쪽으로 꽂힘' };
+const MISSK = 3.0; // 큰 미스 증폭 (게이지 45% 밖부터)
 // 샷 계산. 사람/CPU 공용. p: 파워(0~1), a: 정확도(-1~1)
 function takeShot(h, st, club, aim, p, a, wind) {
   const ch = st.ch, from = { x: st.pos.x, y: st.pos.y }, lie = st.lie, ev = [];
@@ -543,13 +545,14 @@ function takeShot(h, st, club, aim, p, a, wind) {
   if (club.id === 'D' && R() < Math.max(ch.drvDie || 0, (COURSES[G.course] || {}).drv || 0)) { ev.push('drvdie'); carry *= .55; ang += rad((R() < .5 ? -1 : 1) * 12); st.awake = true; }
   if (ch.laugh && R() < ch.laugh) { ev.push('laugh'); eAmp *= 2; }
   if (Math.abs(a) < zoneOf(ch, st.human)) a = 0;
-  const ae = st.human ? Math.sign(a) * Math.pow(Math.abs(a), .8) : a; ang += rad(ae * eAmp);
+  const aA = Math.abs(a), ae = st.human ? Math.sign(a) * (Math.pow(aA, .8) + MISSK * Math.pow(Math.max(0, aA - .45), 1.2)) : a; ang += rad(ae * eAmp); // 게이지 끝쪽 큰 미스는 훅·슬라이스로 크게 휨
+  let shp = '', crv = 0; if (st.human && a !== 0) { const sg = Math.sign(a), m = Math.abs(ae); shp = m > 1.1 ? (sg > 0 ? 'bigslice' : 'duckhook') : m > .55 ? (sg > 0 ? 'slice' : 'hook') : m > .18 ? (sg > 0 ? 'fade' : 'draw') : ''; if (shp) { ev.push(shp); crv = sg * Math.min(.2, .08 * m) * carry; } } // 오른손 기준: +쪽 미스 = 페이드·슬라이스(오른쪽으로 휨), -쪽 = 드로우·훅
   const wf = (ch.id === 'gm' ? .5 : 1) * ((st.human && G.easy) ? .5 : 1) * ((G.rain && !rainImm(ch)) ? 1.3 : 1);
   const d = dirv(ang), landF = { x: from.x + d.x * carry + wind.x * wf * carry / 100, y: from.y + d.y * carry + wind.y * wf * carry / 100 };
   const tLand = terr(h, landF);
   let fin = landF, tFin = tLand;
   if (tLand !== 'water' && tLand !== 'ob') {
-    const rm = ROLLM[tLand] || 0, rollLen = carry * club.roll * rm + rollExtra * (rm > 0 ? 1 : 0);
+    const rm = ROLLM[tLand] || 0, rollLen = (carry * club.roll * rm + rollExtra * (rm > 0 ? 1 : 0)) * (/hook|draw/.test(shp) ? 1.25 : /slice|fade/.test(shp) ? .75 : 1);
     fin = { x: landF.x + d.x * rollLen, y: landF.y + d.y * rollLen }; tFin = terr(h, fin);
   }
   if (tFin === 'bunker') ev.push('bunker');
@@ -560,7 +563,7 @@ function takeShot(h, st, club, aim, p, a, wind) {
     else if (dp <= .5) { holed = true; ev.push('chipin'); }
     else if (tFin === 'green' && dp <= OKR) { holed = true; ev.push('concede'); }
   }
-  return { club, from, land: landF, fin, tLand, tFin, carry: dist(from, landF), ev, holed, ang, putter: false };
+  return { club, from, land: landF, fin, tLand, tFin, carry: dist(from, landF), ev, holed, ang, putter: false, curve: crv, shape: shp };
 }
 function putt(h, st, aim, p, a) {
   const ch = st.ch, from = { x: st.pos.x, y: st.pos.y }, lie = st.lie, ev = [];
@@ -816,6 +819,7 @@ const staD = () => { const v = G.sta == null ? 100 : G.sta; return v >= 60 ? 1 :
 function trF(ch, club) { if (!isMe(ch)) return 1; return staA() * (1 - .005 * trPts(club.putter ? 'p' : (club.id === 'D' || club.id === 'W') ? 'd' : 'i')); }
 const today = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
 // 비용은 태국 연습장·레슨 일반 시세 어림값(밧)
+const PRAC_DAY = 5; // 하루 연습 가능 횟수
 const PRAC = [['range', '🏌 개인 연습 (연습장 2박스)', 200, 1, .75], ['pro', '👨‍🏫 프로 레슨 1시간', 1500, 3, 1], ['kpro', '🇰🇷 한국인 프로 레슨 1시간', 2500, 5, 1]];
 // 장비 업그레이드(튜닝). 가격은 태국 피팅샵 일반 시세 어림값(밧). 보유한 장비마다 따로 적용
 const UPG = [
@@ -952,7 +956,7 @@ $('#oNum').onchange = syncNum;
 $('#goBtn').onclick = () => { G.course = $('#oCourse').value; G.part = $('#oPart').value; G.hcp = $('#oHcp').checked && G.part !== 'full'; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = Math.floor(Math.random() * 1e9); try { if (G.voice) { const u = new SpeechSynthesisUtterance('주통배 시작합니다'); u.lang = 'ko-KR'; speechSynthesis.speak(u); } } catch (e) { } newGame(); };
 
 function newGame() {
-  G.gear = gearFx(CH.find(c => c.id === G.me)); G.rewarded = false; G.sta = 100; G.cad = pickCaddie(); G.cadHello = false; G.gear.putt *= 1 - .12 * G.cad.s.putt; G.costFee = 0; G.costPending = true; { const m = MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0]; G.meal = m; G.mealPow = m[3]; G.sta = 100 + (m[2] > 0 ? Math.min(10, Math.round(m[2] / 40)) : 0); G.pay = 'each'; G.mealBill = 0; G.mealPaid = 0; }
+  G.gear = gearFx(CH.find(c => c.id === G.me)); G.rewarded = false; G.sta = 100; G.cad = pickCaddie(); G.cadHello = false; G.gear.putt *= 1 - .12 * G.cad.s.putt; G.costFee = 0; G.costPending = true; G.tipTot = 0; { const m = MEALS.find(x => x[0] === $('#oMeal').value) || MEALS[0]; G.meal = m; G.mealPow = m[3]; G.sta = 100 + (m[2] > 0 ? Math.min(10, Math.round(m[2] / 40)) : 0); G.pay = 'each'; G.mealBill = 0; G.mealPaid = 0; }
   HOLES = G.course === 'fan' ? FANTASY.slice() : buildCourse(G.course, G.part, G.qSeed == null ? Math.floor(Math.random() * 1e9) : G.qSeed); if (G.course === 'fan' && G.part === 'quick') HOLES = HOLES.slice(0, 3); G.nHoles = HOLES.length;
   const eqCh = c => Object.assign({}, c, { mult: 1, acc: .7, putt: .7, top: .04, wild: undefined, ace: undefined, drvDie: undefined, caddie: undefined, hcp: undefined });
   G.pl = CH.filter(c => G.on.has(c.id)).map(c => newState(G.multi ? eqCh(c) : c, c.id === G.me)); G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
@@ -984,7 +988,7 @@ function rollStock() {
   const names = e.ids.map(id => G.pl.find(p => p.ch.id === id)).filter(Boolean);
   let body = `<div class="box"><h3>${e.up ? '📈' : '📉'} ${e.t}</h3><div style="font-size:13px;line-height:1.7">${names.length ? names.map(p => `<span class="bub" style="color:${p.ch.ink}">${p.ch.name} ${p.mood > 0 ? '▲ 정확도 버프' : p.mood < 0 ? '▼ 정확도 디버프' : '🛡 노노해 철벽(면역)'}</span>`).join('') : '이번엔 영향받는 멤버가 없습니다.'}</div><div style="font-size:11px;opacity:.75;margin-top:6px">효과는 3홀 동안 유지됩니다.</div></div>`;
   { G.pfMood = 0; try { const pf = pfToday(), hm = G.pl.find(p => p.human); if (pf && hm) { const up = pf.pc >= 1.5, dn = pf.pc <= -1.5, sg = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; if (up) { hm.mood = 1; G.pfMood = 1; } else if (dn) { hm.mood = -1; G.pfMood = -1; } body += `<div class="box" style="box-shadow:inset 0 0 0 2px ${up ? '#a33' : dn ? '#346' : '#444'}"><h3>💼 내 보유 주식 오늘 <span style="color:${pf.pc >= 0 ? '#ff8080' : '#80a8ff'}">${sg(pf.pc)}</span></h3><div style="font-size:13px;line-height:1.7">평가액 ${pf.v.toLocaleString()}밧 · ${pf.n}종목${pf.best ? ` · 최고 ${pf.best[0]} ${sg(pf.best[1])}` : ''}${pf.n > 1 && pf.worst ? ` · 최저 ${pf.worst[0]} ${sg(pf.worst[1])}` : ''}<br><b style="color:${up ? '#7fe09a' : dn ? '#ff9a9a' : '#cfd8e0'}">${up ? '▲ 계좌가 빨갛다! 기분 최고 — 정확도 버프, 심박수 안정' : dn ? '▼ 계좌가 파랗다... 멘탈 흔들림 — 정확도 디버프, 심박수 상승' : '― 보합. 평소 컨디션 (±1.5% 이상 움직이면 컨디션에 반영)'}</b></div><div style="font-size:11px;opacity:.75;margin-top:4px">실제 시세 기준 · 내 보유 주식이 위 시황보다 우선 적용됩니다.</div></div>`; } } catch (x) { } }
-  if (e.up && e.ids.includes('yt')) { const gy = G.pl.find(p => p.ch.id === 'gy'); if (gy) { gy.money += 300; body += '<div class="box"><h3>💸 유태 덕에 70%</h3>안경용 보너스 +300바트</div>'; } }
+  if (e.up && e.ids.includes('yt')) { const gy = G.pl.find(p => p.ch.id === 'gy'); const ytp = G.pl.find(p => p.ch.id === 'yt'); if (gy && ytp) { gy.money += 300; ytp.money -= 300; body += '<div class="box"><h3>💸 유태 덕에 70%</h3>안경용 보너스 +300바트 (안유태가 냄)</div>'; } }
   if (G.pl.some(p => p.ch.id === 'jt') && G.hi + 3 < G.nHoles) body += `<div class="box"><h3>📰 K대표 아침 브리핑</h3>다음 시황 예고: ${G.nextStock.t}</div>`;
   if (G.hi === 0) body = `<div class="box"><h3>💳 체크인</h3><div style="font-size:13px;line-height:1.7">${G.multi ? `${G.memUsed ? `🎫 회원권 사용 (남은 ${memLeft(G.course)}회) · ` : ''}그린피 -${G.costFee.toLocaleString()}밧 (${G.nHoles}홀) · 캐디팁 -${CADDIE_TIP}밧 · 카트비+락커·샤워 -${(CART_FEE(G.nHoles) + LOCKER).toLocaleString()}밧${G.cad.des ? ` · 캐디 지정료 -${CAD_FEE.toLocaleString()}밧` : ''}${G.stampUse ? `<br>🎟 연습 스탬프 ${G.stampUse}개 사용 → <b style="color:#7fe09a">+${G.stampOff.toLocaleString()}밧 할인</b> (남은 ${SV.stamp | 0}개)` : ''}${G.mealBill ? `<br>🍽 식사 ${G.pay === 'each' ? '각자 계산 -' + G.meal[2] + '밧' : G.pay === 'treat' ? (G.mealPaid ? `방장인 내가 쐈다 -${G.mealBill.toLocaleString()}밧` : `${G.payWho}이(가) 쐈다 (공짜)`) : `외상 ${G.mealBill.toLocaleString()}밧 — 라운드 꼴찌가 계산`}` : ''}` : '싱글 모드(연습 라운드): 비용 없음 · 내기 결과는 지갑에 반영 안 됨. 대신 🎟 연습 스탬프가 쌓여 멀티 모드 그린피·캐디비를 깎아 줍니다 (1개 = 100밧)'}${G.meal[2] ? `<br>${G.meal[1]} — 오늘 파워 +${(G.mealPow * 100).toFixed(1)}%` : ''}<br>지갑 <b style="color:${SV.wallet < 0 ? '#ff9a9a' : '#ffb627'}">${SV.wallet.toLocaleString()}밧</b>${SV.wallet < 0 ? ' (마이너스 통장)' : ''}<br>🧢 캐디 ${G.cad.no}번 — ${G.cad.d}</div></div>` + body;
   if (G.hi === 0) { const C = COURSES[G.course]; const intro = { bpk: '🎡 돌림판 결과는 리버사이드입니다 (홈구장)', rls: '💸 렉싸 1,999밧 프로모션 (심리적 저항선 2,500밧)', pcc: '🎫 안경용 쿠폰(2,050밧)으로 입장 · 끝나면 시암가든', scr: '🏠 삼화 스크린골프장 · 정b 우드 디버프', gv: '☠ 그린밸리 — 2포트 금지구장 하드코어' }[G.course]; body = `<div class="box"><h3>${C.name}</h3>${intro || ''}</div>` + body; if (G.wx) body += `<div class="box"><h3>🌦 현지 실시간 날씨</h3>${wxText(G.wx)}</div>`; if (G.rain) body += '<div class="box" style="box-shadow:inset 0 0 0 2px #4a8fe0"><h3>☔ 남투엄 안따라이 — 호우경보!</h3><div style="font-size:12px;line-height:1.6">폭우 지옥훈련 로컬 룰: 박힌 공 무벌타 드롭 · 물 찬 벙커 구제 · 진흙 공 프리퍼드 라이 · 더블파 픽업 · 천둥 시 30분 대피<br>이규만·윤대욱·안유태는 폭우 면역</div></div>'; }
@@ -1026,11 +1030,11 @@ const ARR = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
 function hudSub() { const h = curHole(); $('#hsub').textContent = `PAR ${h.par} · ${Math.round(h.len)}y${h.estimated ? ' ✱' : ''}${G.mult > 1 ? ' · 배판 ×' + G.mult : ''}`; }
 function startHole() {
   if (G.costPending) { G.costPending = false; G.extraFee = 0; G.stampUse = 0; G.stampOff = 0; G.costFee = 0; G.memUsed = 0; G.mealBill = 0; G.mealPaid = 0; G.cadFee = 0; G.payWho = '';
-    if (G.multi) { G.costFee = greenFee(G.course, G.nHoles); const need = G.nHoles / 18; if (memLeft(G.course) >= need - 1e-9) { SV.mem[G.course] = +(memLeft(G.course) - need).toFixed(2); G.memUsed = need; G.costFee = 0; }
+    if (G.multi) { G.costFee = greenFee(G.course, G.nHoles); { const o = ownerOf(G.course); if (o && o.ch === G.me) { G.costFee = 0; G.ownFree = 1; } else G.ownFree = 0; } const need = G.nHoles / 18; if (memLeft(G.course) >= need - 1e-9) { SV.mem[G.course] = +(memLeft(G.course) - need).toFixed(2); G.memUsed = need; G.costFee = 0; }
       const d = MR.data, pl = d.pl || {}; G.pay = d.cfg.pay || 'each'; G.mealBill = Object.values(pl).reduce((a, v) => a + ((v && v.meal) | 0), 0); const host = d.host === SV.did; G.payWho = (CH.find(c => pl[c.id] && pl[c.id].did === d.host) || {}).name || '방장';
       G.mealPaid = G.pay === 'each' ? G.meal[2] : G.pay === 'treat' ? (host ? G.mealBill : 0) : 0; G.cadFee = CADDIE_TIP + (G.cad.des ? CAD_FEE : 0); G.extraFee = CART_FEE(G.nHoles) + LOCKER; G.cadFee += G.extraFee;
       { const base = G.costFee + G.cadFee, use = Math.min(SV.stamp | 0, Math.floor(base * .5 / 100)); G.stampUse = use; G.stampOff = use * 100; SV.stamp = (SV.stamp | 0) - use; }
-      SV.wallet -= G.costFee + G.cadFee + G.mealPaid - G.stampOff; saveSV(); } }
+      SV.wallet -= G.costFee + G.cadFee + G.mealPaid - G.stampOff; saveSV(); { const o = ownerOf(G.course); if (o && o.ch !== G.me && G.costFee > 0 && NET.ok) nreq('POST', '/pay/' + o.ch, { amt: G.costFee, why: COURSES[G.course].name + ' 그린피', from: G.me, ts: Date.now() }).catch(() => { }); } } }
   const h = curHole(); const w = G.multi ? G.mWind[G.hi] : (G.nextWind || genWind()); G.nextWind = G.multi ? (G.mWind[G.hi + 1] || G.mWind[0]) : genWind();
   G.wind = { x: Math.sin(w.a) * w.s, y: Math.cos(w.a) * w.s }; G.windS = w.s; G.windA = w.a; G.news = []; G.mult = Math.max(G.nextMult || 1, G.course === 'rls' ? 2 : 1); G.nextMult = 1;
   $('#chat').innerHTML = '';
@@ -1169,6 +1173,7 @@ function shotDone() {
   else if (ev.includes('fat')) { msg = '뒤땅...'; col = '#ffb36b'; }
   else if (ev.includes('bunker')) msg = '벙커...';
   else if (res.tFin === 'trees') { msg = '🌳 나무 밑... 레이업 각'; col = '#ffb36b'; }
+  else if (SHAPEN[res.shape] && !res.putter && !res.holed) { msg = SHAPEN[res.shape]; col = /big|duck/.test(res.shape) ? '#ff9a9a' : /slice|hook/.test(res.shape) ? '#ffb36b' : '#cfe8ff'; }
   else if (ev.includes('fly')) { msg = '🪂 공중부양 샷!'; col = '#9fd3ff'; }
   else if (Math.abs(G.acc) < zoneOf(st.ch) && !res.putter && G.pw0 > .9) { msg = '나이스샷!'; col = '#9fffb0'; }
   if (res.holed && (ev.includes('ace') || st.strokes - h.par <= -1)) meme(ev.includes('ace') ? '홀 인 원' : st.strokes - h.par <= -2 ? '이 글' : '버 디', `${st.ch.name} · ${h.no}번홀`);
@@ -1209,6 +1214,7 @@ const NEWS = {
  bunker: [n => `${n} 벙커에서 모래찜질`, n => `${n} 벙커에서 해변 휴양 중`, n => `${n} 모래성 쌓기 3타째`, n => `[속보] ${n} 벙커 탈출 실패, 구조대 요청`, n => `${n} 벙커샷 후 모래만 그린 위로`],
  bug: [n => `${n} 14번홀 오른쪽 나무 밑 벌레 테러 당해, 다음 샷 흔들`, n => `${n} 14번홀 벌레와 재회, 스윙 리듬 붕괴`, n => `[현장] ${n} 나무 밑 개미떼 습격… 샷 흔들`],
 };
+Object.assign(NEWS, { bigslice: [n => `${n} 바나나 슬라이스, 공이 옆 홀 관광`, n => `[속보] ${n} 슬라이스 각도 90도 돌파`], duckhook: [n => `${n} 덕훅 작렬, 공이 왼쪽 숲으로 다이빙`, n => `[단독] ${n} 훅 구질, 오리도 놀라 날아가`], slice: [n => `${n} 슬라이스, 바람 탓이라 주장`], hook: [n => `${n} 훅 걸려 데굴데굴, 런은 많이 나옴`] });
 function newsFor(st, e, h) { const f = NEWS[e]; if (!f) return null; return pick(f)(st.ch.short); }
 // 대사 음성 (기기 내장 한국어 TTS). 캐릭터마다 높낮이·속도를 달리함
 const VOICE = { '정슬기': [1.1, 1.08], '안유태': [1.0, 1.05], '안경용': [.9, .98], '이규만': [.95, 1.0], '신현욱': [1.05, 1.05], '윤대욱': [.98, 1.0], '김정태': [.92, .98], '권어진': [1.12, 1.08] };
@@ -1245,6 +1251,7 @@ function finishHoleCore() {
     else if (aceHit) { p.st.ace++; lines.push(`${p.ch.short} 홀인원, 판돈 싹쓸이 · 2포트 전원 디폴트 선언`); }
     else if (sc <= -2 && p.strokes > 0) { p.st.eagle++; lines.push(`${p.ch.short} 이글! 주통방 코피 호소인 속출`); }
     else if (sc === -1) { p.st.birdie++; lines.push(`${p.ch.short} ${h.name} 버디, 버디값 두세 번 낼 건 벌었네요`); }
+    if (p.human && !p.ev.includes('trip') && p.strokes > 0) { const tip = (aceHit || sc <= -3) ? 1000 : sc === -2 ? 500 : sc === -1 ? 100 : 0; if (tip) { SV.wallet -= tip; G.tipTot = (G.tipTot || 0) + tip; saveSV(); setTimeout(() => { chat('🧢 캐디 ' + (G.cad ? G.cad.no : ''), `${tip.toLocaleString()}밧 팁 감사합니다 카~ 컵쿤카! 〔ขอบคุณค่ะ〕`, '#9fe0ff'); toast(`💸 ${aceHit ? '홀인원' : sc <= -3 ? '알바트로스' : sc === -2 ? '이글' : '버디'} 캐디팁 -${tip.toLocaleString()}밧`, '#ffd27a'); }, 1200); } }
     const pc = p.ev.filter(e => e === 'concede'); if (p.putts >= 3 && p.ch.three) { p.st.three++; lines.push(`${p.ch.short} ${p.putts}퍼트, "퍼터 무조건 쓰리펏" 예언 적중`); }
     p.st.putts = p.st.putts; // (집계는 applyResult)
     // 판돈 (버디/이글/홀인원)
@@ -1253,14 +1260,16 @@ function finishHoleCore() {
   }
   { // 홀 승자 정산 (타당 100밧, 배판/따당)
     const n = G.pl.length, nets = G.pl.map(p => p.strokes - ((G.hcp && p.ch.hcp && G.hi < Math.round(p.ch.hcp * G.nHoles / 18)) ? 1 : 0)); const mn = Math.min(...nets);
-    const wi = nets.map((v, i) => v === mn ? i : -1).filter(i => i >= 0); const mult = G.mult; let nm = 1;
-    if (G.pl.some(p => p.strokes - h.par <= -1 && !p.ev.includes('trip'))) nm = 2;
+    const wi = nets.map((v, i) => v === mn ? i : -1).filter(i => i >= 0); let nm = 1;
+    // 버디 이상 또는 양파가 나오면 그 홀 바로 배판 ×2
+    const bdP = G.pl.filter(p => p.strokes > 0 && p.strokes - h.par <= -1 && !p.ev.includes('trip')), onP = G.pl.filter(p => !p.ev.includes('trip') && (p.ev.includes('pickup') || p.strokes >= h.par * 2)), bpan = bdP.length || onP.length, mult = G.mult * (bpan ? 2 : 1); G.bpanTxt = bpan ? ` · 🎲 이 홀 배판 ×${mult} (${[bdP.length ? bdP.map(p => p.ch.short).join('·') + ' 버디 이상' : '', onP.length ? onP.map(p => p.ch.short).join('·') + ' 양파' : ''].filter(Boolean).join(', ')})` : '';
     G.holeQuotes = [];
     if (wi.length === 1) { const w = G.pl[wi[0]]; w.holeWins = (w.holeWins || 0) + 1; const amt = 100 * mult * (G.paycut === w.ch.id ? .8 : 1); w.money += amt * (n - 1); G.pl.forEach((q, i) => { if (i !== wi[0]) q.money -= amt; }); G.holeWin = `🏆 ${w.ch.name} 홀 승리 +${(amt * (n - 1)).toLocaleString()}바트 (×${mult})`; G.lastWinner = w.ch.id; const t = SELF[w.ch.id]; if (t && t.win) G.holeQuotes.push([w.ch, pick(t.win)]); }
     else { G.holeWin = wi.length === n ? '🤝 전원 무승부! 다음 홀 따당 ×4' : '🤝 공동 선두 무승부, 다음 홀 배판'; nm = Math.max(nm, wi.length === n ? 4 : 2); G.lastWinner = null; }
     if (G.pl.some(p => p.ch.id === 'gy' && p.strokes - h.par <= -1)) nm = 4;
+    if (G.bpanTxt) G.holeWin = (G.holeWin || '') + G.bpanTxt;
     G.nextMult = nm; G.paycut = null;
-    { const jt = G.pl.find(p => p.ch.id === 'jt'); if (jt) { const nb = G.pl.filter(p => p !== jt && p.strokes - h.par <= -1 && !p.ev.includes('trip')).length; if (nb) { jt.money += 50 * nb; G.holeQuotes.push([jt.ch, `대박 (깔끔한 리액션 +${50 * nb}바트)`]); } } }
+    { const jt = G.pl.find(p => p.ch.id === 'jt'); if (jt) { const bp = G.pl.filter(p => p !== jt && p.strokes - h.par <= -1 && !p.ev.includes('trip')), nb = bp.length; if (nb) { jt.money += 50 * nb; bp.forEach(p => p.money -= 50); G.holeQuotes.push([jt.ch, `대박 (깔끔한 리액션 +${50 * nb}바트)`]); } } }
     for (const p of G.pl) { const sc = p.strokes - h.par; if (p.ev.includes('trip')) continue; if (sc >= 2 && R() < .6) { const t = SELF[p.ch.id]; if (t && t.bad) G.holeQuotes.push([p.ch, pick(t.bad)]); } else if (sc <= -1 && R() < .7) { const t = SELF[p.ch.id]; if (t && t.birdie) G.holeQuotes.push([p.ch, pick(t.birdie)]); } }
     G.holeQuotes = G.holeQuotes.slice(0, 4);
     // 지정 캐디는 동반자에게도 가끔 구찌(장난·견제) — 확률 적용
@@ -1337,7 +1346,7 @@ function finalScreen() {
   if (!G.rewarded) { G.rewarded = true; const me = T.find(t => t.p.human), hm = me.p, id = hm.ch.id; const lv0 = lvOf(id);
     const fee = 0, rank = order.indexOf(me) + 1, prize = rank === 1 ? 1000 : rank === 2 ? 400 : 0;
     const xp = 30 + G.nHoles * 12 + hm.st.birdie * 25 + hm.st.eagle * 60 + hm.st.ace * 200 + (rank === 1 ? 60 : 0);
-    const w0 = SV.wallet; let mealTxt = ''; if (G.multi && G.pay === 'loser' && G.mealBill) { const last = order[order.length - 1]; if (last === me) { SV.wallet -= G.mealBill; mealTxt = ` · 🍽 꼴찌라서 식사 계산 -${G.mealBill.toLocaleString()}밧`; } else mealTxt = ` · 🍽 식사는 꼴찌 ${last.p.ch.name}이(가) 계산`; } { SV.ballHoles = (SV.ballHoles || 0) + G.nHoles; while (SV.ballHoles >= 18) { SV.ballHoles -= 18; useBall(1, '18홀 사용'); } } G.sgRw = 0; if (!G.multi && me.tot > 0) { G.sgRw = Math.round(me.tot * .1); SV.wallet += G.sgRw; } if (G.multi) { SV.wallet = SV.wallet + me.tot + fee + prize; SV.mr = (SV.mr | 0) + 1; if (rank === 1) SV.mw = (SV.mw | 0) + 1; SV.mm = (SV.mm | 0) + me.tot; } let stTxt = ''; if (!G.multi) { if (SV.stDay !== today()) { SV.stDay = today(); SV.stN = 0; } const raw = G.nHoles + (rank === 1 && order.length > 1 ? 3 : 0) + hm.st.birdie + hm.st.eagle * 2 + hm.st.ace * 5, got = Math.max(0, Math.min(raw, 20 - (SV.stN | 0))); SV.stN = (SV.stN | 0) + got; SV.stamp = (SV.stamp | 0) + got; stTxt = `<br>🎟 연습 스탬프 +${got}개 (보유 ${SV.stamp}개 · 오늘 ${SV.stN}/20) — 멀티 모드 체크인 때 1개당 100밧 자동 할인${got < raw ? ' · 오늘 한도 도달' : ''}` + dqCheck({ rank, n: order.length, st: hm.st, ph: hm.parHist, money: me.tot }); } cadSay('tip'); SV.xp[id] = (SV.xp[id] || 0) + xp; SV.rounds++; if (G.multi) SV.lastRound = today(); try { achRound(hm, rank, order.length); } catch (e) { }
+    const w0 = SV.wallet + (G.tipTot || 0); let mealTxt = G.tipTot ? ` · 🧢 버디·이글 캐디팁 -${G.tipTot.toLocaleString()}밧` : ''; if (G.multi && G.pay === 'loser' && G.mealBill) { const last = order[order.length - 1]; if (last === me) { SV.wallet -= G.mealBill; mealTxt = ` · 🍽 꼴찌라서 식사 계산 -${G.mealBill.toLocaleString()}밧`; } else mealTxt = ` · 🍽 식사는 꼴찌 ${last.p.ch.name}이(가) 계산`; } { SV.ballHoles = (SV.ballHoles || 0) + G.nHoles; while (SV.ballHoles >= 18) { SV.ballHoles -= 18; useBall(1, '18홀 사용'); } } G.sgRw = 0; if (!G.multi && me.tot > 0) { G.sgRw = Math.round(me.tot * .1); SV.wallet += G.sgRw; } if (G.multi) { SV.wallet = SV.wallet + me.tot + fee + prize; SV.mr = (SV.mr | 0) + 1; if (rank === 1) SV.mw = (SV.mw | 0) + 1; SV.mm = (SV.mm | 0) + me.tot; } let stTxt = ''; if (!G.multi) { if (SV.stDay !== today()) { SV.stDay = today(); SV.stN = 0; } const raw = G.nHoles + (rank === 1 && order.length > 1 ? 3 : 0) + hm.st.birdie + hm.st.eagle * 2 + hm.st.ace * 5, got = Math.max(0, Math.min(raw, 20 - (SV.stN | 0))); SV.stN = (SV.stN | 0) + got; SV.stamp = (SV.stamp | 0) + got; stTxt = `<br>🎟 연습 스탬프 +${got}개 (보유 ${SV.stamp}개 · 오늘 ${SV.stN}/20) — 멀티 모드 체크인 때 1개당 100밧 자동 할인${got < raw ? ' · 오늘 한도 도달' : ''}` + dqCheck({ rank, n: order.length, st: hm.st, ph: hm.parHist, money: me.tot }); } cadSay('tip'); SV.xp[id] = (SV.xp[id] || 0) + xp; SV.rounds++; if (G.multi) SV.lastRound = today(); try { achRound(hm, rank, order.length); } catch (e) { }
     let stHTML = ''; { SV.story = SV.story || {}; const ci = chapOf(id), c = STORY[id][ci], done = storyDone(id); const ok = GOAL[c[2]][1]({ rank, n: order.length, money: me.tot, st: hm.st, worst: Math.max(...hm.parHist) }); const bonus = ok && !done ? 800 * (ci + 1) : 0;
       if (ok && !done) { SV.story[id] = ci + 1; SV.wallet += bonus; }
       stHTML = `<div class="story" style="box-shadow:inset 0 0 0 2px ${hm.ch.color}"><div style="color:${hm.ch.ink};font-weight:800">📖 ${hm.ch.name} 스토리 ${ci + 1}장 — ${c[0]}</div><div style="margin-top:4px;color:${ok ? '#7fe09a' : '#ff9a9a'}">${ok ? '✅ 목표 달성' : '❌ 목표 실패'}: ${GOAL[c[2]][0]}</div><div class="nar" style="margin-top:4px">${ok ? c[3] : c[4]}</div>${bonus ? `<div style="margin-top:4px;color:#ffb627">스토리 보상 +${bonus.toLocaleString()}밧${ci + 1 < STORY[id].length ? ' · 다음 장 해금!' : ' · 스토리 완결!'}</div>` : (ok ? '' : '<div style="margin-top:4px;opacity:.8">같은 장에 다시 도전할 수 있습니다.</div>')}</div>`; }
@@ -1384,7 +1393,7 @@ function update(dt) {
   if (G.phase === 'fly' && G.A) { const b = ballPos(); camT = { x: b.x, y: b.y, s: Math.max(1.1, Math.min(camT.s, 5)) }; cam.x += (camT.x - cam.x) * Math.min(1, dt * 7); cam.y += (camT.y - cam.y) * Math.min(1, dt * 7); }
 }
 function camSnapSoft() { camSnap(); }
-function ballPos() { const A = G.A, r = A.res; if (A.t < A.tf) { const t = A.t / A.tf; const h = r.putter ? 0 : 4 * t * (1 - t) * clamp(r.carry * .22, 3, 46); return { x: r.from.x + (r.land.x - r.from.x) * t, y: r.from.y + (r.land.y - r.from.y) * t, h }; } const t = clamp((A.t - A.tf) / A.tr, 0, 1), e = 1 - (1 - t) * (1 - t); return { x: r.land.x + (r.fin.x - r.land.x) * e, y: r.land.y + (r.fin.y - r.land.y) * e, h: 0 }; }
+function ballPos() { const A = G.A, r = A.res; if (A.t < A.tf) { const t = A.t / A.tf; const h = r.putter ? 0 : 4 * t * (1 - t) * clamp(r.carry * .22, 3, 46); const dx = r.land.x - r.from.x, dy = r.land.y - r.from.y, L = Math.hypot(dx, dy) || 1, bo = -(r.curve || 0) * .55 * 4 * t * (1 - t); return { x: r.from.x + dx * t + dy / L * bo, y: r.from.y + dy * t - dx / L * bo, h }; } const t = clamp((A.t - A.tf) / A.tr, 0, 1), e = 1 - (1 - t) * (1 - t); return { x: r.land.x + (r.fin.x - r.land.x) * e, y: r.land.y + (r.fin.y - r.land.y) * e, h: 0 }; }
 const cx = () => Wd / 2, cy = () => Ht * .46;
 const sx = x => cx() + (x - cam.x) * cam.s, sy = y => cy() - (y - cam.y) * cam.s;
 const PAL = { ob: '#0b120e', line: '#d9e2d6', rough: '#2a6a34', cut: '#34803f', fw: '#4ea854', fwL: '#5dbb62', green: '#76d57d', fringe: '#58b862', sand: '#e8d89c', sandD: '#c9b678', water: '#2f80d0', waterD: '#235f9f', wave: '#8fd0f7' };
@@ -1486,8 +1495,9 @@ function drawShop() {
       const du = Math.round(durOf(g.id)); html += `<div class="gear ${eq ? 'eq' : ''}"><div>${g.n}${isReal ? ' <span style="color:#7fe8d2">★실제 보유</span>' : own ? ' ✔' : ''}<small>${g.spec}</small><small style="color:#ffe08a;opacity:1">${fxText(g, ch)}</small>${own && isBallG(g) ? ballHTML(g) : own ? `<small style="color:${du < 30 ? '#ff9a9a' : du < 60 ? '#ffd27a' : '#7fe09a'};opacity:1">내구도 ${du}%${du < 60 ? ' (성능 저하 중)' : ''} ${!isReal && SV.owned.includes(g.id) ? `<button class="btn" data-sell="${g.id}" style="font-size:11px;padding:3px 7px">중고판매 ${sellPrice(g).toLocaleString()}</button> ` : ''}${du < 100 ? ` <button class="btn" data-fix="${g.id}" style="font-size:11px;padding:3px 7px" ${SV.wallet < repairCost(g) ? 'disabled' : ''}>수리 ${repairCost(g).toLocaleString()}밧</button>` : ''}</small>` : ''}${own ? UPG.filter(u => u.slot === g.slot).map(u => `<small style="opacity:1">🔧 ${u.n} — ${u.d} ${hasUp(g.id, u.id) ? '<span style="color:#7fe09a">완료</span>' : `<button class="btn" data-up="${g.id}:${u.id}" style="font-size:11px;padding:3px 7px" ${SV.wallet < u.price ? 'disabled' : ''}>${u.price.toLocaleString()}밧</button>`}</small>`).join('') : ''}</div>${own ? `<button class="btn" data-eq="${slot}:${g.id}">${eq ? '장착중' : '장착'}</button>` : `<button class="btn" data-buy="${g.id}" ${SV.wallet < g.price ? 'disabled' : ''}>${g.price.toLocaleString()}밧</button>`}</div>`; }
     html += '</div>';
   }
-  html = `<div class="box"><h3>🎫 골프장 회원권 (10회분)</h3><div style="font-size:11.5px;opacity:.85;margin-bottom:4px">18홀 10회 요금의 약 70% 가격. 9홀은 0.5회, 3홀은 약 0.17회 차감되고 그린피가 0이 됩니다. 캐디팁은 별도.</div>${Object.keys(MEMPRICE).map(k => `<div class="gear ${memLeft(k) > 0 ? 'eq' : ''}"><div>${COURSES[k].name}<small>정가 18홀 ${GREENFEE[k](new Date().getDay()).toLocaleString()}밧${k === 'bpk' ? ' (평일 1,300 / 주말 2,500)' : ''}</small><small style="color:#7fe09a;opacity:1">${memLeft(k) > 0 ? '남은 ' + memLeft(k) + '회' : '미보유'}</small></div><button class="btn" data-mem="${k}" ${SV.wallet < MEMPRICE[k] ? 'disabled' : ''}>${MEMPRICE[k].toLocaleString()}밧</button></div>`).join('')}</div>` + html;
+  html = ownHTML() + `<div class="box"><h3>🎫 골프장 회원권 (10회분)</h3><div style="font-size:11.5px;opacity:.85;margin-bottom:4px">18홀 10회 요금의 약 70% 가격. 9홀은 0.5회, 3홀은 약 0.17회 차감되고 그린피가 0이 됩니다. 캐디팁은 별도.</div>${Object.keys(MEMPRICE).map(k => `<div class="gear ${memLeft(k) > 0 ? 'eq' : ''}"><div>${COURSES[k].name}<small>정가 18홀 ${GREENFEE[k](new Date().getDay()).toLocaleString()}밧${k === 'bpk' ? ' (평일 1,300 / 주말 2,500)' : ''}</small><small style="color:#7fe09a;opacity:1">${memLeft(k) > 0 ? '남은 ' + memLeft(k) + '회' : '미보유'}</small></div><button class="btn" data-mem="${k}" ${SV.wallet < MEMPRICE[k] ? 'disabled' : ''}>${MEMPRICE[k].toLocaleString()}밧</button></div>`).join('')}</div>` + html;
   $('#shopBody').innerHTML = html;
+  $('#shopBody').querySelectorAll('[data-own]').forEach(b => b.onclick = () => buyCourse(b.dataset.own, b));
   $('#shopBody').querySelectorAll('[data-mem]').forEach(b => b.onclick = () => { const k = b.dataset.mem; if (SV.wallet < MEMPRICE[k]) return; SV.wallet -= MEMPRICE[k]; SV.mem = SV.mem || {}; SV.mem[k] = +(memLeft(k) + 10).toFixed(2); saveSV(); beep(988, .15); drawShop(); });
   $('#shopBody').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => { const g = GEAR.find(x => x.id === b.dataset.buy); if (SV.wallet < g.price) return; SV.wallet -= g.price; if (isBallG(g)) { SV.balls = SV.balls || {}; SV.balls[g.id] = (SV.owned.includes(g.id) || (REALGEAR[G.me] || {}).ball === g.id ? ballsLeft(g.id) : 0) + (BALLN[g.id] || 12); } if (!SV.owned.includes(g.id)) SV.owned.push(g.id); SV.equip[g.slot] = g.id; saveSV(); beep(880, .12); drawShop(); });
   $('#shopBody').querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const [gid, uid] = b.dataset.up.split(':'), g = GEAR.find(x => x.id === gid), u = UPG.find(x => x.id === uid && x.slot === g.slot); if (!u || SV.wallet < u.price) return; SV.wallet -= u.price; SV.up = SV.up || {}; SV.up[gid] = SV.up[gid] || {}; SV.up[gid][uid] = 1; saveSV(); beep(988, .12); drawShop(); });
@@ -1519,7 +1529,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.34.1';
+const VERSION = 'v0.35.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1544,6 +1554,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.35.1', '2026-11-24', ['💵 정산 금액 정리: 김정태 리액션 보너스(+50)는 버디한 사람이, 안경용 주식 보너스(+300)는 안유태가 직접 내도록 변경. 공짜로 생기던 돈이 없어져서 1,219·-381 같은 자투리 금액 없이 타당 100밧 단위로 딱 떨어짐']],
+ ['v0.35.0', '2026-11-24', ['🏌 연습장 하루 3회 → 5회로 늘림', '🏌 골프장 인수(장기 목표): 상점에서 번 돈으로 골프장 구매 → 오너 등극. 다른 멤버가 그 골프장에서 멀티 치면 그린피가 오너 지갑으로, 오너 본인은 그린피 무료. 주인 있는 골프장은 1.3배 값에 인수 가능(대금은 전 오너에게). 가격: 스크린 10만 · 그린우드 50만 · 그린밸리 80만 · 파타야CC 100만 · 방파콩·로얄레이크 150만밧', '🧢 버디 캐디팁 100밧 · 이글 500밧 · 알바트로스·홀인원 1,000밧 (지갑에서 빠짐)', '🎲 버디 이상 또는 양파가 나오면 그 홀 바로 배판 ×2 (원래 배판 홀이면 ×4) — 전에는 다음 홀에 적용되던 버디 배판도 그 홀 적용으로 변경', '🍌 구질 반영: 게이지 빗나간 정도에 따라 페이드·드로우 → 슬라이스·훅 → 바나나 슬라이스·덕훅. 공이 실제로 휘어서 날아가고, 훅·드로우는 더 굴러가고 슬라이스·페이드는 덜 굴러감 (오른손 기준)', '⚠️ 큰 미스 현실화: 게이지 끝쪽으로 크게 빗나가면 훨씬 크게 휘고, OB 경계도 페어웨이 쪽으로 8야드 당김 → 미스 시 OB·해저드가 실제처럼 나옴']],
  ['v0.34.1', '2026-11-24', ['⛳ 공이 소모품으로: 1더즌 = 12개(로스트볼은 40개). 18홀 칠 때마다 1개, 물·OB로 잃어버릴 때마다 1개씩 줄어듦. 다 쓰면 자동으로 일반공(효과 없음)으로 바뀜', '상점에서 남은 공 개수 표시 + 같은 공 1더즌 추가 구매 가능. 3개 이하 남으면 알림']],
  ['v0.34.0', '2026-11-24', ['💰 싱글 보상: 싱글에서 딴 돈의 10%를 지갑에 입금 (상한 없음, 잃은 돈은 안 빠짐)', '🛒 상점 장비를 2026 최신 4대 브랜드로 교체: 드라이버 GTS2·GTS3·Qi4D·Qi4D Max·G440 K·퀀텀 맥스, 아이언 T150·P790·G440·엘리트, 웨지 보키 SM11·MG5·s159·오퍼스, 퍼터 스카티 스튜디오 스타일·스파이더 투어·핑 앤서·Ai-ONE. 가격은 실제가(밧)', '⛳ 공 2~5피스 8종: 피스가 많을수록 비싸고 정확도·퍼팅·러프 탈출이 좋아짐 (2피스는 비거리 위주로 저렴)', '예전 장비는 이미 산 것·멤버 실사용 장비만 계속 표시']],
  ['v0.33.3', '2026-11-24', ['⚡ 8명 전원 고유 스킬, 9홀마다 1번 사용 (18홀이면 전반·후반 각 1번). 새 스킬: 신현욱 🍱 노노해 도시락(체력+25·정확도 버프) / 윤대욱 🐍 어휴 뱀이다(상대 전원 정확도 -15%) / 김정태 📈 장투 존버(다음 샷 바람 무시)', '정슬기 공중부양·안유태 융단 폭격은 매 홀 → 9홀마다 1번으로 변경, 이규만·안경용·권어진은 라운드 1번 → 9홀마다 1번으로 늘어남', '스킬 버튼을 길게 누르면 효과 설명. 멀티에서는 남에게 영향 주는 스킬(융단폭격·파마·감봉·캐스팅보트·뱀)은 꺼짐']],
@@ -1607,6 +1619,18 @@ const CHANGELOG = [
  ['v0.9.0', '2026-11-23', ['게임 이름 확정, 게임 안내·업데이트 내역 화면 추가', '스윙을 파워 + 정확도 2단계로 (파워 게이지 한 번 왕복)', '시작 메뉴, 칩튠 배경음악, 클럽하우스 채팅(오프라인은 CPU 응답)', '양파 픽업, 은갈치 컨시드 룰', '안경용·정슬기 실제 장비와 최근 스코어 반영', '대사 음성 읽기', '실제 모델 제원 기반 장비 상점, 레벨 성장, 실제 스코어 주간 입력', '캐릭터별 전용 스토리 4장, 홀 전후 스토리, 구찌', '8인 완전체, 포트제, 폭우 지옥훈련, 그늘집, 조작 돌림판', '2D 도트 그래픽, 실제 코스 스코어카드 반영']],
 ];
 function drawInfo() { $('#infoBody').innerHTML = `<div class="box"><h3>게임 소개 <small style="opacity:.7">${VERSION}</small></h3>${ABOUT.map(a => `<div style="font-size:12.5px;line-height:1.6;margin:6px 0"><b style="color:#ffe08a">${a[0]}</b><br>${a[1]}</div>`).join('')}</div>` + CHANGELOG.map(c => `<div class="box"><h3>🆕 ${c[0]} <small style="opacity:.7">${c[1]}</small></h3><div style="font-size:12.5px;line-height:1.7">${c[2].map(t => '· ' + t).join('<br>')}</div></div>`).join(''); }
+// ================= 골프장 인수 (장기 목표): 산 사람이 오너, 다른 멤버가 멀티로 치면 그린피가 오너 지갑으로 =================
+const COURSE_PRICE = { scr: 100000, grn: 500000, gv: 800000, pcc: 1000000, bpk: 1500000, rls: 1500000 };
+let OWN = {};
+const ownerOf = k => (OWN[k] && OWN[k].ch) ? OWN[k] : null;
+const buyPrice = k => { const o = ownerOf(k); return o ? Math.round(o.price * 1.3 / 1000) * 1000 : COURSE_PRICE[k]; };
+function ownHTML() { const me = G.me; let t = `<div class="box"><h3>🏌 골프장 인수 (장기 목표)</h3><div style="font-size:11.5px;opacity:.85;margin-bottom:6px">번 돈으로 골프장을 사면 오너가 됩니다. 다른 멤버가 그 골프장에서 멀티를 치면 그린피가 오너 지갑으로 들어오고, 오너 본인은 그린피 무료. 이미 주인이 있으면 산 값의 1.3배로 인수(대금은 전 오너에게).${SV.ownEarn ? `<br>💰 지금까지 오너 수입 <b style="color:#7fe09a">${SV.ownEarn.toLocaleString()}밧</b>` : ''}</div>`;
+  for (const k of Object.keys(COURSE_PRICE)) { if (!COURSES[k]) continue; const o = ownerOf(k), oc = o && CH.find(c => c.id === o.ch), mine = o && o.ch === me, pr = buyPrice(k); t += `<div class="gear ${mine ? 'eq' : ''}"><div>${COURSES[k].name}<small>${o ? `오너 <b style="color:${oc ? oc.ink : '#fff'}">${oc ? oc.name : o.ch}</b> · 인수가 ${o.price.toLocaleString()}밧` : '매물 · 주인 없음'}</small></div>${mine ? '<button class="btn" disabled>내 골프장</button>' : `<button class="btn" data-own="${k}" ${(!NET.ok || SV.wallet < pr) ? 'disabled' : ''}>${o ? '인수 ' : '구매 '}${pr.toLocaleString()}밧</button>`}</div>`; }
+  return t + (NET.ok ? '' : '<div style="font-size:11px;color:#ff9a9a">서버 연결이 있어야 살 수 있어요</div>') + '</div>'; }
+async function buyCourse(k, b) { const o = ownerOf(k), pr = buyPrice(k); if (!NET.ok || (o && o.ch === G.me) || SV.wallet < pr) return; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = `정말 ${pr.toLocaleString()}밧?`; b.style.background = '#7a2a2a'; setTimeout(() => { delete b.dataset.sure; drawShop(); }, 3000); return; }
+  SV.wallet -= pr; saveSV(); const rec = { ch: G.me, did: SV.did, price: pr, ts: Date.now() }; OWN[k] = rec; try { await nreq('PUT', '/own/' + k, rec); if (o) await nreq('POST', '/pay/' + o.ch, { amt: pr, why: `${COURSES[k].name} 인수 대금`, from: G.me, ts: Date.now() }); nreq('POST', '/chat', { ch: G.me, t: `🏌 ${COURSES[k].name} ${o ? '인수' : '구매'} 완료! 이제 여기 그린피는 제 지갑으로 ㅎㅎ (${pr.toLocaleString()}밧)`, did: SV.did, ts: Date.now() }); } catch (e) { } meme('골프장 오너 등극', `${COURSES[k].name} · ${pr.toLocaleString()}밧`); drawShop(); }
+// 다른 멤버가 낸 그린피·인수 대금 받기 (기기 두 대가 동시에 받지 않도록 '찜' 후 확인)
+async function payClaim(d) { const me = SV.myCh; if (!me || !d) return; for (const k of Object.keys(d)) { const v = d[k]; if (!v || !v.amt || v.c) continue; try { await nreq('PUT', `/pay/${me}/${k}/c`, SV.did); await new Promise(r => setTimeout(r, 700)); const c = await nreq('GET', `/pay/${me}/${k}/c`); if (c !== SV.did) continue; await nreq('DELETE', `/pay/${me}/${k}`); SV.wallet += v.amt; SV.ownEarn = (SV.ownEarn || 0) + v.amt; saveSV(); const fc = CH.find(c => c.id === v.from); toast(`🏌 오너 수입 +${v.amt.toLocaleString()}밧 (${fc ? fc.short : ''} ${v.why || ''})`, '#9fffb0'); try { drawMe(); } catch (e) { } } catch (e) { } } }
 // ================= 온라인 (Firebase Realtime Database, REST + 스트리밍) =================
 const NET = { base: 'https://jutong-golf-default-rtdb.asia-southeast1.firebasedatabase.app/jt/k7Qm2xVp9LzT4wRs8HnB', ok: false };
 if (!SV.did) { SV.did = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); try { localStorage.setItem(SV_KEY, JSON.stringify(SV)); } catch (e) { } }
@@ -1640,6 +1664,7 @@ let onl = {}, chatSeen = {}, chatInit = false;
 function netBeat(st) { if (NET.ok) nreq('PUT', '/on/' + SV.did, { ch: G.me, lv: lvOf(G.me), st: st || (G.multi ? 'multi' : ['aim', 'power', 'acc', 'fly', 'wait', 'result', 'stock'].includes(G.phase) ? 'play' : 'menu'), ts: Date.now() }).catch(() => { }); }
 async function netInit() { try { await nreq('GET', '/ping'); NET.ok = true; } catch (e) { NET.ok = false; return; } cfgLoad(); cloudSync(); stkLoad(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
   netBeat(); setInterval(() => netBeat(), 25000);
+  try { nlisten('/own', '', d => { OWN = d || {}; if ($('#sShop') && $('#sShop').classList.contains('on')) drawShop(); }); if (SV.myCh) nlisten('/pay/' + SV.myCh, '', d => payClaim(d)); } catch (e) { }
   nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnline(); if (MR && MR.data && !G.multi && $('#sMulti').classList.contains('on')) mUpdate(); } catch (e) { } });
   nlisten('/chat', '?orderBy="$key"&limitToLast=30', d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; if (!clubOpen && m.ch !== G.me && m.did !== SV.did && (m.ts || 0) > (SV.clubRd || (SV.clubRd = Date.now() - 864e5))) { clubUnread++; clubBadge(); if (chatInit && G.phase === 'title') { try { navigator.vibrate && SV.vib !== false && navigator.vibrate(40); } catch (e) { } toast('💬 클럽하우스 새 메시지 · ' + CH.find(c => c.id === m.ch).short, '#9ff0d0'); } } clubAdd(m.ch, m.t, chatInit ? '' : '이전', !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; });
   if (clubOpen) clubPeers(); }
@@ -1686,7 +1711,7 @@ const openStart = m => { $('#oMode').value = m; $('#oMode').onchange(); $('#mode
 $('#mStart').onclick = () => openStart('s');
 $('#mMulti').onclick = () => openStart('m');
 $('#toMenu').onclick = showMenu;
-function drawPrac() { SV.tr = SV.tr || { d: 0, i: 0, p: 0 }; if (SV.prDay !== today()) { SV.prDay = today(); SV.prN = 0; } const played = SV.lastRound === today(), left = 3 - (SV.prN || 0);
+function drawPrac() { SV.tr = SV.tr || { d: 0, i: 0, p: 0 }; if (SV.prDay !== today()) { SV.prDay = today(); SV.prN = 0; } const played = SV.lastRound === today(), left = PRAC_DAY - (SV.prN || 0);
   $('#pracStat').innerHTML = `💰 지갑 <b style="color:#ffb627">${SV.wallet.toLocaleString()}밧</b><br>연습 포인트 — 드라이버 ${trPts('d')} · 아이언 ${trPts('i')} · 퍼팅 ${trPts('p')} (각 30점 만점)<br>${played ? '<span style="color:#ff9a9a">오늘은 멀티 시합을 한 날이라 연습할 수 없습니다. 내일 오세요.</span>' : `오늘 남은 연습 ${left}번`}`;
   const el = $('#pracBtns'); el.innerHTML = ''; PRAC.forEach(p => { const b = document.createElement('button'); b.className = 'go'; b.style.cssText = 'font-size:14px;padding:11px;background:#22301a;color:#cfe8a8'; b.innerHTML = `${p[1]} — ${p[2].toLocaleString()}밧 <small>(+${p[3]}점${p[4] < 1 ? ', 성공률 ' + Math.round(p[4] * 100) + '%' : ''})</small>`; b.disabled = played || left <= 0 || SV.wallet < p[2];
     b.onclick = () => { const k = $('#pracArea').value, nm = { d: '드라이버', i: '아이언', p: '퍼팅' }[k]; SV.wallet -= p[2]; SV.prN = (SV.prN || 0) + 1; const ok = R() < p[4], full = trPts(k) >= 30; if (ok && !full) SV.tr[k] = Math.min(30, (SV.tr[k] || 0) + p[3]); saveSV(); beep(ok ? 880 : 220, .12);
