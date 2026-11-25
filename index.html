@@ -1627,7 +1627,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.38.4';
+const VERSION = 'v0.38.5';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1652,6 +1652,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.38.5', '2026-11-25', ['🐞 데일리 챌린지·월례 주통배 화면이 "불러오는 중…"에서 멈추던 문제 수정 — 서버 요청 10초 제한, 기록 5종 동시 불러오기, 로딩 중 닫기 버튼, 실패 시 안내']],
  ['v0.38.4', '2026-11-25', ['📋 일일 퀘스트: 고정은 "연습 또는 레슨 3회" 하나만, 나머지 3개는 매일 랜덤 (싱글 완주도 랜덤 풀로)', '🎁 메뉴에 오늘 받은 출석 보상 표시 (일당 + 출석 1,000밧 + 연속 접속 스탬프)']],
  ['v0.38.3', '2026-11-25', ['📰 팀전 결과에 오늘 단톡 경기 방식 논쟁 속보 7종 추가 (토탈 vs 매치, 갠전 주장, 노쇼가 더 싸다 등)']],
  ['v0.38.2', '2026-11-25', ['👥 팀전 방식 선택: 스트로크(기본) — 각 팀에서 제일 잘 친 사람의 총타수 비교, 진 팀이 밥값·캐디피 / 매치 — 홀마다 팀 베스트볼, 진 팀이 홀마다 판돈 + 밥값·캐디피', '스트로크 팀전은 홀마다 양 팀 최고 성적자 현황 표시']],
@@ -1755,7 +1756,7 @@ function applyPath(root, path, data, patch) { const ks = path.split('/').filter(
 const MOCK = { ls: [], n: 0 };
 async function nreq(method, p, body) {
   if (window.__mockdb) { const db = window.__mockdb; let ret = null; if (method === 'GET') return JSON.parse(JSON.stringify(gpath(db, p) ?? null)); if (method === 'POST') { const k = 'k' + String(++MOCK.n).padStart(5, '0'); applyPath(db, p + '/' + k, body); ret = { name: k }; } else if (method === 'DELETE') applyPath(db, p, null); else applyPath(db, p, body, method === 'PATCH'); setTimeout(() => MOCK.ls.forEach(l => l.cb(JSON.parse(JSON.stringify(gpath(db, l.p) ?? null)))), 0); return ret; }
-  const r = await fetch(NET.base + p + '.json', { method, body: body === undefined ? undefined : JSON.stringify(body) }); if (!r.ok) throw new Error('net'); return r.json(); }
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), 10000); try { const r = await fetch(NET.base + p + '.json', { method, body: body === undefined ? undefined : JSON.stringify(body), signal: ac.signal }); if (!r.ok) throw new Error('net'); return await r.json(); } finally { clearTimeout(to); } }
 function nlisten(p, q, cb) { if (window.__mockdb) { const l = { p, cb }; MOCK.ls.push(l); setTimeout(() => cb(JSON.parse(JSON.stringify(gpath(window.__mockdb, p) ?? null))), 0); return () => { MOCK.ls = MOCK.ls.filter(x => x !== l); }; }
   let st = null; const es = new EventSource(NET.base + p + '.json' + (q || '')); const h = e => { try { const d = JSON.parse(e.data); st = applyPath(st, d.path, d.data, e.type === 'patch'); cb(st); } catch (x) { } }; es.addEventListener('put', h); es.addEventListener('patch', h); return () => es.close(); }
 let profT = null;
@@ -1879,14 +1880,14 @@ async function boardPrize() { if (!SV.myCh || !NET.ok) return; SV.bpaid = SV.bpa
   if (!SV.bpaid['m' + mk]) { const b = await boardGet('/cup/' + mk); if (b.length) { SV.bpaid['m' + mk] = 1; const i = b.findIndex(r => r.id === SV.myCh); if (i >= 0 && i < 3) { led('🏆 월례 주통배 상금'); SV.wallet += CUP_PRIZE[i]; SV.titles = SV.titles || []; SV.titles.push(`${mk.slice(0, 4)}.${mk.slice(4)} 주통배 ${i + 1}위`); toast(`🏆 지난달 월례 주통배 ${i + 1}위! 상금 +${CUP_PRIZE[i].toLocaleString()}밧 · 트로피 획득`, '#ffd27a'); } saveSV(); } } }
 function bRows(b) { return b.length ? b.map((r, i) => `<div style="display:flex;gap:8px;padding:3px 0;${r.id === SV.myCh ? 'color:#ffd27a;font-weight:800' : ''}"><span style="width:26px">${['🥇', '🥈', '🥉'][i] || (i + 1)}</span><span style="flex:1">${r.n}${r.co ? ` <small style="color:#8aa">${r.co}</small>` : ''}</span><b>${fmtPar(r.s)}</b><small style="color:#8aa">${r.g}타</small></div>`).join('') : '<div style="color:#8aa">아직 기록 없음</div>'; }
 async function showBoards() { const o = document.getElementById('oBoard') || mkOverlay('oBoard'), k = dKey(), dc = dailyCfg(k), mine = (SV.dTry || {})[k] || 0;
-  o.innerHTML = '<div class="box" style="max-width:420px;width:100%">불러오는 중…</div>'; o.style.display = 'flex';
-  const [db, cb] = await Promise.all([boardGet('/daily/' + k), boardGet('/cup/' + mKey())]);
+  o.innerHTML = '<div class="box" style="max-width:420px;width:100%">불러오는 중… <button class="go" id="bClose0" style="background:#333;color:#ddd;margin-top:8px">닫기</button></div>'; o.style.display = 'flex'; $('#bClose0').onclick = () => o.style.display = 'none';
+  const [db, cb, hofH, longH, puttH] = await Promise.all([boardGet('/daily/' + k), boardGet('/cup/' + mKey()), hofRows(), miniRows('long'), miniRows('putt')]);
   o.innerHTML = `<div class="box" style="max-width:420px;width:100%;font-size:13px;line-height:1.6"><h3>🎯 오늘의 데일리 챌린지</h3><div>${COURSES[dc.course].name} · 랜덤 3홀 · 모두 같은 홀·같은 바람<br>하루 ${DAILY_TRY}회 도전 (남은 ${Math.max(0, DAILY_TRY - mine)}회) · 1등 상금 ${DAILY_PRIZE.toLocaleString()}밧 (다음날 지급)<br>👻 1등 기록이 고스트로 따라와 홀마다 비교해 줍니다</div><div style="margin:6px 0">${bRows(db)}</div><button class="go" id="bDGo" ${mine >= DAILY_TRY || !SV.myCh ? 'disabled' : ''}>도전하기</button>
-  <h3 style="margin-top:12px">🏆 ${mKey().slice(4)}월 월례 주통배</h3><div>이번 달 싱글 18홀(핸디 없음) 최저타 · 어느 코스든 기록<br>1위 ${CUP_PRIZE[0].toLocaleString()} · 2위 ${CUP_PRIZE[1].toLocaleString()} · 3위 ${CUP_PRIZE[2].toLocaleString()}밧 + 트로피 칭호 (다음 달 지급)</div><div style="margin:6px 0">${bRows(cb)}</div>${(SV.titles || []).length ? `<div style="color:#ffd27a">🏅 내 트로피: ${SV.titles.join(', ')}</div>` : ''}<h3 style="margin-top:12px">🎯 홀인원 명예의 전당</h3>${await hofRows()}<h3 style="margin-top:12px">🚀 롱기스트 (티샷 드라이버 최장)</h3>${await miniRows('long')}<h3 style="margin-top:12px">🎯 퍼팅 챌린지 (성공한 최장 퍼트)</h3>${await miniRows('putt')}<h3 style="margin-top:12px">👕 코스튬 (내 캐릭터 복장)</h3><div id="cosBox">${cosHTML()}</div><button class="go" id="bClose" style="background:#333;color:#ddd">닫기</button></div>`;
+  <h3 style="margin-top:12px">🏆 ${mKey().slice(4)}월 월례 주통배</h3><div>이번 달 싱글 18홀(핸디 없음) 최저타 · 어느 코스든 기록<br>1위 ${CUP_PRIZE[0].toLocaleString()} · 2위 ${CUP_PRIZE[1].toLocaleString()} · 3위 ${CUP_PRIZE[2].toLocaleString()}밧 + 트로피 칭호 (다음 달 지급)</div><div style="margin:6px 0">${bRows(cb)}</div>${(SV.titles || []).length ? `<div style="color:#ffd27a">🏅 내 트로피: ${SV.titles.join(', ')}</div>` : ''}<h3 style="margin-top:12px">🎯 홀인원 명예의 전당</h3>${hofH}<h3 style="margin-top:12px">🚀 롱기스트 (티샷 드라이버 최장)</h3>${longH}<h3 style="margin-top:12px">🎯 퍼팅 챌린지 (성공한 최장 퍼트)</h3>${puttH}<h3 style="margin-top:12px">👕 코스튬 (내 캐릭터 복장)</h3><div id="cosBox">${cosHTML()}</div><button class="go" id="bClose" style="background:#333;color:#ddd">닫기</button></div>`;
   $('#bClose').onclick = () => o.style.display = 'none'; cosBind(o);
   $('#bDGo').onclick = () => { o.style.display = 'none'; SV.dTry = SV.dTry || {}; Object.keys(SV.dTry).forEach(x => { if (x !== k) delete SV.dTry[x]; }); SV.dTry[k] = mine + 1; saveSV(); const lead = db.find(r => r.id !== SV.myCh) || db[0];
     G.daily = k; G.ghost = lead && lead.c ? lead : null; G.course = dc.course; G.part = 'quick'; G.hcp = false; G.easy = false; G.voice = $('#oVoice').checked; G.qSeed = dc.seed; G.multi = false; if (G.ghost) setTimeout(() => toast(`👻 고스트: ${G.ghost.n} ${fmtPar(G.ghost.s)} 기록과 대결`, '#cfe8ff'), 1500); newGame(); }; }
-$('#mDaily').onclick = () => showBoards();
+$('#mDaily').onclick = () => showBoards().catch(e => { const o = document.getElementById('oBoard'); if (o) o.innerHTML = `<div class="box" style="max-width:420px;width:100%">불러오기 실패 — 잠시 후 다시 눌러 주세요<br><small>${String(e && e.message || e).slice(0, 80)}</small><button class="go" onclick="this.closest('#oBoard').style.display='none'" style="background:#333;color:#ddd;margin-top:8px">닫기</button></div>`; });
 function showLedger(mode) { try { ledRec(); } catch (e) { } const o = document.getElementById('oLedger') || mkOverlay('oLedger'); o.style.display = 'flex'; mode = mode || 'm'; const L = SV.ledger || [], now = new Date();
   const inR = e => { const d = new Date(e.t); return mode === 'd' ? dKey(d) === dKey(now) : mode === 'm' ? mKey(d) === mKey(now) : true; }, rows = L.filter(inR), inc = rows.filter(e => e.d > 0).reduce((a, e) => a + e.d, 0), out = rows.filter(e => e.d < 0).reduce((a, e) => a - e.d, 0), cat = {};
   rows.forEach(e => { const c = cat[e.c] || (cat[e.c] = { i: 0, o: 0 }); if (e.d > 0) c.i += e.d; else c.o -= e.d; });
