@@ -329,7 +329,7 @@ const Q = new URLSearchParams(location.search);
 let R = Math.random;
 if (Q.get('seed')) { let s = (+Q.get('seed')) >>> 0; R = () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const OKR = .95, PCAP = .2, CHIPR = .14; // 컵 인 판정(야드): 퍼트 진행선과 컵 거리 / 어프로치 칩인 // 은갈치(퍼터 샤프트, 약 60cm) 컨시드 거리(야드)
-const TUNE = { err: 1.6, aiA: .6, fat: .07, puttErr: 1.35, puttNoise: 1.6 };
+const TUNE = { err: 1.6, aiA: .6, fat: .07, puttErr: 1.35, puttNoise: 1.6, hPl: 4, hPr: .05, hAr: .26, hCr: .045 }; // hPl: 사람 퍼트 라인 기본 오차(도) · hPr: 퍼트 거리감 오차 · hAr: 샷 좌우 잔여오차 · hCr: 샷 거리 오차
 const TAU = Math.PI * 2, rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const $ = s => document.querySelector(s);
@@ -573,8 +573,8 @@ function takeShot(h, st, club, aim, p, a, wind) {
   else if (r < pt + TUNE.fat * tm) { ev.push('fat'); carry *= .72; }
   if (club.id === 'D' && R() < Math.max(ch.drvDie || 0, (COURSES[G.course] || {}).drv || 0)) { ev.push('drvdie'); carry *= .55; ang += rad((R() < .5 ? -1 : 1) * 12); st.awake = true; }
   if (ch.laugh && R() < ch.laugh) { ev.push('laugh'); eAmp *= 2; }
-  if (Math.abs(a) < zoneOf(ch, st.human)) a = clamp(randn() * .16, -.3, .3); // 스윗스팟이라도 실제처럼 약간의 좌우 편차
-  if (st.human) carry *= 1 + clamp(randn() * .035, -.08, .08); // 사람도 거리 편차 ±3.5%
+  if (Math.abs(a) < zoneOf(ch, st.human)) a = st.human ? clamp(randn() * TUNE.hAr, -.6, .6) : clamp(randn() * .16, -.3, .3); // 스윗스팟이라도 실제처럼 약간의 좌우 편차
+  if (st.human) carry *= 1 + clamp(randn() * TUNE.hCr, -.13, .13); // 사람도 거리 편차 ±3.5%
   const aA = Math.abs(a), ae = st.human ? Math.sign(a) * (Math.pow(aA, .8) + MISSK * Math.pow(Math.max(0, aA - .45), 1.2)) : a; ang += rad(ae * eAmp); // 게이지 끝쪽 큰 미스는 훅·슬라이스로 크게 휨
   let shp = '', crv = 0; if (st.human && a !== 0) { const sg = Math.sign(a), m = Math.abs(ae); shp = m > 1.1 ? (sg > 0 ? 'bigslice' : 'duckhook') : m > .55 ? (sg > 0 ? 'slice' : 'hook') : m > .18 ? (sg > 0 ? 'fade' : 'draw') : ''; if (shp) { ev.push(shp); crv = sg * Math.min(.2, .08 * m) * carry; } } // 오른손 기준: +쪽 미스 = 페이드·슬라이스(오른쪽으로 휨), -쪽 = 드로우·훅
   const wf = (ch.id === 'gm' ? .5 : 1) * ((st.human && G.easy) ? .5 : 1) * ((G.rain && !rainImm(ch)) ? 1.3 : 1);
@@ -600,8 +600,8 @@ function putt(h, st, aim, p, a) {
   const onG = lie === 'green';
   let roll = p * (st.human && st.ptier ? st.ptier : 50) * (lie === 'rough' ? .6 : lie === 'bunker' ? .5 : onG ? 1 : .9);
   let eAmp = TUNE.puttErr * 3.4 * (1.55 - ch.putt * .9) * (onG ? 1 : 1.8) * ((ch.id === 'gm' && roll <= 10) ? .5 : 1) * realF(ch) * lvF(ch) * trF(ch, CLUBS[7]) * (isMe(ch) ? G.gear.putt : 1) * ((G.course === 'scr' && ch.id === 'sg') ? 1.4 : 1) * ((ch.three && roll > 8) ? ch.three : 1) * moodF(st) * jtF(ch) * (st.tilt || 1) * ((st.human && G.easy) ? .55 : 1) * ((onG && !st.human && G.pl.some(q => q.ch.id === 'gy') && ch.id !== 'gy') ? 1.12 : 1);
-  if (Math.abs(a) < zoneOf(ch, st.human) * .8) a = clamp(randn() * .05, -.12, .12); // 퍼트도 미세한 라인 편차
-  if (st.human) roll *= 1 + clamp(randn() * .05, -.12, .12); // 퍼트 거리감 편차
+  if (Math.abs(a) < zoneOf(ch, st.human) * .8) a = st.human ? clamp(randn() * TUNE.hPl / (TUNE.puttErr * 3.4 * .884), -3, 3) : clamp(randn() * .05, -.12, .12); // 사람: 게이지를 맞춰도 실제 아마추어처럼 라인이 조금씩 빗나감 (퍼트 능력치·장비가 클수록 덜 빗나감) // 퍼트도 미세한 라인 편차
+  if (st.human) roll *= 1 + clamp(randn() * TUNE.hPr, -.2, .2); // 퍼트 거리감 편차
   const ang = aim + rad(a * eAmp), d = dirv(ang), k = onG ? roll / 10 : roll / 30;
   const E = { x: from.x + d.x * roll + h.slope[0] * k, y: from.y + d.y * roll + h.slope[1] * k };
   const pin = h.pinPos, vx = E.x - from.x, vy = E.y - from.y, L2 = vx * vx + vy * vy || 1e-9;
@@ -1592,7 +1592,7 @@ window.addEventListener('keyup', e => { if (e.code === 'ArrowLeft') keys.L = 0; 
 setInterval(() => { if (keys.L) adjAim(-.6); if (keys.R) adjAim(.6); }, 55);
 
 // ================= 테스트/디버그 훅 =================
-window.__golf = { startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { TUNE, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -1683,7 +1683,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.40.4';
+const VERSION = 'v0.41.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1708,6 +1708,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.41.0', '2026-11-25', ['🎯 사람 플레이 현실화 (모든 캐릭터 공통 · 특정인 너프 아님): 서버 기록을 보니 사람이 3홀 -3, 9홀 -8처럼 투어 프로보다 잘 쳤음. 게이지를 정확히 맞춰도 실제 아마추어처럼 결과가 조금씩 흩어지게 함', '퍼트: 게이지를 맞춰도 라인이 약 4° 안팎으로 빗나가고 거리감도 ±5% 정도 흔들림 → 3야드 퍼트 약 절반, 6야드 약 4분의 1 성공 (퍼트 능력치·퍼터·연습이 좋을수록 덜 빗나감 — 이규만 퍼터신 유지)', '샷: 스윗스팟을 맞춰도 좌우 편차와 거리 편차(약 ±4.5%)를 키움', '시뮬레이션 기준 게이지를 매번 완벽히 맞춰도 9홀 약 +1~+4 (전: -5), 버디 9홀당 2~3개 (전: 6개), 퍼트 9홀 17개 안팎 (전: 12개). CPU 실력은 그대로라 이제 CPU와 붙어도 접전']],
  ['v0.40.4', '2026-11-25', ['🔧 채팅이 "다시 보내는 중"에서 안 넘어가던 진짜 원인 수정: 브라우저는 같은 서버에 동시에 6개까지만 연결하는데, 실시간 연결을 7개(채팅·접속·랭킹·골프장·그린피·대결·방)나 붙잡고 있어서 보내기·알림 요청이 줄 서서 기다리다 실패했음. 이제 실시간 연결은 채팅·방 2개만 쓰고 나머지는 몇 초마다 확인(대결 신청 6초, 접속 상태 15초, 랭킹 30초)', '화면이 꺼지거나 다른 탭으로 가면 실시간 연결을 닫았다가 돌아오면 다시 연결 (탭 여러 개 열어도 막히지 않게)']],
  ['v0.40.3', '2026-11-25', ['📲 일일 퀘스트·연습 횟수가 초기화되던 문제: 같은 캐릭터를 카톡 안 브라우저·크롬 등 여러 곳에서 열면 예전 기록이 최신 기록을 덮어썼음. 이제 다른 곳에 더 최신 기록이 있으면 덮어쓰지 않고 그 기록을 불러오면서 오늘 퀘스트 달성·연습 횟수는 합침 (라운드 중에는 확인 안 함)']],
  ['v0.40.2', '2026-11-25', ['💬 클럽하우스 채팅 전송 확인: 보낸 글은 "⏳ 보내는 중" → 서버에 올라가면 시각 표시. 실패하면 자동 2번 재시도, 그래도 안 되면 "⚠ 전송 실패 · 눌러서 다시 보내기" (전에는 실패해도 내 화면에만 보이고 조용히 사라졌음)', '실시간 연결 보강: 폰 절전·통신 끊김으로 실시간 연결이 멈춰도 12초마다 최근 대화·접속 상태를 다시 확인, 화면을 다시 켜면 즉시 확인', '실시간으로 들어온 대화에도 시각 표시']],
