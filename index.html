@@ -1683,7 +1683,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.40.1';
+const VERSION = 'v0.40.3';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1708,6 +1708,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.40.3', '2026-11-25', ['📲 일일 퀘스트·연습 횟수가 초기화되던 문제: 같은 캐릭터를 카톡 안 브라우저·크롬 등 여러 곳에서 열면 예전 기록이 최신 기록을 덮어썼음. 이제 다른 곳에 더 최신 기록이 있으면 덮어쓰지 않고 그 기록을 불러오면서 오늘 퀘스트 달성·연습 횟수는 합침 (라운드 중에는 확인 안 함)']],
+ ['v0.40.2', '2026-11-25', ['💬 클럽하우스 채팅 전송 확인: 보낸 글은 "⏳ 보내는 중" → 서버에 올라가면 시각 표시. 실패하면 자동 2번 재시도, 그래도 안 되면 "⚠ 전송 실패 · 눌러서 다시 보내기" (전에는 실패해도 내 화면에만 보이고 조용히 사라졌음)', '실시간 연결 보강: 폰 절전·통신 끊김으로 실시간 연결이 멈춰도 12초마다 최근 대화·접속 상태를 다시 확인, 화면을 다시 켜면 즉시 확인', '실시간으로 들어온 대화에도 시각 표시']],
  ['v0.40.1', '2026-11-25', ['⚔ 멀티 화면 "지금 접속 상태"에서도 접속 중인 사람 옆에 대결 신청 버튼 (누르면 방 만들기 버튼으로 이동, 방 만들면 상대에게 신청 전송)', '방 목록을 못 불러오면 자동으로 한 번 더 시도 + 다시 불러오기 버튼', '방 만들기/입장 오류 문구를 화면 아래 알림으로도 표시 (위에 숨어 안 보이던 문제)', '내기가 팀전이 아닐 때 방 규칙 칸에 생기던 빈 공간 제거']],
  ['v0.40.0', '2026-11-25', ['📳 아이폰 진동 대체: 아이폰 사파리는 웹 진동을 지원하지 않아서, 진동 대신 화면이 살짝 흔들리고 큰 이벤트(OB·물·홀인원·대결 신청·전설 뽑기)는 화면 테두리가 붉게 번쩍임 (안드로이드는 기존처럼 진동)']],
  ['v0.39.9', '2026-11-25', ['🐞 이어서 하기를 누르면 소리만 나고 메뉴 화면이 그대로 덮여 있던 문제 수정 (게임 화면이 바로 보이게)', '💬 클럽하우스 대화가 업데이트(새로고침) 후 최근 30개만 남던 문제 → 최근 200개까지 불러오고, 지난 대화에는 "이전" 대신 날짜·시간 표시']],
@@ -1833,10 +1835,16 @@ function nlisten(p, q, cb) { if (window.__mockdb) { const l = { p, cb }; MOCK.ls
 let profT = null;
 // ---- 서버 저장: 지갑·레벨·장비 등 진행 기록을 서버(/sv/캐릭터)에 보관 → 폰을 바꾸거나 기록이 지워져도 이어짐 ----
 let cloudReady = false, cloudT = 0;
-function cloudSave() { if (!cloudReady || !SV.myCh) return; clearTimeout(cloudT); cloudT = setTimeout(() => { SV.svTs = Date.now(); try { localStorage.setItem(SV_KEY, JSON.stringify(SV)); } catch (e) { } nreq('PUT', '/sv/' + SV.myCh, svPack()).catch(() => { }); }, 1500); }
+function cloudSave() { if (!cloudReady || !SV.myCh) return; clearTimeout(cloudT); cloudT = setTimeout(async () => { if (await cloudFresh()) return; SV.svTs = Date.now(); try { localStorage.setItem(SV_KEY, JSON.stringify(SV)); } catch (e) { } try { await nreq('PUT', '/sv/' + SV.myCh, svPack()); SV.svSync = SV.svTs; try { localStorage.setItem(SV_KEY, JSON.stringify(SV)); } catch (e) { } } catch (e) { } }, 1500); }
+// 같은 캐릭터를 다른 기기·브라우저(카톡 안 브라우저, 크롬 등)에서 더 최근에 저장했으면, 덮어쓰지 않고 그쪽 기록을 불러오면서 오늘 퀘스트·연습 횟수는 합침
+const inRound = () => ['aim', 'power', 'acc', 'fly', 'wait', 'result'].includes(G.phase);
+async function cloudFresh() { if (!cloudReady || !SV.myCh || !NET.ok || inRound() || !SV.svSync) return false; try { const sv = await nreq('GET', '/sv/' + SV.myCh); if (!sv || sv.myCh !== SV.myCh || sv.did === SV.did || (sv.svTs || 0) <= SV.svSync) return false; const n = svFull(sv), t = today();
+  if (SV.dq && SV.dq.day === t) { if (!n.dq || n.dq.day !== t) n.dq = SV.dq; else { const add = (SV.dq.done || []).filter(k => !(n.dq.done || []).includes(k)); n.dq.done = (n.dq.done || []).concat(add); n.stamp = (n.stamp | 0) + add.length * DQ_ST + (SV.dq.all && !n.dq.all ? DQ_ALL : 0); n.dq.all = n.dq.all || SV.dq.all; } }
+  if (SV.prDay === t) { if (n.prDay !== t) { n.prDay = t; n.prN = SV.prN | 0; } else n.prN = Math.max(n.prN | 0, SV.prN | 0); }
+  n.svSync = n.svTs; toast('📲 다른 기기에서 진행한 기록을 불러옵니다', '#9fffb0'); setTimeout(() => cloudAdopt(n), 600); return true; } catch (e) { return false; } }
 const svPack = () => ({ myCh: SV.myCh, did: SV.did, svTs: SV.svTs || 0, pin: SV.pin || null, wallet: Math.round(SV.wallet), rounds: SV.rounds | 0, j: JSON.stringify(SV) });
 function svFull(sv) { if (sv && sv.j) { try { return Object.assign(JSON.parse(sv.j), { myCh: sv.myCh, svTs: sv.svTs || 0, pin: sv.pin || undefined }); } catch (e) { } } return sv; }
-function cloudAdopt(sv) { sv = svFull(sv); const mine = SV.did; const n = Object.assign({}, sv, { did: mine, st50: 1 }); try { localStorage.setItem(SV_KEY, JSON.stringify(n)); } catch (e) { } location.reload(); }
+function cloudAdopt(sv) { sv = svFull(sv); const mine = SV.did; const n = Object.assign({}, sv, { did: mine, st50: 1, svSync: sv.svTs || 0 }); try { localStorage.setItem(SV_KEY, JSON.stringify(n)); } catch (e) { } location.reload(); }
 async function cloudSync() { if (!SV.myCh || cloudReady) return; try { const sv = await nreq('GET', '/sv/' + SV.myCh); if (sv && sv.myCh === SV.myCh && sv.pin && SV.pin !== sv.pin && sv.did !== SV.did) { try { localStorage.setItem(SV_KEY, JSON.stringify({ did: SV.did, st50: 1 })); } catch (e) { } location.reload(); return; } if (sv && sv.myCh === SV.myCh && sv.did !== SV.did && (sv.svTs || 0) > (SV.svTs || 0)) { cloudAdopt(sv); return; } cloudReady = true; cloudSave(); ensurePin(); } catch (e) { } }
 function netProfile() { if (!NET.ok || G.phase === undefined) return; clearTimeout(profT); profT = setTimeout(() => { if (!SV.myCh) return; nreq('PUT', '/p/' + SV.myCh, { w: Math.round(SV.wallet), a: Math.round(SV.wallet + stkVal() - ((SV.loan && SV.loan.amt) || 0)), ab: abil(CH.find(c => c.id === SV.myCh)).t, mw: SV.mw | 0, mr: SV.mr | 0, mm: SV.mm | 0, tt: SV.title || '', lv: lvOf(G.me), r: SV.rounds, did: SV.did, ts: Date.now(), v: 2 }).catch(() => { }); }, 800); }
 let RANK = {};
@@ -1855,7 +1863,13 @@ async function netInit() { if (NET.ok || NET.busy) return; NET.busy = true; let 
   try { nlisten('/own', '', d => { OWN = d || {}; if ($('#sShop') && $('#sShop').classList.contains('on')) drawShop(); }); if (SV.myCh) nlisten('/pay/' + SV.myCh, '', d => payClaim(d)); } catch (e) { }
   { let invOff = null, invCh = null; setInterval(() => { if (SV.myCh && NET.ok && invCh !== SV.myCh) { if (invOff) invOff(); invCh = SV.myCh; invOff = nlisten('/inv/' + SV.myCh, '', duelCheck); } }, 3000); }
 nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnline(); if (MR && MR.data && !G.multi && $('#sMulti').classList.contains('on')) mUpdate(); } catch (e) { } });
-  nlisten('/chat', '?orderBy="$key"&limitToLast=200', d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; if (!clubOpen && m.ch !== G.me && m.did !== SV.did && (m.ts || 0) > (SV.clubRd || (SV.clubRd = Date.now() - 864e5))) { clubUnread++; clubBadge(); if (chatInit && G.phase === 'title') { try { SV.vib !== false && vib(40); } catch (e) { } toast('💬 클럽하우스 새 메시지 · ' + CH.find(c => c.id === m.ch).short, '#9ff0d0'); } } clubAdd(m.ch, m.t, chatInit ? '' : (m.ts ? (() => { const d = new Date(m.ts); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); })() : '이전'), !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; });
+  window.chatIn = d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; if (!clubOpen && m.ch !== G.me && m.did !== SV.did && (m.ts || 0) > (SV.clubRd || (SV.clubRd = Date.now() - 864e5))) { clubUnread++; clubBadge(); if (chatInit && G.phase === 'title') { try { SV.vib !== false && vib(40); } catch (e) { } toast('💬 클럽하우스 새 메시지 · ' + CH.find(c => c.id === m.ch).short, '#9ff0d0'); } } clubAdd(m.ch, m.t, (m.ts ? (() => { const d = new Date(m.ts); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); })() : '이전'), !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; };
+  nlisten('/chat', '?orderBy="$key"&limitToLast=200', d => chatIn(d));
+  // 실시간 연결이 폰 절전·통신 끊김으로 멈춰도 놓치지 않도록 12초마다 최근 대화·접속 상태를 한 번 더 확인
+  const nget = async (p, q) => { if (window.__mockdb) return nreq('GET', p); const ac = new AbortController(), to = setTimeout(() => ac.abort(), 8000); try { const r = await fetch(NET.base + p + '.json' + (q || ''), { signal: ac.signal }); if (!r.ok) throw new Error('net'); return await r.json(); } finally { clearTimeout(to); } };
+  window.netPoll = async () => { if (!NET.ok || document.hidden) return; try { const c = await nget('/chat', '?orderBy=%22$key%22&limitToLast=30'); if (c) chatIn(c); } catch (e) { } try { const o = await nget('/on'); if (o) { onl = o; if (clubOpen) clubPeers(); mOnline(); } } catch (e) { } };
+  setInterval(netPoll, 12000);
+
   if (clubOpen) clubPeers(); }
 // ---------- 멀티 플레이 방 ----------
 let MR = null;
@@ -1996,7 +2010,7 @@ function clubMarkRead() { clubUnread = 0; SV.clubRd = Date.now(); saveSV(); club
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function clubLock() { const off = !NET.ok, i = $('#clubIn'); if (!i) return; i.disabled = off; i.placeholder = off ? '🔴 서버 연결 후 채팅 가능 (접속한 사람끼리만)' : '메시지 입력'; document.querySelectorAll('#clubQuick button, #clubSend').forEach(b => { b.disabled = off; b.style.opacity = off ? .4 : 1; }); }
 setInterval(() => { try { clubLock(); } catch (e) { } }, 2000);
-function clubAdd(chId, text, tag, quiet) { const ch = CH.find(c => c.id === chId), el = $('#clubLog'), d = document.createElement('div'); d.innerHTML = `<b style="color:${ch ? ch.ink : '#ff7a7a'}">${ch ? ch.name : '📡 안내'}</b>${tag ? ` <small style="opacity:.6">${tag}</small>` : ''} ${esc(text).slice(0, 200)}`; el.appendChild(d); while (el.children.length > 250) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; if (clubOpen && ch && !quiet) speak(ch.name, text); }
+function clubAdd(chId, text, tag, quiet) { const ch = CH.find(c => c.id === chId), el = $('#clubLog'), d = document.createElement('div'); d.innerHTML = `<b style="color:${ch ? ch.ink : '#ff7a7a'}">${ch ? ch.name : '📡 안내'}</b>${tag ? ` <small style="opacity:.6">${tag}</small>` : ''} ${esc(text).slice(0, 200)}`; el.appendChild(d); while (el.children.length > 250) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; if (clubOpen && ch && !quiet) speak(ch.name, text); return d; }
 // 멀티: 멤버별 접속 여부 (/on 하트비트 기준)
 function onlState() { const r = {}; for (const v of Object.values(onl || {})) { if (!v || !v.ch || !v.ts) continue; if (!r[v.ch] || r[v.ch].ts < v.ts) r[v.ch] = v; } return r; }
 function onlMark(id, r) { const v = (r || onlState())[id]; if (!v) return ['⚪', '미접속', 0]; const ag = Date.now() - v.ts; if (ag < 90000) return ['🟢', v.st === 'play' ? '싱글 중' : v.st === 'multi' ? '멀티 중' : '접속 중', 2]; if (ag < 180000) return ['🟡', '방금 전', 1]; const m = Math.round(ag / 60000); return ['⚪', m < 60 ? m + '분 전' : m < 1440 ? Math.round(m / 60) + '시간 전' : Math.round(m / 1440) + '일 전', 0]; }
@@ -2008,9 +2022,10 @@ function clubPeers() { const el = $('#clubPeers'); if (NET.ok) { const r = onlSt
   el.querySelectorAll('[data-duel]').forEach(b => b.onclick = () => duelSend(b.dataset.duel, b));
   el.insertAdjacentHTML('beforeend', '<div id="clubRank" style="width:100%;font-size:12px;line-height:1.7;margin-top:4px"></div>'); drawRank(); return; } if (!room) { el.innerHTML = ''; $('#clubStat').innerHTML = '🔴 서버 연결 끊김 — 연결되면 채팅할 수 있습니다. 자동으로 다시 연결 중… <button id="netRetry" style="font:inherit;font-size:12px;padding:3px 8px;border:0;background:#2c6b44;color:#fff">지금 다시 연결</button>'; const nb = $('#netRetry'); if (nb) nb.onclick = () => { nb.textContent = '연결 중…'; netInit(); }; return; } const ps = room.peers().filter(p => p.kind === 'viewer'); $('#clubStat').textContent = `🟢 온라인 · 접속 ${ps.length}명`; el.innerHTML = ps.map(p => { const ch = CH.find(c => c.id === (p.presence || {}).ch); return `<span class="bub" style="color:${ch ? ch.ink : '#fff'}">${ch ? ch.name : '입장 중'}${p.isMe ? ' (나)' : ''}${(p.presence || {}).lv ? ' Lv.' + (+p.presence.lv | 0) : ''}${(p.presence || {}).st === 'play' ? ' ⛳라운드 중' : ''}</span>`; }).join(''); }
 function setPres(st) { if (room) room.presence({ ch: G.me, lv: lvOf(G.me), st: st || 'club' }).catch(() => { }); }
-function clubSend(t) { t = String(t || '').trim().slice(0, 120); if (!t) return; if (!NET.ok) { toast('🔴 서버에 접속해야 채팅할 수 있어요 — 연결 중…', '#ff9a9a'); netInit(); clubLock(); return; } clubAdd(G.me, t); $('#clubIn').value = '';
-  if (NET.ok) nreq('POST', '/chat', { ch: G.me, t, did: SV.did, ts: Date.now() }).catch(() => { });
-  else if (room && room.connected()) room.emit('chat', { ch: G.me, t }).catch(() => { });
+function clubSend(t) { t = String(t || '').trim().slice(0, 120); if (!t) return; if (!NET.ok) { toast('🔴 서버에 접속해야 채팅할 수 있어요 — 연결 중…', '#ff9a9a'); netInit(); clubLock(); return; } const d = clubAdd(G.me, t, '⏳ 보내는 중'); $('#clubIn').value = ''; clubPost(t, d); }
+async function clubPost(t, d) { const tg = d && d.querySelector('small'), hm = () => { const x = new Date(); return (x.getMonth() + 1) + '/' + x.getDate() + ' ' + String(x.getHours()).padStart(2, '0') + ':' + String(x.getMinutes()).padStart(2, '0'); };
+  for (let i = 0; i < 3; i++) { try { const r = await nreq('POST', '/chat', { ch: G.me, t, did: SV.did, ts: Date.now() }); if (r && r.name) chatSeen[r.name] = 1; if (tg) { tg.textContent = hm(); tg.style.color = ''; } return; } catch (e) { if (tg) tg.textContent = `⏳ 다시 보내는 중 (${i + 1})`; await new Promise(z => setTimeout(z, 1500)); } }
+  if (tg) { tg.innerHTML = '⚠ 전송 실패 · <u>눌러서 다시 보내기</u>'; tg.style.color = '#ff9a9a'; tg.style.opacity = 1; tg.style.cursor = 'pointer'; tg.onclick = () => { tg.onclick = null; tg.textContent = '⏳ 보내는 중'; tg.style.color = ''; clubPost(t, d); }; } toast('⚠ 메시지가 서버에 안 올라갔어요 — 인터넷 확인 후 다시 보내기를 눌러 주세요', '#ff9a9a');
 }
 function needCh() { if (SV.myCh) return false; ['sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sTitle').classList.add('on'); drawCards(); return true; }
 // ===== 대결 신청: 접속 중인 멤버에게 방을 만들어 초대 → 상대는 알림 받고 수락하면 바로 입장 =====
@@ -2114,7 +2129,7 @@ const NAVMAP = [['sMulti', 'mLeaveBtn'], ['sStk', 'stkClose'], ['sPrac', 'pracCl
 function navBtn() { if ($('#statBox')) return $('#statClose'); if ($('#rankBox')) return $('#rankClose'); if ($('#achBox')) return $('#achClose'); if ($('#bagBox')) return $('#bagClose'); if ($('#profBox')) return $('#profClose'); if ($('#whoBox') || $('#pinSet')) return null; for (const [sc, b] of NAVMAP) { const e = $('#' + sc); if (e && e.classList.contains('on')) return $('#' + b); } return null; }
 { const nb = document.createElement('button'); nb.id = 'navBack'; nb.textContent = '← 메뉴'; nb.style.cssText = 'position:fixed;right:10px;top:max(10px,env(safe-area-inset-top));z-index:100;font:inherit;font-size:14px;padding:9px 13px;border:0;background:#ffb627;color:#111;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,.6);display:none'; document.body.appendChild(nb); nb.onclick = () => { const b = navBtn(); if (b) b.click(); }; setInterval(() => { nb.style.display = navBtn() ? 'block' : 'none'; }, 250);
   try { history.pushState({ g: 1 }, ''); window.addEventListener('popstate', () => { const b = navBtn(); if (b) { b.click(); history.pushState({ g: 1 }, ''); } else if (['aim', 'power', 'acc', 'fly', 'wait', 'result'].includes(G.phase) || $('#whoBox') || $('#pinSet')) { history.pushState({ g: 1 }, ''); if (!$('#whoBox') && !$('#pinSet')) toast('라운드 중입니다. 나가려면 뒤로 가기를 한 번 더 누르지 말고 라운드를 마쳐 주세요', '#ffe08a'); } }); } catch (e) { } }
-netInit(); document.addEventListener('visibilitychange', () => { if (!document.hidden && !NET.ok) netInit(); }); window.addEventListener('online', () => { if (!NET.ok) netInit(); });
+netInit(); document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (!NET.ok) netInit(); else { try { netBeat(); window.netPoll && netPoll(); cloudFresh(); } catch (e) { } } } }); window.addEventListener('online', () => { if (!NET.ok) netInit(); });
 drawCards(); requestAnimationFrame(frame);
 })();
 </script>
