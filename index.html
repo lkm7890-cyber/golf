@@ -1658,7 +1658,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.39.3';
+const VERSION = 'v0.39.4';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1683,6 +1683,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.39.4', '2026-11-25', ['🎁 특별 보너스 10,000밧 전원 지급 — 메뉴에 들어오면 1회 자동 입금 (가계부에 "보상·보상금"으로 기록)']],
  ['v0.39.3', '2026-11-25', ['📋 결과 복사(카톡용)에 게임 주소 링크 자동 포함', '🧢 캐디를 맞혀 낸 위로금(2,000밧)은 결과에 "캐디 직격 위로금 포함"으로 표시 — 그래서 합계가 0이 아닐 수 있다는 안내 추가']],
  ['v0.39.2', '2026-11-25', ['🎥 중계 카메라를 부드럽게: 클로즈업·급줌 없이 공을 따라가며 비행 중간에만 살짝 줌아웃, 화면 전환 속도를 절반 이하로 늦춤(샷 후 다음 조준 화면 복귀 포함)', '▶ 이어서 하기: 싱글 라운드 중 앱을 닫거나 나가도 홀이 시작될 때마다 자동 저장 → 메뉴에 들어오면 "이어서 하기 / 새로 하기" 선택', '이어서 하면 같은 코스·같은 홀 배치·동반자·스코어·내기 돈·체력 그대로, 나갔던 홀의 처음부터 다시 시작', '저장은 3일 보관, 라운드를 끝내면 자동 삭제 (멀티·데일리 챌린지는 제외)']],
  ['v0.39.1', '2026-11-25', ['🎥 샷 중계 카메라: 공이 날아가는 동안 살짝 줌아웃했다가 착지 쪽으로 천천히 복귀 (v0.39.2에서 부드럽게 수정)', '퍼트·짧은 샷은 기존처럼 공만 따라감, 세부 설정에서 끌 수 있음 (🎥 샷 중계 카메라)']],
@@ -1867,14 +1868,14 @@ $('#againBtn').addEventListener('click', () => mLeave(true));
 // ================= 메뉴 =================
 function drawMe() { const mc = CH.find(c => c.id === SV.myCh); $('#menuMe').innerHTML = mc ? `🏌 내 캐릭터: <b style="color:${mc.ink};font-size:17px">${mc.name}</b> <small>${SV.title ? '「' + SV.title + '」 ' : ''}Lv.${lvOf(mc.id)}${rebOf(mc.id) ? ' ★' + rebOf(mc.id) + '환생' : ''} · ${mc.port}포트</small>${lvOf(mc.id) >= LV_MAX && rebOf(mc.id) < 5 ? ' <button id="rebBtn" style="font:inherit;font-size:11.5px;padding:4px 8px;border:0;background:#6b2c5a;color:#fff">🔁 환생</button>' : ''} <button id="chSw" style="font:inherit;font-size:11.5px;padding:4px 8px;margin-left:6px;border:0;background:#2a3440;color:#cfd8e0">내가 아니에요</button><div style="font-size:19px;margin-top:4px">💰 보유 금액 <b style="color:#ffb627">${Math.round(SV.wallet).toLocaleString()}밧</b></div>${salHTML()}` : ''; const sw = $('#chSw'); if (sw) sw.onclick = () => switchCh(sw); const rb = $('#rebBtn'); if (rb) rb.onclick = () => { if (rb.dataset.arm) rebirth(); else { rb.dataset.arm = 1; rb.textContent = '정말 Lv.1로? 다시 누르기'; } }; }
 // 1회성 보상: v0.32.6 수리비 인하 전 비싼 수리비 낸 것 (이규만 5,000밧). 서버 저장본 동기화가 끝난 뒤(메뉴 진입 시) 지급
-const COMP = [{ id: 'fix0326', ch: 'gm', amt: 5000, msg: '🔧 수리비 인하 전 비싼 수리비 보상' }];
+const COMP = [{ id: 'fix0326', ch: 'gm', amt: 5000, msg: '🔧 수리비 인하 전 비싼 수리비 보상' }, { id: 'bonus1125', ch: 'all', amt: 10000, msg: '🎁 운영진 특별 보너스 (전원 지급)' }];
 // ===== 월급: 월 100,000밧을 그 달 일수로 나눈 일당을, 접속한 날만 지급 (매일 접속 = 월급 전액) =====
 const MSAL = 100000;
 function paySalary() { if (!SV.myCh) return; led('💼 월급(일당)'); const d = new Date(), dk = dKey(d), mk = mKey(d), days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(), wage = Math.round(MSAL / days); SV.sal = SV.sal || {}; if (SV.sal.last === dk) return;
   if (SV.sal.m !== mk) { if (SV.sal.m && SV.sal.n) toast(`💼 지난달 월급 정산: ${SV.sal.n}일 출근 · ${(SV.sal.amt || 0).toLocaleString()}밧`, '#cfe8ff'); SV.sal.m = mk; SV.sal.n = 0; SV.sal.amt = 0; }
   SV.sal.last = dk; SV.sal.n++; SV.sal.amt += wage; SV.wallet += wage; saveSV(); setTimeout(() => toast(`💼 출근 완료! 일당 +${wage.toLocaleString()}밧 (이번 달 ${SV.sal.n}/${days}일 · ${SV.sal.amt.toLocaleString()}밧 / 월급 ${MSAL.toLocaleString()}밧)`, '#9fffb0'), 900); }
 function salHTML() { const s = SV.sal || {}, d = new Date(), days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(), lg = SV.logGot || (SV.logDay === today() ? { day: today(), w: DAILY_PAY, st: (SV.streak | 0) === 7 ? 10 : 1 + (SV.streak | 0) } : {}), wage = s.last === dKey() ? Math.round(MSAL / days) : 0, lgOn = lg.day === today(); const tdy = (wage || lgOn) ? `<div style="font-size:12.5px;margin-top:3px;color:#9fffb0">🎁 오늘 출석 보상 받음: +${(wage + (lgOn ? lg.w : 0)).toLocaleString()}밧 (일당 ${wage.toLocaleString()} + 출석 ${lgOn ? lg.w.toLocaleString() : 0})${lgOn ? ` · 🎟 스탬프 +${lg.st} (연속 ${SV.streak | 0}일차)` : ''}</div>` : ''; return tdy + (s.m === mKey() ? `<div style="font-size:12.5px;margin-top:3px;color:#cfe8ff">💼 이번 달 월급 ${s.n}/${days}일 출근 · ${(s.amt || 0).toLocaleString()}밧 (매일 접속하면 ${MSAL.toLocaleString()}밧)</div>` : ''); }
-function grantComp() { led('🎁 보상·보상금'); if (!SV.myCh) return; SV.comp = SV.comp || {}; for (const c of COMP) { if (c.ch !== SV.myCh || SV.comp[c.id]) continue; SV.comp[c.id] = Date.now(); SV.wallet = (SV.wallet | 0) + c.amt; saveSV(); setTimeout(() => toast(`${c.msg} +${c.amt.toLocaleString()}밧`, '#9fffb0'), 600); } }
+function grantComp() { led('🎁 보상·보상금'); if (!SV.myCh) return; SV.comp = SV.comp || {}; for (const c of COMP) { if ((c.ch !== 'all' && c.ch !== SV.myCh) || SV.comp[c.id]) continue; SV.comp[c.id] = Date.now(); SV.wallet = (SV.wallet | 0) + c.amt; saveSV(); setTimeout(() => toast(`${c.msg} +${c.amt.toLocaleString()}밧`, '#9fffb0'), 600); } }
 function showMenu() { setTimeout(() => { try { resumeOffer(); } catch (e) { } }, 900); const pay = null; try { paySalary(); } catch (e) { } try { grantComp(); membDue(); boardPrize(); } catch (e) { } try { if (SV.myCh) achCheck(); } catch (e) { } drawMe(); try { drawRank(); netProfile(); } catch (e) { } ['sTitle', 'sFinal', 'sShop', 'sReal', 'sClub'].forEach(i => $('#' + i).classList.remove('on')); $('#sMenu').classList.add('on'); G.phase = 'title'; { const dl = dailyLogin(); if (dl) setTimeout(() => { toast(dl, '#ffe08a'); beep(880, .12); }, pay ? 2600 : 300); try { drawDaily(); } catch (e) { } try { drawLoan(); } catch (e) { } } drawMe(); $('#menuWallet').innerHTML = `💰 ${SV.wallet.toLocaleString()}밧 · 🎟 스탬프 ${SV.stamp | 0}개${stkVal() ? ` · 📈 주식 ${stkVal().toLocaleString()}밧` : ''}${SV.loan && SV.loan.amt ? ` · 🏦 빚 ${SV.loan.amt.toLocaleString()}밧` : ''} · 라운드 ${SV.rounds}회`; musicLabel(); bgmStart('menu'); const c = $('#logoCv').getContext('2d'); c.clearRect(0, 0, 96, 40); CH.forEach((ch, i) => drawSprite(c, ch, i % 2 ? 'back' : 'idle', i * 12 - 2, 12 + (i % 2) * 6, 1)); }
 const openStart = m => { $('#oMode').value = m; $('#oMode').onchange(); $('#modeTag').textContent = m === 'm' ? '🌐 멀티 모드 — 코스·구간을 고르고 방을 만들거나 입장하세요' : '▶ 싱글 모드'; $('#sMenu').classList.remove('on'); $('#sTitle').classList.add('on'); drawCards(); };
 $('#mStart').onclick = () => openStart('s');
