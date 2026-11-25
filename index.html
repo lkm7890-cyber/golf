@@ -327,8 +327,8 @@ tr.me td{background:rgba(255,182,39,.13)}
 const Q = new URLSearchParams(location.search);
 let R = Math.random;
 if (Q.get('seed')) { let s = (+Q.get('seed')) >>> 0; R = () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const OKR = .95; // 은갈치(퍼터 샤프트, 약 60cm) 컨시드 거리(야드)
-const TUNE = { err: 1.42, aiA: .6, fat: .07, puttErr: 1.35, puttNoise: 1.6 };
+const OKR = .95, PCAP = .2, CHIPR = .14; // 컵 인 판정(야드): 퍼트 진행선과 컵 거리 / 어프로치 칩인 // 은갈치(퍼터 샤프트, 약 60cm) 컨시드 거리(야드)
+const TUNE = { err: 1.6, aiA: .6, fat: .07, puttErr: 1.35, puttNoise: 1.6 };
 const TAU = Math.PI * 2, rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const $ = s => document.querySelector(s);
@@ -571,7 +571,8 @@ function takeShot(h, st, club, aim, p, a, wind) {
   else if (r < pt + TUNE.fat * tm) { ev.push('fat'); carry *= .72; }
   if (club.id === 'D' && R() < Math.max(ch.drvDie || 0, (COURSES[G.course] || {}).drv || 0)) { ev.push('drvdie'); carry *= .55; ang += rad((R() < .5 ? -1 : 1) * 12); st.awake = true; }
   if (ch.laugh && R() < ch.laugh) { ev.push('laugh'); eAmp *= 2; }
-  if (Math.abs(a) < zoneOf(ch, st.human)) a = 0;
+  if (Math.abs(a) < zoneOf(ch, st.human)) a = clamp(randn() * .16, -.3, .3); // 스윗스팟이라도 실제처럼 약간의 좌우 편차
+  if (st.human) carry *= 1 + clamp(randn() * .035, -.08, .08); // 사람도 거리 편차 ±3.5%
   const aA = Math.abs(a), ae = st.human ? Math.sign(a) * (Math.pow(aA, .8) + MISSK * Math.pow(Math.max(0, aA - .45), 1.2)) : a; ang += rad(ae * eAmp); // 게이지 끝쪽 큰 미스는 훅·슬라이스로 크게 휨
   let shp = '', crv = 0; if (st.human && a !== 0) { const sg = Math.sign(a), m = Math.abs(ae); shp = m > 1.1 ? (sg > 0 ? 'bigslice' : 'duckhook') : m > .55 ? (sg > 0 ? 'slice' : 'hook') : m > .18 ? (sg > 0 ? 'fade' : 'draw') : ''; if (shp) { ev.push(shp); crv = sg * Math.min(.2, .08 * m) * carry; } } // 오른손 기준: +쪽 미스 = 페이드·슬라이스(오른쪽으로 휨), -쪽 = 드로우·훅
   const wf = (ch.id === 'gm' ? .5 : 1) * ((st.human && G.easy) ? .5 : 1) * ((G.rain && !rainImm(ch)) ? 1.3 : 1);
@@ -587,7 +588,7 @@ function takeShot(h, st, club, aim, p, a, wind) {
   const dp = dist(fin, h.pinPos);
   if (tFin !== 'water' && tFin !== 'ob') {
     if (st.tee && h.par === 3 && dp <= (ch.ace ? ch.ace : 2.2) && R() < .15) { holed = true; ev.push('ace'); }
-    else if (dp <= .5) { holed = true; ev.push('chipin'); }
+    else if (dp <= CHIPR) { holed = true; ev.push('chipin'); }
     else if (tFin === 'green' && dp <= OKR) { holed = true; ev.push('concede'); }
   }
   return { club, from, land: landF, fin, tLand, tFin, carry: dist(from, landF), ev, holed, ang, putter: false, curve: crv, shape: shp };
@@ -597,14 +598,15 @@ function putt(h, st, aim, p, a) {
   const onG = lie === 'green';
   let roll = p * (st.human && st.ptier ? st.ptier : 50) * (lie === 'rough' ? .6 : lie === 'bunker' ? .5 : onG ? 1 : .9);
   let eAmp = TUNE.puttErr * 3.4 * (1.55 - ch.putt * .9) * (onG ? 1 : 1.8) * ((ch.id === 'gm' && roll <= 10) ? .5 : 1) * realF(ch) * lvF(ch) * trF(ch, CLUBS[7]) * (isMe(ch) ? G.gear.putt : 1) * ((G.course === 'scr' && ch.id === 'sg') ? 1.4 : 1) * ((ch.three && roll > 8) ? ch.three : 1) * moodF(st) * jtF(ch) * (st.tilt || 1) * ((st.human && G.easy) ? .55 : 1) * ((onG && !st.human && G.pl.some(q => q.ch.id === 'gy') && ch.id !== 'gy') ? 1.12 : 1);
-  if (Math.abs(a) < zoneOf(ch, st.human) * .8) a = 0;
+  if (Math.abs(a) < zoneOf(ch, st.human) * .8) a = clamp(randn() * .05, -.12, .12); // 퍼트도 미세한 라인 편차
+  if (st.human) roll *= 1 + clamp(randn() * .05, -.12, .12); // 퍼트 거리감 편차
   const ang = aim + rad(a * eAmp), d = dirv(ang), k = onG ? roll / 10 : roll / 30;
   const E = { x: from.x + d.x * roll + h.slope[0] * k, y: from.y + d.y * roll + h.slope[1] * k };
   const pin = h.pinPos, vx = E.x - from.x, vy = E.y - from.y, L2 = vx * vx + vy * vy || 1e-9;
   const t = ((pin.x - from.x) * vx + (pin.y - from.y) * vy) / L2, qx = from.x + vx * t, qy = from.y + vy * t;
   const perp = Math.hypot(pin.x - qx, pin.y - qy), len = Math.sqrt(L2), along = t * len, over = len - along;
   let holed = false;
-  if (onG || terr(h, pin) === 'green') { if (perp <= .55 && along > 0 && over >= -.25 && over <= 1.7) holed = true; }
+  if (onG || terr(h, pin) === 'green') { if (perp <= PCAP && along > 0 && over >= -.12 && over <= 1.1) holed = true; }
   let fin = E; if (holed) fin = pin;
   const tFin = terr(h, fin);
   if (!holed && onG && tFin === 'green' && dist(fin, pin) <= OKR) { holed = true; ev.push('concede'); }
@@ -1634,7 +1636,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.38.8';
+const VERSION = 'v0.39.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1659,6 +1661,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.39.0', '2026-11-25', ['⛳ 난이도 현실화 (버디·이글이 너무 잘 나오던 문제)', '컵 인 판정을 실제 홀컵 크기에 맞춤: 퍼트는 라인이 컵 20cm 안을 지나야 들어감(기존 50cm), 어프로치 칩인은 13cm 안(기존 45cm), 너무 세게 치면 컵을 타고 넘어감', '스윗스팟(초록 칸)에 맞혀도 실제처럼 미세한 좌우·거리 편차 발생, 샷 편차 소폭 상향', 'CPU 18홀 평균: 기존 -4~+9타 → +5~+28타(77~100타), 라운드당 퍼트 20~24개 → 28~37개로 실제 아마추어 수준']],
  ['v0.38.8', '2026-11-25', ['🧹 설정 화면 간소화: 기본은 코스·구간·인원·내기만, 나머지(캐디·목소리·식사·계산·티타임·보험·진동·음성·날씨)는 "⚙ 세부 설정"에 접어 둠 (안 건드려도 기본값으로 진행)', '팀 편성·팀전 방식은 내기를 팀전으로 고를 때만 표시', '멀티 방 규칙도 코스·구간·내기·판돈만 기본, 나머지는 "⚙ 세부 규칙"', '하단 내기 룰 안내를 현재 규칙(당홀 정산·그 홀 배판)으로 수정']],
  ['v0.38.7', '2026-11-25', ['📰 라운드 시작 속보 6종 추가 — 오늘 단톡 소식(만취 합류 밑밥, 핸디 철회, 멀리건 0개, 6명이라 다점먹골 무산, 13:37 캔슬)']],
  ['v0.38.6', '2026-11-25', ['🤝 타당 무승부 = 당홀 정산 (기본): 공동 1등이 각자 나머지에게서 판돈을 받고 끝, 다음 홀 이월 없음 (유태님 요청)', '전원 무승부면 그 홀 정산 없음', '멀티 방 규칙에서 "무승부: 다음 홀 이월(따당)"도 선택 가능']],
