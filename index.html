@@ -1683,7 +1683,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.40.3';
+const VERSION = 'v0.40.4';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1708,6 +1708,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.40.4', '2026-11-25', ['🔧 채팅이 "다시 보내는 중"에서 안 넘어가던 진짜 원인 수정: 브라우저는 같은 서버에 동시에 6개까지만 연결하는데, 실시간 연결을 7개(채팅·접속·랭킹·골프장·그린피·대결·방)나 붙잡고 있어서 보내기·알림 요청이 줄 서서 기다리다 실패했음. 이제 실시간 연결은 채팅·방 2개만 쓰고 나머지는 몇 초마다 확인(대결 신청 6초, 접속 상태 15초, 랭킹 30초)', '화면이 꺼지거나 다른 탭으로 가면 실시간 연결을 닫았다가 돌아오면 다시 연결 (탭 여러 개 열어도 막히지 않게)']],
  ['v0.40.3', '2026-11-25', ['📲 일일 퀘스트·연습 횟수가 초기화되던 문제: 같은 캐릭터를 카톡 안 브라우저·크롬 등 여러 곳에서 열면 예전 기록이 최신 기록을 덮어썼음. 이제 다른 곳에 더 최신 기록이 있으면 덮어쓰지 않고 그 기록을 불러오면서 오늘 퀘스트 달성·연습 횟수는 합침 (라운드 중에는 확인 안 함)']],
  ['v0.40.2', '2026-11-25', ['💬 클럽하우스 채팅 전송 확인: 보낸 글은 "⏳ 보내는 중" → 서버에 올라가면 시각 표시. 실패하면 자동 2번 재시도, 그래도 안 되면 "⚠ 전송 실패 · 눌러서 다시 보내기" (전에는 실패해도 내 화면에만 보이고 조용히 사라졌음)', '실시간 연결 보강: 폰 절전·통신 끊김으로 실시간 연결이 멈춰도 12초마다 최근 대화·접속 상태를 다시 확인, 화면을 다시 켜면 즉시 확인', '실시간으로 들어온 대화에도 시각 표시']],
  ['v0.40.1', '2026-11-25', ['⚔ 멀티 화면 "지금 접속 상태"에서도 접속 중인 사람 옆에 대결 신청 버튼 (누르면 방 만들기 버튼으로 이동, 방 만들면 상대에게 신청 전송)', '방 목록을 못 불러오면 자동으로 한 번 더 시도 + 다시 불러오기 버튼', '방 만들기/입장 오류 문구를 화면 아래 알림으로도 표시 (위에 숨어 안 보이던 문제)', '내기가 팀전이 아닐 때 방 규칙 칸에 생기던 빈 공간 제거']],
@@ -1831,7 +1832,13 @@ async function nreq(method, p, body) {
   if (window.__mockdb) { const db = window.__mockdb; let ret = null; if (method === 'GET') return JSON.parse(JSON.stringify(gpath(db, p) ?? null)); if (method === 'POST') { const k = 'k' + String(++MOCK.n).padStart(5, '0'); applyPath(db, p + '/' + k, body); ret = { name: k }; } else if (method === 'DELETE') applyPath(db, p, null); else applyPath(db, p, body, method === 'PATCH'); setTimeout(() => MOCK.ls.forEach(l => l.cb(JSON.parse(JSON.stringify(gpath(db, l.p) ?? null)))), 0); return ret; }
   const ac = new AbortController(), to = setTimeout(() => ac.abort(), 10000); try { const r = await fetch(NET.base + p + '.json', { method, body: body === undefined ? undefined : JSON.stringify(body), signal: ac.signal }); if (!r.ok) throw new Error('net'); return await r.json(); } finally { clearTimeout(to); } }
 function nlisten(p, q, cb) { if (window.__mockdb) { const l = { p, cb }; MOCK.ls.push(l); setTimeout(() => cb(JSON.parse(JSON.stringify(gpath(window.__mockdb, p) ?? null))), 0); return () => { MOCK.ls = MOCK.ls.filter(x => x !== l); }; }
-  let st = null; const es = new EventSource(NET.base + p + '.json' + (q || '')); const h = e => { try { const d = JSON.parse(e.data); st = applyPath(st, d.path, d.data, e.type === 'patch'); cb(st); } catch (x) { } }; es.addEventListener('put', h); es.addEventListener('patch', h); return () => es.close(); }
+  // 브라우저는 같은 서버에 동시 연결이 6개뿐 → 실시간 스트림은 채팅·방만 쓰고, 화면이 꺼지거나 다른 탭으로 가면 닫았다가 돌아오면 다시 연결
+  const L = { st: null, es: null, open() { if (L.es) return; L.st = null; const es = new EventSource(NET.base + p + '.json' + (q || '')); const h = e => { try { const d = JSON.parse(e.data); L.st = applyPath(L.st, d.path, d.data, e.type === 'patch'); cb(L.st); } catch (x) { } }; es.addEventListener('put', h); es.addEventListener('patch', h); es.onerror = () => { if (es.readyState === 2) { L.es = null; setTimeout(() => { if (NLS.has(L) && !document.hidden) L.open(); }, 3000); } }; L.es = es; }, close() { if (L.es) { L.es.close(); L.es = null; } } };
+  NLS.add(L); if (!document.hidden) L.open(); return () => { L.close(); NLS.delete(L); }; }
+const NLS = new Set();
+document.addEventListener('visibilitychange', () => { NLS.forEach(l => document.hidden ? l.close() : l.open()); });
+// 덜 급한 정보(랭킹·골프장 주인·그린피·대결 신청·접속 상태)는 연결을 오래 붙잡지 않고 몇 초마다 가져옴
+function npoll(p, ms, cb) { let on = true; const run = async () => { if (!on) return; if (!document.hidden && NET.ok) { try { cb(await nreq('GET', p)); } catch (e) { } } if (on) setTimeout(run, ms); }; run(); return () => { on = false; }; }
 let profT = null;
 // ---- 서버 저장: 지갑·레벨·장비 등 진행 기록을 서버(/sv/캐릭터)에 보관 → 폰을 바꾸거나 기록이 지워져도 이어짐 ----
 let cloudReady = false, cloudT = 0;
@@ -1858,11 +1865,11 @@ function rankHTML(sep, noTitle) { sep = sep || ' · '; const R_ = RANK || {}, al
 function drawRank() { for (const id of ['rankBody', 'clubRank']) { const e = $('#' + id); const h = id === 'rankBody' ? rankHTML('<br>', 1) : rankHTML(); if (e) { e.innerHTML = h; e.style.display = h ? 'block' : 'none'; e.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { RKT = b.dataset.rk; drawRank(); }); } } }
 let onl = {}, chatSeen = {}, chatInit = false;
 function netBeat(st) { if (NET.ok) nreq('PUT', '/on/' + SV.did, { ch: G.me, lv: lvOf(G.me), st: st || (G.multi ? 'multi' : ['aim', 'power', 'acc', 'fly', 'wait', 'result', 'stock'].includes(G.phase) ? 'play' : 'menu'), ts: Date.now() }).catch(() => { }); }
-async function netInit() { if (NET.ok || NET.busy) return; NET.busy = true; let ok = false; for (let i = 0; i < 3 && !ok; i++) { try { await Promise.race([nreq('GET', '/ping'), new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), 8000))]); ok = true; } catch (e) { await new Promise(r => setTimeout(r, 1500)); } } NET.busy = false; if (!ok) { NET.ok = false; setTimeout(netInit, 10000); return; } NET.ok = true; try { clubLock(); if (clubOpen) { clubPeers(); toast('🟢 서버 연결됨 — 실시간 대화 가능', '#9fffb0'); } } catch (e) { } cfgLoad(); cloudSync(); stkLoad(); try { nlisten('/p', '', d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
+async function netInit() { if (NET.ok || NET.busy) return; NET.busy = true; let ok = false; for (let i = 0; i < 3 && !ok; i++) { try { await Promise.race([nreq('GET', '/ping'), new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), 8000))]); ok = true; } catch (e) { await new Promise(r => setTimeout(r, 1500)); } } NET.busy = false; if (!ok) { NET.ok = false; setTimeout(netInit, 10000); return; } NET.ok = true; try { clubLock(); if (clubOpen) { clubPeers(); toast('🟢 서버 연결됨 — 실시간 대화 가능', '#9fffb0'); } } catch (e) { } cfgLoad(); cloudSync(); stkLoad(); try { npoll('/p', 30000, d => { RANK = d || {}; drawRank(); }); } catch (e) { } netProfile();
   netBeat(); setInterval(() => netBeat(), 25000);
-  try { nlisten('/own', '', d => { OWN = d || {}; if ($('#sShop') && $('#sShop').classList.contains('on')) drawShop(); }); if (SV.myCh) nlisten('/pay/' + SV.myCh, '', d => payClaim(d)); } catch (e) { }
-  { let invOff = null, invCh = null; setInterval(() => { if (SV.myCh && NET.ok && invCh !== SV.myCh) { if (invOff) invOff(); invCh = SV.myCh; invOff = nlisten('/inv/' + SV.myCh, '', duelCheck); } }, 3000); }
-nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnline(); if (MR && MR.data && !G.multi && $('#sMulti').classList.contains('on')) mUpdate(); } catch (e) { } });
+  try { npoll('/own', 30000, d => { OWN = d || {}; if ($('#sShop') && $('#sShop').classList.contains('on')) drawShop(); }); if (SV.myCh) npoll('/pay/' + SV.myCh, 30000, d => payClaim(d)); } catch (e) { }
+  { let invOff = null, invCh = null; setInterval(() => { if (SV.myCh && NET.ok && invCh !== SV.myCh) { if (invOff) invOff(); invCh = SV.myCh; invOff = npoll('/inv/' + SV.myCh, 6000, duelCheck); } }, 3000); }
+npoll('/on', 15000, d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnline(); if (MR && MR.data && !G.multi && $('#sMulti').classList.contains('on')) mUpdate(); } catch (e) { } });
   window.chatIn = d => { const ks = Object.keys(d || {}).sort(); for (const k of ks) { if (chatSeen[k]) continue; chatSeen[k] = 1; const m = d[k]; if (!m || typeof m.t !== 'string' || !CH.some(c => c.id === m.ch)) continue; if (m.did === SV.did && chatInit) continue; if (!clubOpen && m.ch !== G.me && m.did !== SV.did && (m.ts || 0) > (SV.clubRd || (SV.clubRd = Date.now() - 864e5))) { clubUnread++; clubBadge(); if (chatInit && G.phase === 'title') { try { SV.vib !== false && vib(40); } catch (e) { } toast('💬 클럽하우스 새 메시지 · ' + CH.find(c => c.id === m.ch).short, '#9ff0d0'); } } clubAdd(m.ch, m.t, (m.ts ? (() => { const d = new Date(m.ts); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); })() : '이전'), !chatInit); if (chatInit && !clubOpen && G.phase !== 'title') chat('💬 ' + CH.find(c => c.id === m.ch).name, esc(m.t.slice(0, 60)), '#9ff0d0'); } chatInit = true; };
   nlisten('/chat', '?orderBy="$key"&limitToLast=200', d => chatIn(d));
   // 실시간 연결이 폰 절전·통신 끊김으로 멈춰도 놓치지 않도록 12초마다 최근 대화·접속 상태를 한 번 더 확인
