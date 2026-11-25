@@ -1013,7 +1013,7 @@ function newGame() {
     else if (tm === 'port') { A = G.pl.filter(p => p.ch.port === 1); B = G.pl.filter(p => p.ch.port !== 1); }
     if (!A || !A.length || !B.length) { const r = mulb((G.qSeed || 7) * 17 + 3), a = G.pl.slice().sort(() => r() - .5), h = Math.ceil(a.length / 2); A = a.slice(0, h); B = a.slice(h); G.teamTm = 'rand'; } else G.teamTm = tm;
     if (G.pl.length < 2 || !B.length) { G.bet = 'tadang'; } else { G.teams = [A, B]; G.teamW = [0, 0]; const N = TEAMN[G.teamTm]; setTimeout(() => chat('📡 AI특파원', `👥 팀전! ${N[0]}(${A.map(p => p.ch.short).join('·')}) vs ${N[1]}(${B.map(p => p.ch.short).join('·')}) — ${G.tfmt === 'match' ? '매치: 홀마다 팀 베스트볼' : '스트로크: 팀에서 제일 잘 친 사람 총타수'}, 진 팀이 밥값·캐디피`, '#ffd54a'), 1500); } }
-  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); G.ins = !G.multi && $('#oIns').checked; if (G.ins) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
+  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); G.ins = !G.multi && $('#oIns').checked; if (G.ins) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (R() < .45) setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(PRENEWS), '#ffd54a'); } catch (e) { } }, 2600); if (G.multi) mSetup(); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
   G.human = G.pl.find(p => p.human); G.hi = 0; G.allNews = [];
   $('#sTitle').classList.remove('on'); $('#sFinal').classList.remove('on');
   $('#top').style.display = 'flex'; $('#bottom').style.display = 'flex';
@@ -1272,6 +1272,7 @@ Object.assign(NEWS, { bigslice: [n => `${n} 바나나 슬라이스, 공이 옆 �
 // ===== 내기 방식 (타당 외): 스킨스·조폭·라스베이거스 =====
 const BETN = { tadang: '타당', skins: '스킨스', jopok: '조폭', vegas: '라스베이거스', team: '팀전' };
 const SAMHWA = ['gy', 'gm', 'ej'], TEAMN = { samhwa: ['🏭 삼화', '🌍 비삼화'], port: ['1️⃣ 1포트', '2️⃣ 2포트'], rand: ['🔴 레드', '🔵 블루'] };
+const PRENEWS = ['[속보] 정b "티업 전 만취 후 합류" 예고… 안IS "벌써 밑밥 까는 거야"', '[단독] 정b, 핸디 요청 3초 만에 "안 받을게요" 자진 철회', '[속보] 안BJ 멀리건 0개 원칙 고수… 정b "형은 멀리건도 안 주지"', '[속보] 6명 한 조 확정에 다점먹골 무산… 안BJ "여섯명이라 안 되지"', '[속보] 방파콩 13:37 티타임 캔슬, 13:30 한 조 편성 확정', '[분석] 정b 만취 전략, 밑밥인가 진심인가… 전문가들 의견 분분'];
 const TEAMNEWS = ['📰 [속보] 주통배, 경기 방식 의견 불일치로 파행… 갠전 주장까지 대두', '📰 [속보] 안BJ "토탈로 해야지" vs 정b "매치가 재밌다" — 룰 미팅 결렬', '📰 [속보] 정b "2천밧 내고 노쇼하는 게 더 싸다" 폭탄 발언', '📰 [속보] 안IS "우리 팀 에이스는 슬기로운 정슬기" 공개 지명… 부담 백배', '📰 [단독] 매치 방식 도입에 각 팀 2·3등 "분발 중"', '📰 [속보] 안BJ "그냥 갠전해" 한마디에 단톡방 초토화', '📰 [속보] 주통배 원정 경비 그린피 2천 + 내기 6천… "겜비 굳는 거지"'];
 const TEAM_MEAL = 700; // 진 팀이 이긴 팀 1인당 내주는 캐디피(400)+밥값(300)
 function betHole(h, wi, n, mult) { const bm = G.bet || 'tadang'; if (bm === 'tadang') return false; const amt = (G.unit || 100) * mult;
@@ -1630,7 +1631,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.38.6';
+const VERSION = 'v0.38.7';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1655,6 +1656,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.38.7', '2026-11-25', ['📰 라운드 시작 속보 6종 추가 — 오늘 단톡 소식(만취 합류 밑밥, 핸디 철회, 멀리건 0개, 6명이라 다점먹골 무산, 13:37 캔슬)']],
  ['v0.38.6', '2026-11-25', ['🤝 타당 무승부 = 당홀 정산 (기본): 공동 1등이 각자 나머지에게서 판돈을 받고 끝, 다음 홀 이월 없음 (유태님 요청)', '전원 무승부면 그 홀 정산 없음', '멀티 방 규칙에서 "무승부: 다음 홀 이월(따당)"도 선택 가능']],
  ['v0.38.5', '2026-11-25', ['🐞 데일리 챌린지·월례 주통배 화면이 "불러오는 중…"에서 멈추던 문제 수정 — 서버 요청 10초 제한, 기록 5종 동시 불러오기, 로딩 중 닫기 버튼, 실패 시 안내']],
  ['v0.38.4', '2026-11-25', ['📋 일일 퀘스트: 고정은 "연습 또는 레슨 3회" 하나만, 나머지 3개는 매일 랜덤 (싱글 완주도 랜덤 풀로)', '🎁 메뉴에 오늘 받은 출석 보상 표시 (일당 + 출석 1,000밧 + 연속 접속 스탬프)']],
