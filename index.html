@@ -1271,6 +1271,7 @@ Object.assign(NEWS, { bigslice: [n => `${n} 바나나 슬라이스, 공이 옆 �
 // ===== 내기 방식 (타당 외): 스킨스·조폭·라스베이거스 =====
 const BETN = { tadang: '타당', skins: '스킨스', jopok: '조폭', vegas: '라스베이거스', team: '팀전' };
 const SAMHWA = ['gy', 'gm', 'ej'], TEAMN = { samhwa: ['🏭 삼화', '🌍 비삼화'], port: ['1️⃣ 1포트', '2️⃣ 2포트'], rand: ['🔴 레드', '🔵 블루'] };
+const TEAMNEWS = ['📰 [속보] 주통배, 경기 방식 의견 불일치로 파행… 갠전 주장까지 대두', '📰 [속보] 안BJ "토탈로 해야지" vs 정b "매치가 재밌다" — 룰 미팅 결렬', '📰 [속보] 정b "2천밧 내고 노쇼하는 게 더 싸다" 폭탄 발언', '📰 [속보] 안IS "우리 팀 에이스는 슬기로운 정슬기" 공개 지명… 부담 백배', '📰 [단독] 매치 방식 도입에 각 팀 2·3등 "분발 중"', '📰 [속보] 안BJ "그냥 갠전해" 한마디에 단톡방 초토화', '📰 [속보] 주통배 원정 경비 그린피 2천 + 내기 6천… "겜비 굳는 거지"'];
 const TEAM_MEAL = 700; // 진 팀이 이긴 팀 1인당 내주는 캐디피(400)+밥값(300)
 function betHole(h, wi, n, mult) { const bm = G.bet || 'tadang'; if (bm === 'tadang') return false; const amt = (G.unit || 100) * mult;
   if (bm === 'skins') { if (wi.length === 1) { const w = G.pl[wi[0]], k = (G.skinCarry || 0) + 1; w.holeWins = (w.holeWins || 0) + 1; G.pl.forEach((q, i) => { if (i !== wi[0]) { q.money -= amt * k; w.money += amt * k; } }); G.holeWin = `🏆 ${w.ch.name} 스킨 획득 +${(amt * k * (n - 1)).toLocaleString()}바트${k > 1 ? ` (이월 ${k - 1}홀 포함)` : ''}`; G.skinCarry = 0; G.lastWinner = w.ch.id; } else { G.skinCarry = (G.skinCarry || 0) + 1; G.holeWin = `🔁 무승부 → 스킨 이월 (다음 홀 ${G.skinCarry + 1}홀치 걸림)`; G.lastWinner = null; } return true; }
@@ -1393,7 +1394,7 @@ function finalScreen() {
   order.forEach((t, i) => { rk += `<tr class="${t.p.human ? 'me' : ''}"><td>${i + 1}</td><td class="l">${t.p.ch.name}<small style="opacity:.7"> 홀승${t.wins}</small></td><td>${t.g}</td><td>${t.hd ? '-' + t.hd : '-'}</td><td><b>${t.net}</b></td><td>${fmtPar(t.g - t.par)}</td><td class="${t.tot >= 0 ? 'plus' : 'minus'}">${t.tot >= 0 ? '+' : ''}${t.tot.toLocaleString()}</td></tr>`; });
   rk += '</table></div>'; $('#fRank').innerHTML = rk;
   const best = (f, min = 1, label) => { let b = null; G.pl.forEach(p => { const v = f(p); if (v >= min && (!b || v > b.v)) b = { p, v }; }); return b; };
-  const aw = []; const w = order[0]; if (G.teamTxt) aw.push(G.teamTxt); aw.push(`🏆 우승 ${w.p.ch.name} (네트 ${w.net})`);
+  const aw = []; const w = order[0]; if (G.teamTxt) { aw.push(G.teamTxt); aw.push(pick(TEAMNEWS)); } aw.push(`🏆 우승 ${w.p.ch.name} (네트 ${w.net})`);
   let x;
   if (x = best(p => p.st.ace * 100 + p.st.eagle * 10 + p.st.birdie)) aw.push(`🐦 버디왕 ${x.p.ch.name} (버디 ${x.p.st.birdie}${x.p.st.eagle ? ' · 이글 ' + x.p.st.eagle : ''}${x.p.st.ace ? ' · 홀인원' : ''})`);
   if (x = best(p => p.st.water)) aw.push(`💦 물귀신 ${x.p.ch.name} (${x.p.st.water}회)`);
@@ -1626,7 +1627,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.38.2';
+const VERSION = 'v0.38.3';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1651,6 +1652,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.38.3', '2026-11-25', ['📰 팀전 결과에 오늘 단톡 경기 방식 논쟁 속보 7종 추가 (토탈 vs 매치, 갠전 주장, 노쇼가 더 싸다 등)']],
  ['v0.38.2', '2026-11-25', ['👥 팀전 방식 선택: 스트로크(기본) — 각 팀에서 제일 잘 친 사람의 총타수 비교, 진 팀이 밥값·캐디피 / 매치 — 홀마다 팀 베스트볼, 진 팀이 홀마다 판돈 + 밥값·캐디피', '스트로크 팀전은 홀마다 양 팀 최고 성적자 현황 표시']],
  ['v0.38.1', '2026-11-25', ['👥 팀전 내기 추가 (싱글·멀티): 팀 편성 삼화 vs 비삼화 · 1포트 vs 2포트 · 랜덤 반반', '홀마다 팀 베스트볼(팀에서 제일 잘 친 타수)로 승부 → 진 팀 각자가 판돈 냄', '18홀(구간) 끝나면 팀 홀승이 많은 쪽 승리(같으면 팀 평균 타수) → 진 팀이 이긴 팀 1인당 캐디피·밥값 700밧 부담', '결과·카톡 공유문에 팀전 결과 표시']],
  ['v0.38.0', '2026-11-24', ['🎯 홀인원 = 평생 한두 번의 기록: 확률은 실제처럼 드물게(약 1/3로 축소), 보상은 초대형으로', '골프장 홀인원 상금 +300,000밧(싱글·멀티) · 보험 가입 시 보험금 +500,000밧 · 🌟 전설 확정 장비 뽑기권 3장 · 경험치 +5,000 · 연습 스탬프 +30', '동반자 축하금 각 5,000밧 · 영구 칭호 "홀인원 레전드" + 날짜·코스·홀 기념 트로피 · 🎯 홀인원 명예의 전당(챌린지 화면)에 영구 기록 · 클럽하우스 자동 축하', '보험 미가입 시 한턱·기념식수 -20,000밧']],
