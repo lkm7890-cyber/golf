@@ -191,7 +191,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   </div>
   <div class="box" id="mOnlineBox"><h3 style="margin:0 0 6px">👥 지금 접속 상태</h3><div id="mOnline" style="font-size:13px;line-height:1.9"></div><div style="font-size:11px;opacity:.6;margin-top:4px">🟢 접속 중 · 🟡 방금 전(3분 이내) · ⚪ 미접속 — 약 1분마다 갱신</div></div>
   <div id="mLobby" style="display:none">
-    <div class="box" style="text-align:center"><div style="font-size:12px;opacity:.8">방 코드 (단톡방에 알려 주세요)</div><div id="mCodeBig" style="font-size:44px;color:#ffb627;letter-spacing:8px"></div><div id="mCfg" style="font-size:12px;opacity:.85"></div></div>
+    <div class="box" style="text-align:center"><div style="font-size:12px;opacity:.8">방 코드 (단톡방에 알려 주세요)</div><div id="mCodeBig" style="font-size:44px;color:#ffb627;letter-spacing:8px"></div><div id="mCfg" style="font-size:12px;opacity:.85"></div><div id="mDuelSt" style="font-size:13px;line-height:1.5;margin-top:6px"></div></div>
     <div class="box"><h3>참가자</h3><div id="mPlayers"></div></div>
     <button class="go" id="mStartBtn">라운드 시작</button>
   </div>
@@ -1696,7 +1696,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.41.2';
+const VERSION = 'v0.41.3';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1721,6 +1721,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.41.3', '2026-11-25', ['⚔ 대결 신청 후 방 화면에 상대 상태 표시: 상대 화면에 신청이 떴음(수락 대기) / 상대가 게임 화면을 안 보고 있음(10분 안에 열면 신청 창이 뜸, 카톡으로 방 번호 알리기 안내) / 입장 완료 / 거절·만료']],
  ['v0.41.2', '2026-11-25', ['👑 영자 마음: 오늘(11/25) 밤 12시(태국 시간)까지 접속하면 1인당 100,000밧 지급 (한 번만, 메뉴 화면 들어올 때 자동 지급)']],
  ['v0.41.1', '2026-11-25', ['⛳ 로얄레이크사이드 18홀 재배치: 가민 홀 맵(부장님 제공) 기준으로 홀마다 물·개울·벙커 위치를 실제처럼 바꿈', '1번 그린 왼쪽 호수 · 2번 티샷 개울 넘기기 + 왼쪽 강 · 3번 그린 앞 대형 웨이스트 벙커 · 4번 오른쪽 호수+개울 · 5번 왼쪽 개울+그린 옆 연못 · 6번 가운데 연못 · 7번 더블 도그렉 벙커 지옥 · 8·9·10·11·13번 왼쪽 강/호수 · 12번 좌우 대형 벙커 · 15번 연못 넘기는 파3 · 16번 양쪽 물 · 17번 티 앞 개울 · 18번 홀 가로지르는 개울', '1·4·16번은 가민 맵대로 직선 홀로 (전: 임의 도그렉)']],
  ['v0.41.0', '2026-11-25', ['🎯 사람 플레이 현실화 (모든 캐릭터 공통 · 특정인 너프 아님): 서버 기록을 보니 사람이 3홀 -3, 9홀 -8처럼 투어 프로보다 잘 쳤음. 게이지를 정확히 맞춰도 실제 아마추어처럼 결과가 조금씩 흩어지게 함', '퍼트: 게이지를 맞춰도 라인이 약 4° 안팎으로 빗나가고 거리감도 ±5% 정도 흔들림 → 3야드 퍼트 약 절반, 6야드 약 4분의 1 성공 (퍼트 능력치·퍼터·연습이 좋을수록 덜 빗나감 — 이규만 퍼터신 유지)', '샷: 스윗스팟을 맞춰도 좌우 편차와 거리 편차(약 ±4.5%)를 키움', '시뮬레이션 기준 게이지를 매번 완벽히 맞춰도 9홀 약 +1~+4 (전: -5), 버디 9홀당 2~3개 (전: 6개), 퍼트 9홀 17개 안팎 (전: 12개). CPU 실력은 그대로라 이제 CPU와 붙어도 접전']],
@@ -2055,7 +2056,13 @@ function needCh() { if (SV.myCh) return false; ['sMenu'].forEach(i => $('#' + i)
 let duelSeen = {};
 async function duelSend(id, b) { const ch = CH.find(c => c.id === id); if (b.dataset.arm !== '1') { b.dataset.arm = '1'; b.textContent = '방 규칙 정하고 신청 ▶'; return; }
   clubOpen = false; $('#sClub').classList.remove('on'); mShow(); G.duelTo = id; toast(`⚔ ${ch.name}님께 보낼 방 규칙을 정하고 "이 규칙으로 방 만들기"를 누르세요`, '#ffd27a'); }
-async function duelPost(code) { const id = G.duelTo; if (!id) return; G.duelTo = null; const ch = CH.find(c => c.id === id), me = CH.find(c => c.id === G.me); try { await nreq('PUT', '/inv/' + id + '/' + G.me, { from: G.me, code, t: Date.now() }); await nreq('POST', '/chat', { ch: G.me, t: `⚔ ${ch.name}님께 대결 신청! (방 ${code})`, did: SV.did, ts: Date.now() }); toast(`⚔ ${ch.name}님께 대결 신청 보냄 — 수락하면 바로 입장합니다`, '#9fffb0'); } catch (e) { toast('대결 신청 전송 실패', '#ff9a9a'); } }
+async function duelPost(code) { const id = G.duelTo; if (!id) return; G.duelTo = null; const ch = CH.find(c => c.id === id), me = CH.find(c => c.id === G.me); try { await nreq('PUT', '/inv/' + id + '/' + G.me, { from: G.me, code, t: Date.now() }); await nreq('POST', '/chat', { ch: G.me, t: `⚔ ${ch.name}님께 대결 신청! (방 ${code})`, did: SV.did, ts: Date.now() }); toast(`⚔ ${ch.name}님께 대결 신청 보냄 — 수락하면 바로 입장합니다`, '#9fffb0'); duelWatch(id, code); } catch (e) { toast('대결 신청 전송 실패', '#ff9a9a'); } }
+// 신청 보낸 뒤 상대 상태를 방 화면에 표시 (화면 보는 중 / 안 보는 중 / 입장 / 거절·만료)
+function duelWatch(id, code) { const ch = CH.find(c => c.id === id), el = $('#mDuelSt'); let n = 0; const tick = async () => { if (!MR || MR.code !== code || !el) { if (el) el.innerHTML = ''; return; } let inv = null; try { inv = await nreq('GET', `/inv/${id}/${G.me}`); } catch (e) { } const inRoom = MR.data && MR.data.pl && MR.data.pl[id], on = onlMark(id)[2] === 2;
+  if (inRoom) { el.innerHTML = `<span style="color:#9fffb0">✅ ${ch.name}님 입장 완료</span>`; return; }
+  if (inv && inv.code === code) el.innerHTML = on ? `<span style="color:#ffd27a">⏳ ${ch.name}님 화면에 대결 신청이 떴습니다 · 수락 기다리는 중</span>` : `<span style="color:#ff9a9a">📴 ${ch.name}님이 지금 게임 화면을 안 보고 있어요.</span><br><small>10분 안에 게임을 열면 신청 창이 뜹니다 · 카톡으로 "골프 방 ${code}" 알려 주세요</small>`;
+  else { el.innerHTML = `<span style="color:#ff9a9a">🙏 ${ch.name}님이 거절했거나 신청 시간(10분)이 지났습니다</span>`; return; }
+  if (++n < 150) setTimeout(tick, 4000); }; tick(); }
 function duelCheck(d) { if (!SV.myCh || !d) return; Object.entries(d).forEach(([from, v]) => { if (!v || !v.code || duelSeen[from + v.t]) return; duelSeen[from + v.t] = 1; if (Date.now() - v.t > 10 * 60000) { nreq('DELETE', '/inv/' + SV.myCh + '/' + from).catch(() => { }); return; } duelShow(from, v); }); }
 function duelShow(from, v) { const ch = CH.find(c => c.id === from); if (!ch) return; const o = document.getElementById('oDuel') || mkOverlay('oDuel'); o.style.display = 'flex'; o.style.zIndex = 120; beep(660, .15); setTimeout(() => beep(990, .2), 180); try { vib([200, 100, 200]); } catch (e) { }
   o.innerHTML = `<div class="box" style="max-width:360px;width:100%;text-align:center"><div style="font-size:40px">⚔</div><h3 style="color:${ch.ink}">${ch.name}님의 대결 신청!</h3><div style="font-size:13px;opacity:.85;margin-bottom:10px">방 코드 ${v.code} · 수락하면 바로 방에 입장합니다</div><button class="go" id="duelOk" style="background:#2c6b44;color:#fff">수락 · 입장</button><button class="go" id="duelNo" style="background:#333;color:#ddd">거절</button></div>`;
