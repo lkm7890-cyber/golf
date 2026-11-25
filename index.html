@@ -175,14 +175,16 @@ tr.me td{background:rgba(255,182,39,.13)}
       <label>코스 <select id="rCourse"></select></label><br>
       <label>구간 <select id="rPart"></select></label><br>
       <label>내기 <select id="rBet"></select></label><br>
-      <label>팀 편성 <select id="rTeam"><option value="samhwa">삼화 vs 비삼화</option><option value="port">1포트 vs 2포트</option><option value="rand">랜덤 반반</option></select></label><br>
-      <label>팀전 방식 <select id="rTfmt"><option value="stroke">스트로크 (팀 최고 성적자 총타수)</option><option value="match">매치 (홀마다 팀 베스트볼)</option></select></label><br>
+      <label class="teamOpt">팀 편성 <select id="rTeam"><option value="samhwa">삼화 vs 비삼화</option><option value="port">1포트 vs 2포트</option><option value="rand">랜덤 반반</option></select></label><br>
+      <label class="teamOpt">팀전 방식 <select id="rTfmt"><option value="stroke">스트로크 (팀 최고 성적자 총타수)</option><option value="match">매치 (홀마다 팀 베스트볼)</option></select></label><br>
       <label>판돈 <select id="rUnit"><option value="50">타당 50밧</option><option value="100" selected>타당 100밧</option><option value="200">타당 200밧</option><option value="500">타당 500밧</option><option value="1000">타당 1,000밧</option></select></label><br>
+      <details class="adv"><summary style="cursor:pointer;color:#ffb627;padding:4px 0">⚙ 세부 규칙 (무승부·배판·식사·티타임·날씨)</summary>
       <label>무승부 <select id="rTie"><option value="hole">당홀 정산 (공동 1등이 각자 받음)</option><option value="carry">다음 홀 이월 (따당)</option></select></label><br>
       <label>배판 <select id="rBp"><option value="1">버디 이상·양파 나오면 그 홀 ×2</option><option value="0">배판 없음</option></select></label><br>
       <label>식사 <select id="rPay"></select></label><br>
       <label>티타임 <select id="rTod"></select></label><br>
       <label><input type="checkbox" id="rWx" checked> 🌦 실시간 날씨</label>
+      </details>
     </div>
     <button class="go" id="mCreateBtn">이 규칙으로 방 만들기</button>
     <div style="display:flex;gap:6px;margin-top:10px"><input id="mCode" inputmode="numeric" maxlength="4" placeholder="방 코드 4자리 (방 만들 때 넣으면 그 번호로)" style="flex:1;background:#07090b;color:#fff;border:2px solid #e8d8a0;padding:12px;font:inherit;font-size:18px;text-align:center;user-select:text;-webkit-user-select:text"><button class="btn" id="mJoinBtn">입장</button></div>
@@ -244,22 +246,23 @@ tr.me td{background:rgba(255,182,39,.13)}
   <div class="cards" id="cards"></div>
   <div class="opts">
     <label style="display:none">모드 <select id="oMode"><option value="s">싱글 (CPU와)</option><option value="m">멀티 (온라인 대결)</option></select></label>
-    <label>캐디 <select id="oCaddie"><option value="rand">랜덤 배정 (지정료 없음)</option><option value="241">241번 지정 (그린 리딩 · 멀티 +1,000밧)</option><option value="276">276번 지정 +1,000밧 (거리)</option><option value="304">304번 지정 +1,000밧 (공 찾기)</option><option value="234">234번 지정 +1,000밧 (구찌 방어)</option><option value="261">261번 지정 +1,000밧 (만능형)</option></select></label>
-    <label>캐디 목소리 <select id="oCadVoice"><option value="auto">캐디마다 다르게 (자동)</option><option value="cute">귀여운 (높고 통통)</option><option value="aegyo">애교 (높고 느릿)</option><option value="sexy">섹시한 (낮고 나긋)</option><option value="cool">시원시원 (빠르고 또렷)</option><option value="calm">차분한 (낮고 느긋)</option><option value="mom">엄마 같은 (푸근)</option></select></label>
-    <label>식사 <select id="oMeal"></select></label>
-    <label>내기 <select id="oBet"><option value="tadang">타당 (홀 1등이 판돈씩 받음)</option><option value="skins">스킨스 (무승부면 판돈 이월)</option><option value="jopok">조폭 (1등이 타수 차이만큼 수금)</option><option value="vegas">라스베이거스 (2:2 팀, 4·6·8명)</option><option value="team">👥 팀전 (팀 베스트볼, 진 팀이 밥값·캐디피)</option></select></label>
-    <label>팀 편성 <select id="oTeam"><option value="samhwa">삼화 vs 비삼화</option><option value="port">1포트 vs 2포트 (0포트는 2포트 편)</option><option value="rand">랜덤 반반</option></select></label>
-    <label>팀전 방식 <select id="oTfmt"><option value="stroke">스트로크 (팀 최고 성적자 총타수)</option><option value="match">매치 (홀마다 팀 베스트볼)</option></select></label>
-    <label id="payLab">계산 <select id="oPay"><option value="each">각자 계산</option><option value="treat">방장(나)이 쏜다</option><option value="loser">라운드 꼴찌가 계산</option></select></label>
-    <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
     <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="pcc">Stage 3 · 파타야 CC (파CC)</option><option value="scr">보너스 · 삼화 스크린골프장</option><option value="gv">보너스 · 그린밸리 (2포트 금지구장)</option></select></label>
     <button class="btn" id="rouBtn" type="button">🎡 조작 돌림판</button>
     <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체</option></select></label>
-    
+    <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+    <label>내기 <select id="oBet"><option value="tadang">타당 (홀 1등이 판돈씩 받음)</option><option value="skins">스킨스 (무승부면 판돈 이월)</option><option value="jopok">조폭 (1등이 타수 차이만큼 수금)</option><option value="vegas">라스베이거스 (2:2 팀, 4·6·8명)</option><option value="team">👥 팀전 (팀 베스트볼, 진 팀이 밥값·캐디피)</option></select></label>
+    <label class="teamOpt">팀 편성 <select id="oTeam"><option value="samhwa">삼화 vs 비삼화</option><option value="port">1포트 vs 2포트 (0포트는 2포트 편)</option><option value="rand">랜덤 반반</option></select></label>
+    <label class="teamOpt">팀전 방식 <select id="oTfmt"><option value="stroke">스트로크 (팀 최고 성적자 총타수)</option><option value="match">매치 (홀마다 팀 베스트볼)</option></select></label>
+    <details class="adv" style="width:100%"><summary style="cursor:pointer;color:#ffb627;padding:6px 0">⚙ 세부 설정 (캐디·식사·티타임·보험·소리) — 안 건드려도 됩니다</summary><div class="opts" style="margin-top:6px">
+    <label>캐디 <select id="oCaddie"><option value="rand">랜덤 배정 (지정료 없음)</option><option value="241">241번 지정 (그린 리딩 · 멀티 +1,000밧)</option><option value="276">276번 지정 +1,000밧 (거리)</option><option value="304">304번 지정 +1,000밧 (공 찾기)</option><option value="234">234번 지정 +1,000밧 (구찌 방어)</option><option value="261">261번 지정 +1,000밧 (만능형)</option></select></label>
+    <label>캐디 목소리 <select id="oCadVoice"><option value="auto">캐디마다 다르게 (자동)</option><option value="cute">귀여운 (높고 통통)</option><option value="aegyo">애교 (높고 느릿)</option><option value="sexy">섹시한 (낮고 나긋)</option><option value="cool">시원시원 (빠르고 또렷)</option><option value="calm">차분한 (낮고 느긋)</option><option value="mom">엄마 같은 (푸근)</option></select></label>
+    <label>식사 <select id="oMeal"></select></label>
+    <label id="payLab">계산 <select id="oPay"><option value="each">각자 계산</option><option value="treat">방장(나)이 쏜다</option><option value="loser">라운드 꼴찌가 계산</option></select></label>
     <label><input type="checkbox" id="oVib" checked> 📳 심박 진동</label> <label><input type="checkbox" id="oVoice" checked> 🔊 대사 음성</label>
     <label><input type="checkbox" id="oWx" checked> 🌦 실시간 날씨</label>
     <label>티타임 <select id="oTod"><option value="auto">지금 시간대</option><option value="dawn">🌅 새벽 (바람 약, 이슬로 런 감소)</option><option value="day">☀ 한낮</option><option value="after">🌤 오후 (바람 강)</option><option value="squall">⛈ 스콜 (비·돌풍)</option><option value="night">🌙 야간 (라이트, 시야↓)</option></select></label>
     <label><input type="checkbox" id="oIns"> 🛡 홀인원 보험 (300밧/라운드, 홀인원 시 보험금 500,000밧)</label>
+    </div></details>
   </div><div class="help" id="wxNote" style="margin:0 0 8px"></div><div style="margin-bottom:10px">
     <input type="checkbox" id="oHcp" style="display:none">
   </div>
@@ -268,7 +271,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="goBtn">라운드 시작</button>
   <div class="help">
     <b>조작</b>: 클럽·방향은 자동 추천(◀▶로 조준, ◂▸로 클럽 변경). 화면 탭 → ① 파워(노란 선, 게이지는 두 번 왕복) → ② 정확도(가운데 초록 칸). 퍼팅은 경사를 보고 직접 조준.<br>
-    <b>룰</b>: 홀마다 양파(더블파)에서 픽업. 그린에서 핀까지 퍼터 한 자루 길이(약 87cm) 안이면 컨시드 OK(1타 추가).<br><b>내기</b>: 홀 승자가 나머지에게 100바트씩. 버디가 나오면 다음 홀 배판(×2), 전원 무승부면 따당(×4).<br>
+    <b>룰</b>: 홀마다 양파(더블파)에서 픽업. 그린에서 핀까지 퍼터 한 자루 길이(약 87cm) 안이면 컨시드 OK(1타 추가).<br><b>내기</b>(타당 기준): 홀 1등이 나머지에게서 판돈씩. 버디 이상·양파가 나오면 그 홀 배판(×2). 공동 1등은 각자 받고 끝(이월 없음).<br>
     <b>시황</b>: 라운드 시작과 3홀마다 아침 주식 시황 버프/디버프.<br><b>폭우 지옥훈련</b>: 랜덤 호우경보 시 로컬 룰(박힌 공 무벌타 드롭·물 찬 벙커 구제·프리퍼드 라이·더블파 픽업) 적용.<br><b>그늘집</b>: 3·6번째 홀 뒤 육개장·짬뽕·흑염소로 멘탈 회복.
   </div>
 </div></div>
@@ -1631,7 +1634,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.38.7';
+const VERSION = 'v0.38.8';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1656,6 +1659,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.38.8', '2026-11-25', ['🧹 설정 화면 간소화: 기본은 코스·구간·인원·내기만, 나머지(캐디·목소리·식사·계산·티타임·보험·진동·음성·날씨)는 "⚙ 세부 설정"에 접어 둠 (안 건드려도 기본값으로 진행)', '팀 편성·팀전 방식은 내기를 팀전으로 고를 때만 표시', '멀티 방 규칙도 코스·구간·내기·판돈만 기본, 나머지는 "⚙ 세부 규칙"', '하단 내기 룰 안내를 현재 규칙(당홀 정산·그 홀 배판)으로 수정']],
  ['v0.38.7', '2026-11-25', ['📰 라운드 시작 속보 6종 추가 — 오늘 단톡 소식(만취 합류 밑밥, 핸디 철회, 멀리건 0개, 6명이라 다점먹골 무산, 13:37 캔슬)']],
  ['v0.38.6', '2026-11-25', ['🤝 타당 무승부 = 당홀 정산 (기본): 공동 1등이 각자 나머지에게서 판돈을 받고 끝, 다음 홀 이월 없음 (유태님 요청)', '전원 무승부면 그 홀 정산 없음', '멀티 방 규칙에서 "무승부: 다음 홀 이월(따당)"도 선택 가능']],
  ['v0.38.5', '2026-11-25', ['🐞 데일리 챌린지·월례 주통배 화면이 "불러오는 중…"에서 멈추던 문제 수정 — 서버 요청 10초 제한, 기록 5종 동시 불러오기, 로딩 중 닫기 버튼, 실패 시 안내']],
@@ -1794,7 +1798,9 @@ nlisten('/on', '', d => { onl = d || {}; if (clubOpen) clubPeers(); try { mOnlin
   if (clubOpen) clubPeers(); }
 // ---------- 멀티 플레이 방 ----------
 let MR = null;
-function mShow() { if (needCh()) return; setTimeout(mRoomList, 200); try { [['rCourse', 'oCourse'], ['rPart', 'oPart'], ['rBet', 'oBet'], ['rPay', 'oPay'], ['rTod', 'oTod']].forEach(([a, b]) => { if (!$('#' + a).options.length) { $('#' + a).innerHTML = $('#' + b).innerHTML; $('#' + a).value = $('#' + b).value; } }); } catch (e) { } ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mMsg').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; netBeat('menu'); mOnline(); }
+function teamOptSync() { const on = (id, box) => { const v = ($('#' + id) || {}).value === 'team'; document.querySelectorAll(box + ' .teamOpt').forEach(e => e.style.display = v ? '' : 'none'); }; on('oBet', '.opts'); on('rBet', '#mRules'); }
+document.addEventListener('change', e => { if (e.target && (e.target.id === 'oBet' || e.target.id === 'rBet')) teamOptSync(); }); setTimeout(teamOptSync, 300);
+function mShow() { setTimeout(teamOptSync, 250); if (needCh()) return; setTimeout(mRoomList, 200); try { [['rCourse', 'oCourse'], ['rPart', 'oPart'], ['rBet', 'oBet'], ['rPay', 'oPay'], ['rTod', 'oTod']].forEach(([a, b]) => { if (!$('#' + a).options.length) { $('#' + a).innerHTML = $('#' + b).innerHTML; $('#' + a).value = $('#' + b).value; } }); } catch (e) { } ['sTitle', 'sMenu'].forEach(i => $('#' + i).classList.remove('on')); $('#sMulti').classList.add('on'); $('#mEntry').style.display = 'block'; $('#mLobby').style.display = 'none'; const me = CH.find(c => c.id === G.me); $('#mMsg').innerHTML = NET.ok ? `🟢 온라인 · 내 캐릭터 <b style="color:${me.ink}">${me.name}</b> Lv.${lvOf(G.me)} · 지갑 ${SV.wallet.toLocaleString()}밧` : '🔴 서버에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 열어 주세요.'; $('#mCreateBtn').disabled = $('#mJoinBtn').disabled = !NET.ok; netBeat('menu'); mOnline(); }
 async function mRoomList() { const el = $('#mRoomList'); if (!el || !$('#sMulti').classList.contains('on') || $('#mEntry').style.display === 'none') return; if (!NET.ok) { el.textContent = '서버 연결 안 됨'; return; }
   try { const r = await nreq('GET', '/room') || {}, now = Date.now(); const rows = Object.entries(r).filter(([k, v]) => v && v.st === 'lobby' && now - (v.ts || 0) < 3 * 3600000 && Object.keys(v.pl || {}).length).sort((a, b) => b[1].ts - a[1].ts).slice(0, 6);
     el.innerHTML = rows.length ? rows.map(([k, v]) => { const ids = Object.keys(v.pl || {}), host = CH.find(c => c.id === ids[0]) || {}, C = COURSES[v.cfg && v.cfg.course] || {}; return `<button data-room="${k}" style="display:block;width:100%;text-align:left;font:inherit;font-size:13px;margin:4px 0;padding:8px;border:0;background:#1d3a24;color:#e8efe6">🚪 <b style="color:#ffb627">${k}</b> · ${ids.map(i => (CH.find(c => c.id === i) || {}).name).join(', ')} (${ids.length}명)<br><small style="opacity:.8">${C.name || ''} · ${({ front: '앞 9홀', back: '뒤 9홀', quick: '3홀', full: '18홀' })[v.cfg && v.cfg.part] || ''} · ${BETN[(v.cfg && v.cfg.bet) || 'tadang']} ${((v.cfg && v.cfg.unit) || 100).toLocaleString()}밧 · ${Math.round((now - v.ts) / 60000)}분 전 생성</small></button>`; }).join('') : '<span style="opacity:.7">지금 열려 있는 방이 없습니다. 위에서 방을 만들어 보세요.</span>';
