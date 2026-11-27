@@ -251,7 +251,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <div class="cards" id="cards"></div>
   <div class="opts">
     <label style="display:none">모드 <select id="oMode"><option value="s">싱글 (CPU와)</option><option value="m">멀티 (온라인 대결)</option></select></label>
-    <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="grn">Stage 3 · 그린우드 (27홀 A·B·C)</option><option value="scr">보너스 · 삼화 스크린골프장</option></select></label>
+    <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="grn">Stage 3 · 그린우드 (27홀 A·B·C)</option><option value="swm">Stage 4 · 서밋 윈드밀 (🌙 야간 전용)</option><option value="scr">보너스 · 삼화 스크린골프장</option></select></label>
     <button class="btn" id="rouBtn" type="button">🎡 조작 돌림판</button>
     <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체</option><option value="c" hidden>C코스 9홀</option><option value="bc" hidden>B+C 18홀</option><option value="ac" hidden>A+C 18홀</option></select></label>
     <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
@@ -488,6 +488,32 @@ const COURSES = {
      25: { fb: [[.3, 'L', 6], [.42, 'C', 6], [.6, 'r', 5], [.75, 'l', 6]], gbunk: 3, name: '긴 직선 파5' },
      26: { fb: [[.45, 'L', 7], [.55, 'r', 5]], gbunk: 2, name: '휘어지는 좁은 파4' },
      27: { water: [{ s: .06, lat: 'C', ry: 6 }, { s: .45, lat: 'R', rx: 26, ry: 210, gap: 10 }], fb: [[.4, 'R', 7], [.55, 'R', 8], [.7, 'R', 7], [.62, 'r', 4]], name: '오른쪽 호수 + 웨이스트 벙커 · 핸디캡 1번' } } },
+ swm: { name: '서밋 윈드밀 GC', night: true, rain: .3, fw: 32, greenR: [13, 12], windMul: 1.1, slopeMul: 1.2, roughK: 1.25, p3water: false, td: 2, bunkMul: 1.6, bunkK: .85,
+   note: '🌙 야간 전용 구장 · 닉 팔도 설계(1993) · 수완나품 공항 옆 방나-뜨랏 · 거의 모든 홀에 호수 · 평지지만 페어웨이 정확도 필수 · 빠른 그린 · 카트 페어웨이 진입 금지 · 보수공사·슬로 플레이 이슈 (파·핸디캡 스코어카드 실측, 화이트티 환산, 가민 홀 지도 기준)',
+   par: [5,3,4,3,4,4,5,4,4, 4,4,3,4,5,4,4,3,5],
+   yd:  [573,143,347,195,379,416,463,347,402, 353,365,141,402,453,365,341,177,530],
+   hcpIdx: [3,17,9,15,7,1,11,13,5, 10,6,18,2,14,8,12,16,4],
+   // 가민 홀 지도(2026-11-27 부장님 제공) 판독 — 대부분 왼쪽 호수, 티샷 물 건너기, 12번 아일랜드 그린
+   dogs: { 1: 'S', 2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 11: 'L', 12: 'S', 13: 'S', 14: 'S', 15: 'S', 16: 'S', 17: 'S', 18: 'S' },
+   special: {
+     1: { water: [{ s: .5, lat: 'L', rx: 34, ry: 230, gap: 6 }, { s: .05, lat: 'C', ry: 6 }], fb: [[.55, 'L', 9], [.78, 'L', 8], [.62, 'R', 8]], gbunk: 4, td: 3, name: '왼쪽 전체 큰 호수 파5 · 오른쪽 나무 줄' },
+     2: { noP3: true, water: [{ s: .5, lat: 'L', rx: 30, ry: 80, gap: 2 }], gbunk: 4, td: 3, name: '파3 · 왼쪽 호수 붙은 그린 · 오른쪽 벙커 줄' },
+     3: { water: [{ s: .45, lat: 'L', rx: 28, ry: 150, gap: 4 }, { s: .06, lat: 'C', ry: 8 }], fb: [[.6, 'R', 7], [.7, 'r', 6]], gbunk: 2, td: 2, name: '물 건너 티샷 · 왼쪽 호수 따라' },
+     4: { noP3: true, water: [{ s: .5, lat: 'L', rx: 28, ry: 90, gap: 2 }, { s: .45, lat: 'R', rx: 20, ry: 40, gap: 14 }], gbunk: 3, td: 3, name: '파3 · 양쪽 물 · 그린 왼쪽 호수' },
+     5: { water: [{ s: .3, lat: 'l', rx: 16, ry: 40, gap: -4 }, { s: .22, lat: 'C', ry: 5 }], fb: [[.78, 'L', 9], [.7, 'R', 6]], gbunk: 2, td: 3, name: '티 앞 연못·개울 · 나무 터널' },
+     6: { water: [{ s: .66, lat: 'C', ry: 5 }, { s: .58, lat: 'L', rx: 24, ry: 60, gap: 14 }], fb: [[.25, 'L', 8], [.82, 'L', 8], [.85, 'R', 8]], gbunk: 2, td: 3, name: '핸디캡 1번 · 그린 앞 개울 · 왼쪽 연못' },
+     7: { water: [{ s: .2, lat: 'C', ry: 9 }, { s: .55, lat: 'L', rx: 26, ry: 170, gap: 14 }, { s: .82, lat: 'R', rx: 18, ry: 40, gap: -4 }], fb: [[.42, 'C', 11], [.5, 'l', 8]], gbunk: 3, td: 3, name: '가운데 대형 웨이스트 벙커 · 그린 오른쪽 연못' },
+     8: { water: [{ s: .5, lat: 'L', rx: 30, ry: 160, gap: 4 }, { s: .25, lat: 'R', rx: 22, ry: 40, gap: 8 }, { s: .05, lat: 'C', ry: 6 }], fb: [[.75, 'L', 8], [.8, 'R', 6]], gbunk: 2, td: 2, name: '왼쪽 호수 · 티 오른쪽 연못' },
+     9: { water: [{ s: .5, lat: 'L', rx: 30, ry: 180, gap: 6 }, { s: .06, lat: 'C', ry: 5 }], fb: [[.62, 'R', 7], [.85, 'L', 6]], gbunk: 2, td: 3, name: '개울 건너 티샷 · 왼쪽 호수 · 핸디캡 5' },
+     10: { water: [{ s: .25, lat: 'L', rx: 26, ry: 80, gap: 2 }, { s: .82, lat: 'R', rx: 16, ry: 30, gap: 10 }], fb: [[.4, 'R', 8], [.8, 'R', 9], [.88, 'L', 6]], gbunk: 2, td: 3, name: '티 왼쪽 호수 · 오른쪽 벙커' },
+     11: { water: [{ s: .6, lat: 'R', rx: 26, ry: 120, gap: 4 }], fb: [[.55, 'R', 7], [.85, 'L', 6]], gbunk: 2, td: 3, name: '왼쪽으로 휘는 파4 · 오른쪽 호수 그린' },
+     12: { noP3: true, water: [{ s: .62, lat: 'C', ry: 30 }, { s: .8, lat: 'L', rx: 18, ry: 40, gap: 2 }, { s: .82, lat: 'R', rx: 18, ry: 40, gap: 2 }], gbunk: 3, slopeK: 1.3, td: 2, name: '시그니처 아일랜드 그린 파3' },
+     13: { water: [{ s: .5, lat: 'L', rx: 28, ry: 180, gap: 4 }, { s: .06, lat: 'C', ry: 7 }], fb: [[.5, 'l', 8], [.7, 'L', 8], [.55, 'R', 10]], gbunk: 2, td: 2, name: '핸디캡 2번 · 물 건너 티샷 · 왼쪽 호수' },
+     14: { water: [{ s: .45, lat: 'L', rx: 30, ry: 170, gap: 2 }, { s: .08, lat: 'C', ry: 9 }], fb: [[.55, 'R', 11], [.85, 'L', 6]], gbunk: 2, td: 3, name: '물 건너 티샷 파5 · 왼쪽 호수 · 오른쪽 긴 벙커' },
+     15: { water: [{ s: .85, lat: 'R', rx: 18, ry: 40, gap: 6 }], fb: [[.45, 'C', 9], [.5, 'l', 8], [.25, 'R', 6]], gbunk: 2, td: 3, name: '나무 터널 · 가운데 긴 벙커 · 그린 오른쪽 연못' },
+     16: { water: [{ s: .5, lat: 'L', rx: 26, ry: 170, gap: 14 }, { s: .06, lat: 'C', ry: 7 }], fb: [[.35, 'L', 9], [.55, 'L', 10], [.75, 'R', 6]], gbunk: 3, td: 3, name: '왼쪽 호수 + 긴 웨이스트 벙커' },
+     17: { noP3: true, water: [{ s: .5, lat: 'L', rx: 30, ry: 110, gap: 10 }, { s: .08, lat: 'C', ry: 6 }], fb: [[.55, 'L', 10]], gbunk: 3, td: 3, name: '파3 · 호수와 그린 사이 대형 벙커' },
+     18: { water: [{ s: .5, lat: 'L', rx: 34, ry: 220, gap: 4 }, { s: .06, lat: 'C', ry: 8 }, { s: .92, lat: 'R', rx: 14, ry: 30, gap: 8 }], fb: [[.35, 'R', 8], [.55, 'R', 8], [.7, 'R', 7]], gbunk: 3, td: 3, name: '피니시 파5 · 왼쪽 큰 호수 · 핸디캡 4' } } },
  rls: { name: '로얄레이크사이드 GC', rain: .6, drv: .05, fw: 36, greenR: [15, 13], windMul: 1.25, slopeMul: 1, p3water: true, lakes: true, td: 2, bunkMul: 1.7, bunkK: .75,
    note: '1,999밧 프로모션 · 방파콩강 하구, 코스를 두른 라군과 가로지르는 개울 · 넓은 페어웨이에 웨이스트 벙커 · 기본 배판 (파·화이트티 야드 실측, 7·10·14·18번홀 공개 코스 가이드 반영)',
    par: [5,4,3,4,4,3,5,4,4, 5,4,3,4,4,3,4,4,5],
@@ -560,7 +586,7 @@ function inWater(w, p) { if (w.t === 'e') return ((p.x - w.x) / w.rx) ** 2 + ((p
 // 나무: 코스별 밀도(td 0~3, 위성사진 기준)로 러프에 배치. 공이 나무 밑(반경 5.5)에 서면 '나무 밑' 라이
 const TREE_TH = [.12, .3, .48, .68];
 function treeCell(h, ix, iy) { const r = hsh(ix + 91, iy + 17); if (r > TREE_TH[h.td == null ? 2 : h.td]) return null; return { x: (ix + hsh(iy, ix + 3)) * 24, y: (iy + hsh(ix, iy + 5)) * 24 }; }
-const TLINE = { bpk: .78, rls: .6, pcc: .5, gv: .45, grn: .5, scr: .35 };
+const TLINE = { swm: .62, bpk: .78, rls: .6, pcc: .5, gv: .45, grn: .5, scr: .35 };
 function lineTree(h, ix, iy) { const dn = TLINE[G.course] || 0; if (!dn || h.noLine) return null; const r = hsh(ix * 3 + 7, iy * 5 + 53); if (r > dn) return null; const wp = { x: (ix + .2 + hsh(iy + 11, ix) * .6) * 12, y: (iy + .2 + hsh(ix + 13, iy) * .6) * 12 }, d = pathInfo(h, wp).d, a = h.fw / 2 + 13, b = h.ob - 2; if (d < a || d > b) return null; if (h.pinPos && dist(wp, h.pinPos) < 30) return null; if (Math.hypot(wp.x, wp.y) < 18) return null; return wp; }
 function nearTree(h, p) { if (h.pinPos && dist(p, h.pinPos) < 30) return false; const cx = Math.floor(p.x / 24), cy = Math.floor(p.y / 24); for (let iy = cy - 1; iy <= cy + 1; iy++) for (let ix = cx - 1; ix <= cx + 1; ix++) { const t = treeCell(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5.5) return true; } const lx = Math.floor(p.x / 12), ly = Math.floor(p.y / 12); for (let iy = ly - 1; iy <= ly + 1; iy++) for (let ix = lx - 1; ix <= lx + 1; ix++) { const t = lineTree(h, ix, iy); if (t && Math.hypot(p.x - t.x, p.y - t.y) <= 5) return true; } return false; }
 function terr(h, p) {
@@ -591,7 +617,7 @@ const CLUBS = [
 const LIE = { tee: { d: 1.03, a: 1, top: 1 }, fairway: { d: 1, a: 1, top: 1 }, fringe: { d: .96, a: 1.05, top: 1.1 }, rough: { d: .82, a: 1.4, top: 1.8 }, trees: { d: .62, a: 1.6, top: 2 }, bunker: { d: .58, a: 1.7, top: 2.2 }, green: { d: 1, a: 1, top: 1 } };
 const ROLLM = { tee: 1, fairway: 1, fringe: .8, rough: .35, trees: .1, bunker: 0, green: .5 };
 const LIENAME = { tee: '티잉', fairway: '페어웨이', fringe: '프린지', rough: '러프', trees: '나무 밑', bunker: '벙커', green: '그린' };
-function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; { const CK = COURSES[G.course] || {}, k = lie === 'rough' ? (CK.roughK || 1) : lie === 'bunker' ? (CK.bunkK || 1) : 1; if (k !== 1) L = { d: 1 - (1 - L.d) * k, a: 1 + (L.a - 1) * k, top: 1 + (L.top - 1) * k }; } if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
+function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; { const CK = COURSES[G.course] || {}, k = lie === 'rough' ? (CK.roughK || 1) : lie === 'bunker' ? (CK.bunkK || 1) : 1; if (k !== 1) L = { d: 1 - (1 - L.d) * k, a: 1 + (L.a - 1) * k, top: 1 + (L.top - 1) * k }; } if (G.swmRepair && lie === 'rough') L = { d: 1 - (1 - L.d) * 1.15, a: 1 + (L.a - 1) * 1.15, top: 1 + (L.top - 1) * 1.15 }; if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
 const rainImm = ch => ['gm', 'du', 'yt'].includes(ch.id) || (isMe(ch) && G.gear.rain);
 const immune = ch => ch.id === 'hw' || ch.id === 'jt';
 const moodF = st => { const m = (st.mood || 0) + (st.bonus || 0) + (st.cond || 0); return (m > 0 ? .88 : m < 0 ? 1.12 : 1) * clamp(1 - .06 * (st.beer || 0), .7, 1.4); };
@@ -857,7 +883,7 @@ const xpFor = lv => lv <= 20 ? 60 * (lv - 1) * (lv - 1) : XP20 + (lv - 20) * XP_
 const lvAccF = lv => lv <= 20 ? 1 - .008 * (lv - 1) : 1 - .008 * 19 - .002 * (lv - 20);
 const lvDistF = lv => lv <= 20 ? 1 + .004 * (lv - 1) : 1 + .004 * 19 + .0006 * (lv - 20);
 const isMe = ch => !!(G.human && G.human.ch === ch && G.phase !== 'title');
-const lvF = ch => (isMe(ch) ? lvAccF(lvOf(ch.id)) * (1 - .01 * rebOf(ch.id)) : 1) * (G.tod === 'night' ? 1.12 : 1);
+const lvF = ch => (isMe(ch) ? lvAccF(lvOf(ch.id)) * (1 - .01 * rebOf(ch.id)) : 1) * (G.tod === 'night' ? 1.12 : 1) * (G.lightsOut === G.hi ? 1.1 : 1);
 const rebOf = id => Math.min(5, ((SV.reb || {})[id]) || 0);      // 레벨당 편차 -0.8%
 // 실제 스코어 반영: 최근 3회 평균과 기준 타수의 차이로 실력 보정
 const BASE18 = { sg: 99, yt: 86, gy: 84, gm: 86, hw: 98, du: 92, jt: 90, ej: 96 };
@@ -956,13 +982,13 @@ function wear(slot, amt) { const id = equipOf(G.human.ch, slot); if (!id) return
 // ================= 월급 · 그린피 · 캐디 =================
 const DAILY_PAY = 1000, SALARY = 0, CADDIE_TIP = 400, LOCKER = 100, CART_FEE = n => Math.round(700 * n / 18 / 10) * 10, SELL_RATE = .5;
 // 18홀 기준 그린피(밧). bpk: 평일 1,300 / 주말 2,500, rls: 1,999 프로모션, pcc: 쿠폰가 2,050, gv·scr: 추정
-const GREENFEE = { bpk: d => (d === 0 || d === 6) ? 2500 : 1300, rls: () => 1999, grn: d => (d === 0 || d === 6) ? 2000 : 1500, scr: () => 600 };
+const GREENFEE = { swm: d => (d === 0 || d === 6) ? 3250 : 1800, bpk: d => (d === 0 || d === 6) ? 2500 : 1300, rls: () => 1999, grn: d => (d === 0 || d === 6) ? 2000 : 1500, scr: () => 600 };
 function greenFee(k, n) { const f = (GREENFEE[k] || (() => 1500))(new Date().getDay()); return Math.round(f * n / 18 / 10) * 10; }
 // 회원권(10회분): 18홀 10회 가격의 약 70%. 라운드마다 친 홀 수만큼(18홀=1회) 차감되고 그린피는 0
-const MEMPRICE = { bpk: 11000, rls: 14000, grn: 12000, scr: 4000 };
+const MEMPRICE = { swm: 13000, bpk: 11000, rls: 14000, grn: 12000, scr: 4000 };
 // 정회원권 (태국 실제 방식): 한 번 사면 그린피 무료(캐디피·카트비는 별도), 1년마다 연회비, 팔 때는 시세의 90%
 // 시세: 파타야CC 180,000 · 로얄레이크사이드 300,000 (태국 회원권 거래소 공시가), 나머지는 추정
-const MEMB = { bpk: [250000, 12000, 1], rls: [300000, 12000, 0], grn: [150000, 10000, 1], scr: [30000, 0, 1] };
+const MEMB = { swm: [280000, 12000, 1], bpk: [250000, 12000, 1], rls: [300000, 12000, 0], grn: [150000, 10000, 1], scr: [30000, 0, 1] };
 const isMember = k => !!(SV.memb && SV.memb[k]);
 function membDue() { led('🎫 회원권 연회비'); if (!SV.memb) return; const now = Date.now(); for (const k of Object.keys(SV.memb)) { const m = SV.memb[k], fee = (MEMB[k] || [0, 0])[1]; if (!fee) continue; while (m.due && m.due <= now) { SV.wallet -= fee; m.due += 365 * 864e5; setTimeout(() => toast(`🎫 ${COURSES[k].name} 연회비 -${fee.toLocaleString()}밧`, '#ffd27a'), 1500); } } saveSV(); }
 function membHTML() { return `<div class="box"><h3>🎫 골프장 정회원권</h3><div style="font-size:11.5px;opacity:.85;margin-bottom:4px">태국 실제 방식: 한 번 사면 그 골프장 그린피 무료(캐디피·카트비는 별도), 1년마다 연회비 자동 차감, 팔 때는 시세의 90%. ✱표는 시세 추정.</div>` + Object.keys(MEMB).filter(k => COURSES[k]).map(k => { const [pr, yf, est] = MEMB[k], on = isMember(k); return `<div class="gear ${on ? 'eq' : ''}"><div>${COURSES[k].name}${est ? ' ✱' : ''}<small>회원권 ${pr.toLocaleString()}밧 · 연회비 ${yf ? yf.toLocaleString() + '밧' : '없음'} · 비회원 그린피 18홀 ${(GREENFEE[k] ? GREENFEE[k](new Date().getDay()) : 0).toLocaleString()}밧</small><small style="color:#7fe09a;opacity:1">${on ? `정회원 · 다음 연회비 ${new Date(SV.memb[k].due).toLocaleDateString('ko-KR')}` : '미보유'}${memLeft(k) > 0 ? ` · 예전 10회권 남은 ${memLeft(k)}회` : ''}</small></div>${on ? `<button class="btn" data-msell="${k}">팔기 ${Math.round(pr * .9).toLocaleString()}밧</button>` : `<button class="btn" data-memb="${k}" ${SV.wallet < pr + yf ? 'disabled' : ''}>${(pr + yf).toLocaleString()}밧</button>`}</div>`; }).join('') + '</div>'; }
@@ -1084,7 +1110,7 @@ function newGame() {
     else if (tm === 'port') { A = G.pl.filter(p => p.ch.port === 1); B = G.pl.filter(p => p.ch.port !== 1); }
     if (!A || !A.length || !B.length) { const r = mulb((G.qSeed || 7) * 17 + 3), a = G.pl.slice().sort(() => r() - .5), h = Math.ceil(a.length / 2); A = a.slice(0, h); B = a.slice(h); G.teamTm = 'rand'; } else G.teamTm = tm;
     if (G.pl.length < 2 || !B.length) { G.bet = 'tadang'; } else { G.teams = [A, B]; G.teamW = [0, 0]; const N = TEAMN[G.teamTm]; setTimeout(() => chat('📡 AI특파원', `👥 팀전! ${N[0]}(${A.map(p => p.ch.short).join('·')}) vs ${N[1]}(${B.map(p => p.ch.short).join('·')}) — ${G.tfmt === 'match' ? '매치: 홀마다 팀 베스트볼' : '스트로크: 팀에서 제일 잘 친 사람 총타수'}, 진 팀이 밥값·캐디피`, '#ffd54a'), 1500); } }
-  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); G.ins = !G.multi && (G.resuming ? !!G.resuming.ins : $('#oIns').checked); if (G.ins && !G.resuming) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (R() < .45) setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(PRENEWS), '#ffd54a'); } catch (e) { } }, 2600); if (G.multi) mSetup(); else if (G.async) asyncSetup(G.async.cfg); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
+  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); swmSetup(); G.ins = !G.multi && (G.resuming ? !!G.resuming.ins : $('#oIns').checked); if (G.ins && !G.resuming) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (R() < .45) setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(PRENEWS), '#ffd54a'); } catch (e) { } }, 2600); if (G.multi) mSetup(); else if (G.async) asyncSetup(G.async.cfg); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
   G.human = G.pl.find(p => p.human); G.hi = 0; G.allNews = [];
   if (G.resuming) { try { resumeApply(G.resuming); } catch (e) { console.error(e); } G.resuming = null; }
   $('#sTitle').classList.remove('on'); $('#sFinal').classList.remove('on');
@@ -1133,14 +1159,14 @@ function rollStock() {
   if (e.up && e.ids.includes('yt')) { const gy = G.pl.find(p => p.ch.id === 'gy'); const ytp = G.pl.find(p => p.ch.id === 'yt'); if (gy && ytp) { gy.money += 300; ytp.money -= 300; body += '<div class="box"><h3>💸 유태 덕에 70%</h3>안경용 보너스 +300바트 (안유태가 냄)</div>'; } }
   if (G.pl.some(p => p.ch.id === 'jt') && G.hi + 3 < G.nHoles) body += `<div class="box"><h3>📰 K대표 아침 브리핑</h3>다음 시황 예고: ${G.nextStock.t}</div>`;
   if (G.hi === 0) body = `<div class="box"><h3>💳 체크인</h3><div style="font-size:13px;line-height:1.7">${G.multi ? `${G.membFree ? `🎫 정회원 · 그린피 무료 · ` : G.memUsed ? `🎫 예전 10회권 사용 (남은 ${memLeft(G.course)}회) · ` : ''}그린피 -${G.costFee.toLocaleString()}밧 (${G.nHoles}홀) · 캐디팁 -${CADDIE_TIP}밧 · 카트비+락커·샤워 -${(CART_FEE(G.nHoles) + LOCKER).toLocaleString()}밧${G.cad.des ? ` · 캐디 지정료 -${CAD_FEE.toLocaleString()}밧` : ''}${G.stampUse ? `<br>🎟 연습 스탬프 ${G.stampUse}개 사용 → <b style="color:#7fe09a">+${G.stampOff.toLocaleString()}밧 할인</b> (남은 ${SV.stamp | 0}개)` : ''}${G.mealBill ? `<br>🍽 식사 ${G.pay === 'each' ? '각자 계산 -' + G.meal[2] + '밧' : G.pay === 'treat' ? (G.mealPaid ? `방장인 내가 쐈다 -${G.mealBill.toLocaleString()}밧` : `${G.payWho}이(가) 쐈다 (공짜)`) : `외상 ${G.mealBill.toLocaleString()}밧 — 라운드 꼴찌가 계산`}` : ''}` : '싱글 모드(연습 라운드): 비용 없음 · 내기 결과는 지갑에 반영 안 됨. 대신 🎟 연습 스탬프가 쌓여 멀티 모드 그린피·캐디비를 깎아 줍니다 (1개 = 100밧)'}${G.meal[2] ? `<br>${G.meal[1]} — 오늘 파워 +${(G.mealPow * 100).toFixed(1)}%` : ''}<br>지갑 <b style="color:${SV.wallet < 0 ? '#ff9a9a' : '#ffb627'}">${SV.wallet.toLocaleString()}밧</b>${SV.wallet < 0 ? ' (마이너스 통장)' : ''}<br>🧢 캐디 ${G.cad.no}번 — ${G.cad.d}</div></div>` + body;
-  if (G.hi === 0) { const C = COURSES[G.course]; const intro = { bpk: '🎡 돌림판 결과는 리버사이드입니다 (홈구장)', rls: '💸 렉싸 1,999밧 프로모션 (심리적 저항선 2,500밧)', pcc: '🎫 안경용 쿠폰(2,050밧)으로 입장 · 끝나면 시암가든', scr: '🏠 삼화 스크린골프장 · 정b 우드 디버프', gv: '☠ 그린밸리 — 2포트 금지구장 하드코어' }[G.course]; body = `<div class="box"><h3>${C.name}</h3>${intro || ''}</div>` + body; if (G.wx) body += `<div class="box"><h3>🌦 현지 실시간 날씨</h3>${wxText(G.wx)}</div>`; if (G.rain) body += '<div class="box" style="box-shadow:inset 0 0 0 2px #4a8fe0"><h3>☔ 남투엄 안따라이 — 호우경보!</h3><div style="font-size:12px;line-height:1.6">폭우 지옥훈련 로컬 룰: 박힌 공 무벌타 드롭 · 물 찬 벙커 구제 · 진흙 공 프리퍼드 라이 · 더블파 픽업 · 천둥 시 30분 대피<br>이규만·윤대욱·안유태는 폭우 면역</div></div>'; }
+  if (G.hi === 0) { const C = COURSES[G.course]; const intro = { swm: '🌙 야간 전용 · 조명 켜진 닉 팔도 코스 · 야간 그린피 평일 1,800 / 주말 3,250밧 · 카트 페어웨이 진입 금지(카트도로만)', bpk: '🎡 돌림판 결과는 리버사이드입니다 (홈구장)', rls: '💸 렉싸 1,999밧 프로모션 (심리적 저항선 2,500밧)', pcc: '🎫 안경용 쿠폰(2,050밧)으로 입장 · 끝나면 시암가든', scr: '🏠 삼화 스크린골프장 · 정b 우드 디버프', gv: '☠ 그린밸리 — 2포트 금지구장 하드코어' }[G.course]; body = `<div class="box"><h3>${C.name}</h3>${intro || ''}</div>` + body; if (G.wx) body += `<div class="box"><h3>🌦 현지 실시간 날씨</h3>${wxText(G.wx)}</div>`; if (G.rain) body += '<div class="box" style="box-shadow:inset 0 0 0 2px #4a8fe0"><h3>☔ 남투엄 안따라이 — 호우경보!</h3><div style="font-size:12px;line-height:1.6">폭우 지옥훈련 로컬 룰: 박힌 공 무벌타 드롭 · 물 찬 벙커 구제 · 진흙 공 프리퍼드 라이 · 더블파 픽업 · 천둥 시 30분 대피<br>이규만·윤대욱·안유태는 폭우 면역</div></div>'; }
   G.stockEv = e; G.stockHTML = body;
 }
 function leaderInfo() { if (!G.pl[0].scores.length) return null; const t = G.pl.map(p => ({ p, v: p.scores.reduce((a, b) => a + b, 0) })).sort((a, b) => a.v - b.v); return { top: t[0], last: t[t.length - 1] }; }
 function introHTML(h) {
   const me = G.human, cpu = G.multi ? [] : G.pl.filter(p => !p.human), L = [], C = COURSES[G.course] || {};
   const nar = t => L.push(`<div class="nar">${t}</div>`), line = (p, t) => L.push(`<div><b style="color:${p.ch.ink}">${p.ch.name}</b>${t}</div>`);
-  nar(`${G.rain ? '🌧 장대비가 그린을 때린다.' : pick(['☀ 촌부리의 태양이 뜨겁다.', '🌫 방파콩 강바람이 낮게 깔린다.', '🌇 그늘집 앞, 카트가 멈춘다.'])} ${C.name || ''} ${h.no}번홀 · 파${h.par} · ${Math.round(h.len)}야드.`);
+  nar(`${G.rain ? '🌧 장대비가 그린을 때린다.' : G.tod === 'night' ? pick(['🌙 조명탑 불빛 아래, 날벌레가 모여든다.', '🌙 빛 밖은 칠흑 같은 호수.', '🌙 저 멀리 공항 활주로 불빛이 깜빡인다.']) : pick(['☀ 촌부리의 태양이 뜨겁다.', '🌫 방파콩 강바람이 낮게 깔린다.', '🌇 그늘집 앞, 카트가 멈춘다.'])} ${C.name || ''} ${h.no}번홀 · 파${h.par} · ${Math.round(h.len)}야드.`);
   if (h.water.length) nar(pick(['물이 기다린다. 누군가는 오늘도 빠진다.', '연못이 조용히 입을 벌리고 있다.', '해저드 ' + h.water.length + '곳. 판통 느와르의 서막.']));
   if (h.par === 3) nar('파3. 니어핀과 홀인원의 꿈이 교차하는 곳.');
   if (G.mult > 1) nar(`판돈 ×${G.mult}. 공기가 무겁다.`);
@@ -1160,7 +1186,7 @@ function outroHTML(h) {
   return `<div class="story">${L.join('')}</div>`;
 }
 function showStock(cb, stock) { G.phase = 'stock'; const h = curHole(); $('#introT').textContent = `🎬 ${h.no}번홀 — 티업 전`; $('#stockBody').innerHTML = (G.hi === 0 ? storyIntroHTML(G.human.ch) : '') + introHTML(h) + (stock ? '<h3 style="color:#ffb627;margin:14px 0 4px">📰 아침 주식 시황</h3>' + G.stockHTML : ''); $('#sStock').scrollTop = 0; $('#sStock').classList.add('on'); $('#stockOk').onclick = () => { $('#sStock').classList.remove('on'); const e = G.stockEv, p = stock && e ? G.pl.find(q => q.ch.id === e.line[0]) : null; if (p) chat(p.ch.name, e.line[1], p.ch.ink); if (G.rain && !G.rainShown) { G.rainShown = true; chat('📡 정b특파원', '[속보] 남투엄 안따라이! 호우경보 발령, 폭우 지옥훈련 돌입', '#ff7a7a'); } cb(); }; }
-const WXPOS = { bpk: [13.60, 101.07], rls: [13.52, 101.00], grn: [13.16, 101.23] };
+const WXPOS = { swm: [13.62, 100.73], bpk: [13.60, 101.07], rls: [13.52, 101.00], grn: [13.16, 101.23] };
 const WX = {};
 async function fetchWx(k) { const p = WXPOS[k]; if (!p) return null; if (WX[k] && Date.now() - WX[k].at < 600000) return WX[k];
   try { const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000); const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p[0]}&longitude=${p[1]}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=Asia%2FBangkok`, { signal: ctl.signal }); clearTimeout(to); const c = (await r.json()).current; if (!c || typeof c.wind_speed_10m !== 'number') return null;
@@ -1197,6 +1223,7 @@ function startHole() {
     if (hm.ch.id === 'du' && G.hi + 1 < G.nHoles) { const nw = G.nextWind; chat('윤대욱', `전화 체크 완료. 다음 홀 바람 ${nw.s.toFixed(1)} ${ARR[Math.round(((nw.a + TAU) % TAU) / (Math.PI / 4)) % 8]} · 그린 경사 ${slopeText(HOLES[G.hi + 1])}`, hm.ch.ink); }
     if (sgp && sgp.cond > 0) chat('📡 정b특파원', '[속보] 정b 83타 각성 모드 돌입, 1포트 긴장', '#ff7a7a'); else if (sgp && sgp.cond < 0) chat('📡 정b특파원', '[속보] 백슬기 강림... 앞으로는 8자를 보지 않겠다', '#ff7a7a');
     if (G.rain && R() < .15) chat('📡 AI특파원', '⚡ 천둥! 타 미 파 롱, 끌랍 클럽하우 러이 (30분 대피 후 재개)', '#ff7a7a');
+    swmHole(h);
     if (perm) chat('권어진', '(웃참 실패) ㅋㅋㅋㅋ 부장님 머리...', '#ffb3c9');
     if (G.course === 'bpk' && h.no === 14) { const g = G.pl.find(p => p.ch.id === 'gy'); chat(g ? '안경용' : '📡 AI특파원', '14번홀 티샷 오른쪽 물가 벌레 조심', g ? g.ch.ink : '#ff7a7a'); }
     if (G.pl.some(p => p.ch.id === 'du') && h.water.length && R() < .6) chat('윤대욱', `태국 물웅덩이 안에 지뢰 많으니 다들 조심하세요 (이 홀 해저드 ${h.water.length}곳)`, '#cfd8df');
@@ -1458,7 +1485,7 @@ function finishHoleCore() {
 $('#nextBtn').onclick = () => {
   $('#sHole').classList.remove('on');
   if (G.hi + 1 >= G.nHoles) { finalScreen(); return; }
-  G.hi++; G.sta = Math.max(20, (G.sta == null ? 100 : G.sta) - (4.2 + (G.rain ? 1 : 0))); if (G.sta < 60) setTimeout(() => { try { toast(`🔋 체력 ${Math.round(G.sta)}% — 비거리 ${Math.round((1 - staD()) * 100)}% 감소, 샷이 흔들립니다. 그늘집 간식으로 보충하세요`, '#ffd27a'); } catch (e) { } }, 900); $('#top').style.display = 'flex'; $('#bottom').style.display = 'flex'; resumeSave(); startHole();
+  G.hi++; G.sta = Math.max(20, (G.sta == null ? 100 : G.sta) - (4.2 + (G.rain ? 1 : 0) + (G.course === 'swm' ? .8 : 0))); if (G.sta < 60) setTimeout(() => { try { toast(`🔋 체력 ${Math.round(G.sta)}% — 비거리 ${Math.round((1 - staD()) * 100)}% 감소, 샷이 흔들립니다. 그늘집 간식으로 보충하세요`, '#ffd27a'); } catch (e) { } }, 900); $('#top').style.display = 'flex'; $('#bottom').style.display = 'flex'; resumeSave(); startHole();
 };
 function fmtPar(v) { return v === 0 ? 'E' : (v > 0 ? '+' + v : '' + v); }
 function scoreTable(upto) {
@@ -1577,6 +1604,22 @@ function hsh(ix, iy) { let h = Math.imul(ix, 374761393) + Math.imul(iy, 66826526
 const TREE = ['..GGGG...', '.GGLLGG..', 'GGLLGGGG.', 'GGGGGGGG.', '.GGGGGG..', '..GGGG...', '....T....', '....T....'];
 function drawTree(x, y, ps) { ps = ps || 1; for (let r = 0; r < 8; r++) for (let c = 0; c < 9; c++) { const k = TREE[r][c]; if (k === '.') continue; bx.fillStyle = k === 'G' ? '#1d5a2b' : k === 'L' ? '#2f8a43' : '#5b3a1e'; bx.fillRect(x + c * ps, y + r * ps, ps, ps); } }
 function pxRing(cx0, cy0, r, col) { bx.fillStyle = col; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; bx.fillRect(Math.round(cx0 + Math.cos(a) * r) - 1, Math.round(cy0 + Math.sin(a) * r) - 1, 2, 2); } }
+// ===== 야간 조명 (서밋 윈드밀 야간 전용 + 일반 야간 티타임) =====
+let nbuf = null, nx = null;
+function holeLights(h) { if (h.lights) return h.lights; const L = [], perp = s => { const p = pathPoint(h, s), q = pathPoint(h, Math.min(h.len, s + 2)), r = pathPoint(h, Math.max(0, s - 2)); let tx = q.x - r.x, ty = q.y - r.y; const l = Math.hypot(tx, ty) || 1; return { p, nx: ty / l, ny: -tx / l }; };
+  let n = 0; for (let s = 10; s < h.len - 15; s += 52, n++) { const a = perp(s), side = n % 2 ? 1 : -1, off = side * (h.fw / 2 + 18); L.push({ x: a.p.x + a.nx * off, y: a.p.y + a.ny * off, r: 74 }); }
+  const g = h.g; [[-1, 0], [1, 0], [0, 1]].forEach(([dx, dy], i) => L.push({ x: g.x + dx * (g.rx + 20), y: g.y + dy * (g.ry + 20), r: 46, gl: 1 })); L.push({ x: -16, y: -6, r: 40 }); h.lights = L; return L; }
+function nightLights(h, X, Y, k) { if (!nbuf || nbuf.width !== BW || nbuf.height !== BH) { nbuf = document.createElement('canvas'); nbuf.width = BW; nbuf.height = BH; nx = nbuf.getContext('2d'); }
+  const out = G.lightsOut === G.hi, flick = G.lightsOut === G.hi && Math.sin(G.t * 23) > .92, L = holeLights(h).filter((l, i) => !out || l.gl || i % 2 === 0);
+  nx.globalCompositeOperation = 'source-over'; nx.clearRect(0, 0, BW, BH); nx.fillStyle = out ? 'rgba(3,6,16,.88)' : 'rgba(4,8,22,.8)'; nx.fillRect(0, 0, BW, BH); nx.globalCompositeOperation = 'destination-out';
+  for (const l of L) { const x = X(l.x), y = Y(l.y), r = l.r * k * (flick ? .6 : 1); if (x < -r || x > BW + r || y < -r || y > BH + r) continue; const gr = nx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.55, 'rgba(0,0,0,.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); nx.fillStyle = gr; nx.beginPath(); nx.arc(x, y, r, 0, TAU); nx.fill(); }
+  bx.drawImage(nbuf, 0, 0);
+  // 조명탑 (기둥 + 램프 + 노란 빛무리)
+  const ps = Math.max(1, Math.round(k * .7)); for (const l of holeLights(h)) { const x = Math.round(X(l.x)), y = Math.round(Y(l.y)); if (x < -10 || x > BW + 10 || y < -20 || y > BH + 10) continue; const on = L.includes(l); bx.fillStyle = '#4a4f57'; bx.fillRect(x, y - 12 * ps, ps, 12 * ps); bx.fillStyle = on ? '#fff3b0' : '#333'; bx.fillRect(x - 2 * ps, y - 14 * ps, 5 * ps, 2 * ps); if (on) { bx.fillStyle = 'rgba(255,236,150,.18)'; bx.beginPath(); bx.arc(x, y - 13 * ps, 5 * ps, 0, TAU); bx.fill(); } } }
+// ===== 서밋 윈드밀 사건사고 (2026 실제 리뷰·소식 기반) =====
+const SWNEWS = ['[현지] 서밋 윈드밀 페어웨이·그린 오버시딩 보수공사… "그린 상태 들쭉날쭉" 후기 속출', '[현지] "앞팀이 6볼" 슬로 플레이 불만… 카트는 카트도로만, 90도 룰도 없음', '[현지] 나이트골프 후기 "그린 엄청 빠름, 캐디 말 믿어라"', '[현지] 수완나품 공항 바로 옆… 머리 위 이착륙 굉음에 스윙 리듬 주의', '[현지] 야간 그린피 평일 1,800밧 · 주말 3,250밧 — 낮보다 반값'];
+function swmSetup() { G.lightsOut = -1; G.swmRepair = false; if (G.course !== 'swm') return; const sd = G.qSeed || (typeof MR !== 'undefined' && MR && MR.data && MR.data.cfg && MR.data.cfg.seed) || 7, r = mulb(sd * 13 + 77); if (r() < .4) G.swmRepair = true; if (r() < .45) G.lightsOut = 1 + Math.floor(r() * Math.max(1, ((typeof HOLES !== "undefined" && HOLES.length) || 9) - 1)); setTimeout(() => { try { chat('📡 AI특파원', '🌙 ' + pick(SWNEWS), '#ffd54a'); if (G.swmRepair) chat('📡 AI특파원', '🚧 오늘 보수공사 구역 운영 — 러프·수리지 라이가 더 나쁩니다', '#ffd27a'); } catch (e) { } }, 3200); }
+function swmHole(h) { if (G.course !== 'swm') return; if (G.lightsOut === G.hi) chat('📡 정b특파원', '[속보] ⚡ 조명탑 절반 정전! 어둠 속 티샷 — 정확도 추가 하락', '#ff7a7a'); else if (R() < .25) chat('📡 AI특파원', '✈ 수완나품 이륙기 굉음… 잠깐 멈췄다 치세요', '#cfe8ff'); else if (R() < .18) chat('📡 AI특파원', '🐢 앞팀 6볼 대기 중 — 카트도로 걸어서 이동, 체력 소모 ↑', '#cfe8ff'); if (h.no === 12) chat('📡 AI특파원', '🏝 12번 아일랜드 그린 — 밤엔 물이 안 보입니다', '#ff7a7a'); }
 function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (G.phase === 'title' || G.phase === 'final') { ctx.fillStyle = '#0a0d10'; ctx.fillRect(0, 0, Wd, Ht); return; }
@@ -1606,6 +1649,7 @@ function render() {
   // 핀 + 깃발
   const pn = h.pinPos, px = R_(X(pn.x)), py = R_(Y(pn.y)); bx.fillStyle = '#111'; bx.fillRect(px - 2, py - 1, 4, 2); bx.fillStyle = '#fff'; bx.fillRect(px, py - 14, 1, 14);
   const fw = Math.floor(G.t * 4) % 2; bx.fillStyle = '#e33'; bx.fillRect(px + 1, py - 14, 5 + fw, 2); bx.fillRect(px + 1, py - 12, 4 - fw, 2); bx.fillRect(px + 1, py - 10, 3 + fw, 1);
+  if (G.tod === 'night') nightLights(h, X, Y, k);
   const st = G.human;
   if (st && G.human.lie === 'green' && (G.phase === 'aim' || G.phase === 'power' || G.phase === 'acc')) { bx.strokeStyle = 'rgba(255,255,255,.6)'; bx.lineWidth = 1; for (const o of [[-8, 5], [8, 5], [-4, -7], [5, -6]]) { const ax = g.x + o[0], ay = g.y + o[1]; bx.beginPath(); bx.moveTo(X(ax), Y(ay)); bx.lineTo(X(ax + h.slope[0] * 18), Y(ay + h.slope[1] * 18)); bx.stroke(); } }
   // 조준선 (점선) + 목표 링
@@ -1661,7 +1705,7 @@ function partOpts(sel, k) { const el = $(sel); if (!el) return; const nn = !!(CO
 const cn = () => { feeNote(); const k = $('#oCourse').value; partOpts('#oPart', k); if ((COURSES[k] || {}).nines) { $('#oPart option[value=back]').disabled = false; $('#oPart option[value=full]').disabled = false; } $('#courseNote').textContent = k === 'fan' ? '가상의 9홀 코스입니다.' : '📍 ' + COURSES[k].note; $('#oPart option[value=back]').disabled = k !== 'fan' && COURSES[k].par.length < 10; $('#oPart option[value=full]').disabled = k === 'fan' || COURSES[k].par.length < 18; if (($('#oPart').value === 'back' && $('#oPart option[value=back]').disabled) || ($('#oPart').value === 'full' && $('#oPart option[value=full]').disabled)) $('#oPart').value = 'front'; hcpUi(); };
 const hcpUi = () => { $('#oHcp').checked = false; };
 $('#oCourse').onchange = () => { cn(); wxNote(); }; cn(); $('#oWx').onchange = wxNote; wxNote(); $('#oPart').onchange = () => { feeNote(); hcpUi(); }; $('#oCaddie').onchange = feeNote;
-$('#rouBtn').onclick = () => { const opts = ['bpk', 'rls', 'grn', 'scr'], b = $('#rouBtn'); let i = 0; b.disabled = true; const res = R() < .8 ? 'bpk' : pick(opts); const iv = setInterval(() => { $('#oCourse').value = opts[i++ % opts.length]; cn(); beep(500 + (i % 5) * 60, .03); }, 90); setTimeout(() => { clearInterval(iv); $('#oCourse').value = res; cn(); b.disabled = false; wxNote(); b.textContent = res === 'bpk' ? '🎡 돌림판 결과는 리버사이드입니다' : '🎡 다시 돌리기 (조작 실패?)'; }, 1700); };
+$('#rouBtn').onclick = () => { const opts = ['bpk', 'rls', 'grn', 'swm', 'scr'], b = $('#rouBtn'); let i = 0; b.disabled = true; const res = R() < .8 ? 'bpk' : pick(opts); const iv = setInterval(() => { $('#oCourse').value = opts[i++ % opts.length]; cn(); beep(500 + (i % 5) * 60, .03); }, 90); setTimeout(() => { clearInterval(iv); $('#oCourse').value = res; cn(); b.disabled = false; wxNote(); b.textContent = res === 'bpk' ? '🎡 돌림판 결과는 리버사이드입니다' : '🎡 다시 돌리기 (조작 실패?)'; }, 1700); };
 $('#goBtn').addEventListener('click', () => { try { if (window.matchMedia('(pointer:coarse)').matches && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { }); } catch (e) { } }, true);
 // ===== 장비 뽑기(가챠): 일반 60% 골프공 · 레어 27% 이전 모델 장비 · 에픽 10% 2026 최신 장비 · 전설 3% 골드 한정 장비 =====
 const GACHA_1 = 5000, GACHA_10 = 45000, GACHA_PITY = 50, GRADE = [['일반', '#cfd8e0', .60], ['레어', '#7fb8ff', .27], ['에픽', '#c88cff', .10], ['전설', '#ffcc33', .03]];
@@ -1750,7 +1794,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.46.0';
+const VERSION = 'v0.47.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1775,6 +1819,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.47.0', '2026-11-27', ['🌙 신규 Stage 4 · 서밋 윈드밀 GC — 야간 전용 구장 (닉 팔도 설계, 파72, 스코어카드 파·핸디캡 + 화이트티 야드, 부장님 가민 홀 지도 18장 반영 · 12번 아일랜드 그린)', '💡 조명탑 구현: 홀마다 페어웨이 양옆·그린·티에 조명탑, 빛 밖은 깜깜 (일반 야간 티타임도 동일 적용)', '⚡ 사건사고: 조명 절반 정전 홀(정확도↓) · 보수공사(러프 라이↓) · 앞팀 6볼 슬로플레이 · 공항 이착륙 굉음 · 카트 페어웨이 금지로 체력 소모↑', '💳 야간 그린피 평일 1,800 / 주말 3,250밧', '🐞 전체 버그 점검: 자동 테스트 30여 개 통과']],
  ['v0.46.0', '2026-11-27', ['🏌 연습장 모션: 연습 누르면 내 캐릭터가 실제로 스윙하고 공이 날아감 — 드라이버는 거리 표시판 너머로, 아이언은 깃발로, 퍼팅은 컵으로 굴러감 (개인 연습 3구, 레슨 2구 · 레슨은 옆에 프로가 서서 한마디씩 지도)', '🎲 레슨 능력치 랜덤 부여: 배운 분야 점수 + 덤으로 랜덤 분야 +1~2점(한국인 프로 +1~3점), 가끔 "🌟 비법 전수" 드라이버·아이언·퍼팅 전부 +1점 (프로 12%, 한국인 프로 20%)']],
  ['v0.45.0', '2026-11-27', ['💬 클럽하우스 채팅: 최신 대화가 맨 위에 오도록 순서 변경', '⚙ 메뉴에 설정 한 곳으로 통합: 음악·대사 음성·진동·샷 카메라·실시간 날씨·캐디 목소리·음성 테스트·게임 안내를 "⚙ 설정" 버튼 하나에', '🏦 주통 캐피탈(대출) 삭제 — 남은 빚은 이자 정산 후 지갑에서 자동 상환', '📝 실제 스코어 기능 삭제 (입력 버튼 없앰 · 실제 스코어로 하던 실력 보정도 끔)', '🗑 파타야 CC · 그린밸리 삭제 (회원권·구장 보유자 없음 확인)', '⛳ 구장 특성 재조사 반영 (제미나이 + 공개 코스 리뷰 교차 확인): 방파콩 = 넓은 페어웨이지만 러프가 두꺼움(러프 페널티 1.3배) · 그린 빨라짐 · 강바람 유지 / 로얄레이크사이드 = 벙커가 더 많아졌지만 넓고 얕아서 탈출은 쉬움(벙커 페널티 0.75배) · 해풍 강화 / 그린우드 = 그린이 좁고 빠르고 굴곡 큼 · 레몬그라스 러프(러프 페널티 1.45배)', '그린우드 그린피 평일 1,500 · 주말 2,000밧', '스테이지 순서: 1 방파콩 · 2 로얄레이크사이드 · 3 그린우드 · 보너스 삼화 스크린']],
  ['v0.44.0', '2026-11-27', ['🛡 내 장비 · 능력치 (RPG식 캐릭터 장비창): 메뉴에 새 버튼. 가운데 내 캐릭터, 둘레에 드라이버·아이언·웨지·퍼터·볼 장비 칸(등급 색 · 내구도 막대), 칸을 누르면 보유 장비 중 골라서 바로 장착', '⚔ 전투력(종합 능력치) + 등급(C~SSS), 파워·정확도·퍼팅 막대(맨몸 vs 장비 효과), 장비 효과 합계, 스킬 한 화면에']],
@@ -1888,7 +1933,7 @@ const CHANGELOG = [
 ];
 function drawInfo() { $('#infoBody').innerHTML = `<div class="box"><h3>게임 소개 <small style="opacity:.7">${VERSION}</small></h3>${ABOUT.map(a => `<div style="font-size:12.5px;line-height:1.6;margin:6px 0"><b style="color:#ffe08a">${a[0]}</b><br>${a[1]}</div>`).join('')}</div>` + CHANGELOG.map(c => `<div class="box"><h3>🆕 ${c[0]} <small style="opacity:.7">${c[1]}</small></h3><div style="font-size:12.5px;line-height:1.7">${c[2].map(t => '· ' + t).join('<br>')}</div></div>`).join(''); }
 // ================= 골프장 인수 (장기 목표): 산 사람이 오너, 다른 멤버가 멀티로 치면 그린피가 오너 지갑으로 =================
-const COURSE_PRICE = { scr: 2200000, grn: 10000000, bpk: 30000000, rls: 30000000 }; // 스크린 = 실제 투자비 약 1억원(≈220만밧) 기준 비율
+const COURSE_PRICE = { swm: 25000000, scr: 2200000, grn: 10000000, bpk: 30000000, rls: 30000000 }; // 스크린 = 실제 투자비 약 1억원(≈220만밧) 기준 비율
 let OWN = {};
 const ownerOf = k => (OWN[k] && OWN[k].ch) ? OWN[k] : null;
 const buyPrice = k => { const o = ownerOf(k); return o ? Math.round(o.price * 1.3 / 1000) * 1000 : COURSE_PRICE[k]; };
@@ -2091,8 +2136,8 @@ function aceReward() { const msgs = []; led('⛳ 홀인원 상금'); SV.wallet +
   setTimeout(() => toast('🎯 홀인원 보상! ' + msgs.join(' · '), '#ffd54a'), 1500); if (NET.ok) nreq('POST', '/chat', { ch: G.me, t: `🎯 홀인원 달성!! (${(COURSES[G.course] || {}).name || ''} ${curHole().no}번홀) 축하해 주세요 🎉`, did: SV.did, ts: Date.now() }).catch(() => { }); }
 // ===== 티타임(시간대·날씨), 코스튬, 캐디 호감도, 미니게임 기록, 환생 =====
 const TODW = { dawn: .5, day: 1, after: 1.3, squall: 1.7, night: .8 }, TODN = { dawn: '🌅 새벽', day: '☀ 한낮', after: '🌤 오후', squall: '⛈ 스콜', night: '🌙 야간' };
-function todPick() { const v = (G.multi ? G.mTod : ($('#oTod') || {}).value) || 'auto'; if (G.daily) return 'day'; if (v !== 'auto') return v; const h = new Date().getHours(); return h < 8 ? 'dawn' : h < 13 ? 'day' : h < 18 ? 'after' : 'night'; }
-function todFx() { const f = { dawn: 'sepia(.25) brightness(.92)', day: '', after: 'saturate(1.1) sepia(.1)', squall: 'brightness(.78) saturate(.7)', night: 'brightness(.55) saturate(.8) hue-rotate(-10deg)' }[G.tod] || ''; $('#cv').style.filter = f; if (G.tod !== 'day') setTimeout(() => toast(TODN[G.tod] + ' 라운드' + (G.tod === 'night' ? ' — 라이트 켜짐, 정확도 소폭 하락' : G.tod === 'dawn' ? ' — 이슬로 런 감소, 바람 약함' : G.tod === 'squall' ? ' — 비와 돌풍 주의' : ' — 바람 강해짐'), '#cfe8ff'), 900); }
+function todPick() { if ((COURSES[G.course] || {}).night) return 'night'; const v = (G.multi ? G.mTod : ($('#oTod') || {}).value) || 'auto'; if (G.daily) return 'day'; if (v !== 'auto') return v; const h = new Date().getHours(); return h < 8 ? 'dawn' : h < 13 ? 'day' : h < 18 ? 'after' : 'night'; }
+function todFx() { const f = { dawn: 'sepia(.25) brightness(.92)', day: '', after: 'saturate(1.1) sepia(.1)', squall: 'brightness(.78) saturate(.7)', night: 'saturate(.85)' }[G.tod] || ''; $('#cv').style.filter = f; if (G.tod !== 'day') setTimeout(() => toast(TODN[G.tod] + ' 라운드' + (G.tod === 'night' ? ((COURSES[G.course] || {}).night ? ' — 서밋 윈드밀 조명 점등! 빛 밖은 깜깜, 정확도 소폭 하락' : ' — 라이트 켜짐, 정확도 소폭 하락') : G.tod === 'dawn' ? ' — 이슬로 런 감소, 바람 약함' : G.tod === 'squall' ? ' — 비와 돌풍 주의' : ' — 바람 강해짐'), '#cfe8ff'), 900); }
 const COS = [['base', '기본 복장', 0], ['red', '선데이 레드', 3000, '#c81e1e', '#111111'], ['navy', '네이비 프로', 1500, '#1f3a7a', '#d8d8d8'], ['pink', '핑크 패셔니스타', 2500, '#ff7fb0', '#ffffff'], ['white', '올화이트 신사', 2000, '#f2f2f2', '#f2f2f2'], ['gold', '골드 챔피언', 8000, '#ffcc33', '#262b36'], ['jacket', '우승 그린 재킷', 20000, '#1f7a3a', '#e8e0c8']];
 function endExtras() { if (G.cad && G.cad.des) { SV.cadAff = SV.cadAff || {}; const a = (SV.cadAff[G.cad.no] || 0) + 5 + Math.floor((G.tipTot || 0) / 100); SV.cadAff[G.cad.no] = Math.min(100, a); setTimeout(() => toast(`💗 ${G.cad.no}번 캐디 호감도 ${SV.cadAff[G.cad.no]}/100 (높을수록 능력 상승, 팁 주면 더 올라요)`, '#ffb0d0'), 2200); }
   saveSV(); if (!NET.ok || !SV.myCh) return; const nm = (CH.find(c => c.id === SV.myCh) || {}).name;
