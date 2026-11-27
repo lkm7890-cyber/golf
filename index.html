@@ -158,6 +158,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="mPrac" style="background:#22301a;color:#cfe8a8">🏌 연습장 · 프로 레슨</button>
   <button class="go" id="mReal" style="background:#1d2a3a;color:#bcd8ff">📝 실제 스코어</button>
   <button class="go" id="mRank" style="background:#2a2208;color:#ffe08a">🏆 실시간 랭킹 (자산 · 능력치 · 대결)</button>
+  <button class="go" id="mGear" style="background:#2a1440;color:#e8d0ff">🛡 내 장비 · 능력치 (캐릭터 장비창)</button>
   <button class="go" id="mProf" style="background:#5a2610;color:#ffe3d3">👤 내 프로필 (활동 · 통계 · 가방)</button>
   <button class="go" id="mBag" style="display:none;background:#2a1c12;color:#ffcfa8">🎒 내 가방 (실제 클럽 · 비거리)</button>
   <button class="go" id="mAch" style="display:none;background:#241a2e;color:#e8c8ff">🎖 업적 · 칭호</button>
@@ -1745,7 +1746,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.43.1';
+const VERSION = 'v0.44.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1770,6 +1771,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.44.0', '2026-11-27', ['🛡 내 장비 · 능력치 (RPG식 캐릭터 장비창): 메뉴에 새 버튼. 가운데 내 캐릭터, 둘레에 드라이버·아이언·웨지·퍼터·볼 장비 칸(등급 색 · 내구도 막대), 칸을 누르면 보유 장비 중 골라서 바로 장착', '⚔ 전투력(종합 능력치) + 등급(C~SSS), 파워·정확도·퍼팅 막대(맨몸 vs 장비 효과), 장비 효과 합계, 스킬 한 화면에']],
  ['v0.43.1', '2026-11-27', ['🎁 업데이트 기념 무료 장비 뽑기 3회 전원 지급 (메뉴 들어오면 자동 지급, 상점 🎰 "기념 무료 뽑기" 버튼)', '🔧 장비 상점 맨 위에 "내 장비 내구도" 한눈에 보기 (낮은 순, 색 막대) + 일괄 수리 버튼 (한 번에 전부 100%)', '📈 주식 부분 매도: 25%·50%·전량 매도 + 금액 매도(원하는 밧만큼). 남은 수량·매입원가는 비율대로 유지', '메뉴에 장비 내구도 70% 미만이면 경고 + 바로 일괄 수리']],
  ['v0.43.0', '2026-11-27', ['⛳ 그린우드 CC 27홀(A·B·C) 완성: 화이트티 실측 야드·파(공개 스코어카드) + 가민 홀 맵(부장님 제공)으로 27홀 물·개울·벙커 배치. 구간에서 A·B·C 9홀 또는 A+B·B+C·A+C 18홀 선택', 'A코스: 3번 티샷 개울, 5번 왼쪽 호수, 8번 그린 앞 개울(왼쪽 도그렉), 9번 왼쪽 호수(핸디캡 1) · B코스: 1번 왼쪽 연못 두 개, 4번 호수+그린 앞 개울, 7번 개울 두 번 넘기기(핸디캡 1) · C코스: 1번 왼쪽 큰 호수, 5번 호수 넘기는 티샷, 6번 오른쪽 호수 파3, 9번 오른쪽 호수+웨이스트 벙커(핸디캡 1)', '홀 이름에 "C코스 5번"처럼 코스·홀 번호 표시', '스테이지 목록에 그린우드 추가 (전에는 상점·회원권에만 있고 선택이 안 됐음)', '🎯 어프로치 현실화: 게이지를 완벽히 맞춰도 짧은 어프로치가 핀에 딱 붙지 않고 3야드 안팎 흩어짐 (테스트 봇 9홀 -8타 → -1~+1타)']],
  ['v0.42.0', '2026-11-25', ['📮 따로 치기 대결 (동시 접속 필요 없음): 멀티 화면에서 규칙 정하고 "따로 치기 열기" → 각자 오늘 밤 12시 전까지 아무 때나 같은 홀·같은 바람으로 침 → 마감(또는 방장 "지금 마감")되면 타당·스킨스·조폭 규칙대로 자동 정산, 결과는 클럽하우스에 자동 게시. 내가 치기 전에는 남의 타수가 안 보임', '💬 카톡 초대 링크: 방 화면·따로 치기에 "카톡으로 초대" 버튼. 받은 사람이 링크를 누르면 게임이 열리면서 그 방에 바로 입장 / 따로 치기 바로 시작', '⚔ 접속 중인 사람 전원에게 한 번에 대결 신청 (방 화면에 사람별 수락 대기·입장·거절 표시)', '🗂 같은 폰에서 게임 탭을 또 열면 예전 탭은 멈추고 "이 탭을 닫아 주세요" 안내 (방이 두 개 생기거나 기록이 엇갈리던 문제)']],
@@ -2242,6 +2244,41 @@ async function whoAmI() { if (SV.myCh || $('#whoBox')) return; const o = mkOverl
 function ensurePin() { if (!SV.myCh || SV.pin || $('#pinSet') || $('#whoBox')) return; const c = CH.find(x => x.id === SV.myCh), o = mkOverlay('pinSet'); pinBox(o, c, `🔒 ${c.name} 비밀번호 정하기`, '다른 사람이 실수로 내 캐릭터를 고르지 못하게 <b>비밀번호 숫자 4자리</b>를 정해 주세요.<br>폰을 바꿔 다시 들어올 때만 묻습니다.', '저장', v => { SV.pin = pinH(SV.myCh, v); saveSV(); o.remove(); toast('🔒 비밀번호가 저장되었습니다', '#7fe09a'); }); }
 try { const q = new URLSearchParams(location.search).get('me'); if (!SV.myCh && q && CH.some(c => c.id === q)) setMyCh(q); } catch (e) { }
 $('#mRank').onclick = () => { let o = $('#rankBox'); if (!o) { o = document.createElement('div'); o.id = 'rankBox'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:rgba(5,8,11,.97);overflow:auto;padding:14px'; document.body.appendChild(o); } o.innerHTML = '<div style="max-width:420px;margin:0 auto"><h3 style="color:#ffe08a;margin:4px 0 10px;font-size:20px">🏆 실시간 랭킹</h3><div class="box" id="rankBody" style="font-size:15px;line-height:2.1"></div><button class="go" id="rankClose" style="background:#22303c;color:#fff">← 메뉴</button></div>'; $('#rankClose').onclick = () => o.remove(); drawRank(); netProfile(); };
+$('#mGear').onclick = () => { if (!SV.myCh) { whoAmI(); return; } drawGearRpg(); };
+// ===== 🛡 RPG식 캐릭터 장비창: 가운데 캐릭터, 둘레에 장비 칸, 아래 종합 전투력·능력치 =====
+const SLOT_IC = { driver: '🏌', iron: '⚔', wedge: '🪃', putter: '🎯', ball: '⚪' };
+function gearGrade(g) { if (!g) return ['기본', '#8a949e']; if (g.gacha) return ['전설', '#ffcc33']; if (/^n[diwp]\d/.test(g.id)) return ['에픽', '#c88cff']; if (g.old) return ['레어', '#7fb8ff']; return ['일반', '#cfd8e0']; }
+function abilBase(c) { const lv = lvAccF(lvOf(c.id)), p = c.mult * 100, a = c.acc * 100 * (2 - lv * (1 - .005 * trPts('i'))), u = c.putt * 100 * (2 - lv * (1 - .005 * trPts('p'))); return { p: Math.round(p), a: Math.round(a), u: Math.round(u), t: Math.round((p + a + u) / 3) }; }
+function drawGearRpg(openSlot) { const c = CH.find(x => x.id === SV.myCh); if (!c) return; G.me = G.me || c.id; const A = abil(c), B = abilBase(c), f = gearFx(c), real = REALGEAR[c.id] || {};
+  let o = $('#gearRpg'); if (!o) { o = document.createElement('div'); o.id = 'gearRpg'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:radial-gradient(ellipse at top,#1d1430,#07080b 70%);overflow:auto;padding:12px'; document.body.appendChild(o); }
+  const slotBox = ([k, nm]) => { const g = GEAR.find(x => x.id === equipOf(c, k)), [gn, gc] = gearGrade(g), d = g ? Math.round(durOf(g.id)) : 100; return `<button data-gslot="${k}" style="font:inherit;width:100%;min-height:92px;padding:6px;border:2px solid ${gc};background:linear-gradient(#1a1f28,#0e1116);color:#fff;text-align:center;box-shadow:0 0 10px ${gc}55 inset">
+    <div style="font-size:22px">${SLOT_IC[k]}</div><div style="font-size:11px;opacity:.75">${nm}</div><div style="font-size:12px;color:${gc};line-height:1.25;margin:2px 0">${g ? g.n.replace(/\s*\(.*\)$/, '') : '기본 장비'}</div>
+    ${g ? `<div style="height:5px;background:#333"><div style="height:5px;width:${d}%;background:${d >= 70 ? '#5fd47a' : d >= 30 ? '#ffb627' : '#e2434b'}"></div></div><div style="font-size:10px;opacity:.7">${gn} · 내구도 ${d}%</div>` : `<div style="font-size:10px;opacity:.6">눌러서 장착</div>`}</button>`; };
+  const S = Object.fromEntries(SLOTS.map(x => [x[0], x]));
+  const bar = (nm, base, now, col) => { const mx = 160, dv = now - base; return `<div style="margin:5px 0;font-size:12.5px"><div style="display:flex;justify-content:space-between"><span>${nm}</span><span><b>${now}</b> <small style="color:${dv >= 0 ? '#9fffb0' : '#ff9a9a'}">(${dv >= 0 ? '+' : ''}${dv} 장비)</small></span></div><div style="position:relative;height:10px;background:#222"><div style="position:absolute;height:10px;width:${Math.min(100, base / mx * 100)}%;background:${col}88"></div><div style="position:absolute;height:10px;left:${Math.min(100, base / mx * 100)}%;width:${Math.max(0, Math.min(100, now / mx * 100) - Math.min(100, base / mx * 100))}%;background:${col}"></div></div></div>`; };
+  const pc = (v, inv) => { const x = (v - 1) * 100, good = inv ? x <= 0 : x >= 0; return `<b style="color:${Math.abs(x) < .05 ? '#cfd8e0' : good ? '#9fffb0' : '#ff9a9a'}">${x >= 0 ? '+' : ''}${x.toFixed(1)}%</b>`; };
+  const tier = A.t >= 120 ? ['SSS', '#ffcc33'] : A.t >= 110 ? ['SS', '#ffb627'] : A.t >= 100 ? ['S', '#c88cff'] : A.t >= 90 ? ['A', '#7fb8ff'] : A.t >= 80 ? ['B', '#9fffb0'] : ['C', '#cfd8e0'];
+  o.innerHTML = `<div style="max-width:430px;margin:0 auto;color:#fff"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;color:${c.ink}">🛡 ${c.name} <small style="color:#fff">Lv.${lvOf(c.id)}${rebOf(c.id) ? ' ★' + rebOf(c.id) : ''}</small></h3><button id="grClose" style="font:inherit;border:0;background:#ffb627;color:#111;padding:6px 10px">← 메뉴</button></div><div style="font-size:12px;opacity:.75;margin:2px 0 8px">${SV.title ? '「' + SV.title + '」 · ' : ''}${c.port}포트 · ${c.title || ''}</div>
+  <div style="display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:6px;align-items:stretch">
+    <div style="display:flex;flex-direction:column;gap:6px">${slotBox(S.driver)}${slotBox(S.wedge)}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#3a2a55,#120d1a);border:2px solid #5a4280;padding:6px"><canvas id="grCv" width="112" height="150" style="width:112px;height:150px;image-rendering:pixelated"></canvas><div style="font-size:11px;opacity:.8">전투력</div><div style="font-size:30px;font-weight:bold;color:${tier[1]};line-height:1">${A.t}</div><div style="font-size:12px;color:${tier[1]}">${tier[0]} 등급</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px">${slotBox(S.iron)}${slotBox(S.putter)}</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:6px;margin-top:6px"><div></div>${slotBox(S.ball)}<div></div></div>
+  <div id="grPick"></div>
+  <div class="box" style="margin-top:8px"><h3>⚔ 종합 능력치 <small style="opacity:.7">(연한 색 = 맨몸 · 진한 색 = 장비 효과)</small></h3>${bar('💥 파워', B.p, A.p, '#ff6a5a')}${bar('🎯 정확도', B.a, A.a, '#5ab0ff')}${bar('⛳ 퍼팅', B.u, A.u, '#5fd47a')}<div style="font-size:12px;opacity:.8;margin-top:4px">전투력 = 세 능력치 평균 (랭킹 '능력치' 기준) · 맨몸 ${B.t} → 장비 ${A.t} <b style="color:${A.t - B.t >= 0 ? '#9fffb0' : '#ff9a9a'}">(${A.t - B.t >= 0 ? '+' : ''}${A.t - B.t})</b></div></div>
+  <div class="box"><h3>📜 장비 효과 합계 <small style="opacity:.7">(내구도 반영)</small></h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:12.5px"><span>드라이버 비거리 ${pc(f.drv)}</span><span>아이언 비거리 ${pc(f.iron)}</span><span>드라이버 편차 ${pc(f.dAcc, 1)}</span><span>아이언 편차 ${pc(f.iAcc, 1)}</span><span>퍼팅 편차 ${pc(f.putt, 1)}</span><span>미스샷 ${pc(f.miss, 1)}</span><span>러프·벙커 ${pc(f.lie, 1)}</span><span>비 대비 <b style="color:${f.rain ? '#9fffb0' : '#888'}">${f.rain ? '있음' : '없음'}</b></span></div><div style="font-size:11px;opacity:.65;margin-top:3px">편차·미스샷·러프는 − 일수록 좋음</div></div>
+  <div class="box"><h3>✨ 스킬</h3><div style="font-size:12.5px">${c.skill || ''}</div></div>
+  <div style="display:flex;gap:6px"><button class="go" id="grShop" style="flex:1;font-size:14px;background:#2c4a6b;color:#fff">🛍 장비 상점 · 뽑기 · 수리</button></div></div>`;
+  { const cv = $('#grCv'), x = cv.getContext('2d'); x.imageSmoothingEnabled = false; try { drawSprite(x, c, 0, 8, 14, 6); } catch (e) { } }
+  $('#grClose').onclick = () => { o.remove(); try { drawMe(); } catch (e) { } };
+  $('#grShop').onclick = () => { o.remove(); document.querySelectorAll('.screen').forEach(e => e.classList.remove('on')); $('#sTitle').classList.add('on'); G.me = SV.myCh; $('#shopBtn').click(); };
+  o.querySelectorAll('[data-gslot]').forEach(b => b.onclick = () => gearPick(c, b.dataset.gslot));
+  if (openSlot) gearPick(c, openSlot); }
+function gearPick(c, k) { const el = $('#grPick'), real = REALGEAR[c.id] || {}, cur = equipOf(c, k), nm = (SLOTS.find(x => x[0] === k) || [])[1];
+  const L = GEAR.filter(g => g.slot === k && (SV.owned.includes(g.id) || real[k] === g.id));
+  el.innerHTML = `<div class="box" style="margin-top:8px;border:1px solid #5a4280"><h3>${SLOT_IC[k]} ${nm} 바꾸기 <small style="opacity:.7">(보유 ${L.length}개)</small></h3>` + [null, ...L].map(g => { const [gn, gc] = gearGrade(g), eq = (g ? g.id : null) === cur; return `<button data-gpick="${g ? g.id : ''}" style="font:inherit;display:block;width:100%;text-align:left;margin:4px 0;padding:7px;border:1px solid ${eq ? '#5fd47a' : '#2a3440'};background:${eq ? '#16301f' : '#11161c'};color:#fff"><b style="color:${gc}">[${gn}]</b> ${g ? g.n : '기본 장비 (효과 없음)'}${eq ? ' <b style="color:#5fd47a">✔ 장착중</b>' : ''}${g ? `<br><small style="color:#ffe08a">${fxText(g, c)}</small> <small style="opacity:.7">· 내구도 ${Math.round(durOf(g.id))}%</small>` : ''}</button>`; }).join('') + (L.length ? '' : '<div style="font-size:12px;opacity:.7">보유한 장비가 없습니다 — 상점에서 사거나 뽑기로 얻으세요</div>') + '</div>';
+  el.querySelectorAll('[data-gpick]').forEach(b => b.onclick = () => { SV.equip[k] = b.dataset.gpick || null; saveSV(); try { refreshGear(); } catch (e) { } beep(880, .08); drawGearRpg(); toast('🛡 장착 변경 — 능력치 갱신', '#9fffb0'); });
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 $('#mProf').onclick = () => { if (!SV.myCh) { whoAmI(); return; } drawProfile(); };
 $('#mBag').onclick = () => { if (!SV.myCh) { whoAmI(); return; } drawBag(); };
 $('#mAch').onclick = () => { if (!SV.myCh) { whoAmI(); return; } achCheck(); drawAch(); };
