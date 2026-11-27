@@ -147,7 +147,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <div class="sub" id="menuWallet"></div>
   <div id="menuNotice" style="display:none;font-size:12.5px;line-height:1.7;text-align:left;background:#101a2a;box-shadow:inset 0 0 0 2px #2c4a78;padding:8px 10px;margin:6px 0"></div>
   <div id="menuDaily" style="font-size:12px;line-height:1.7;text-align:left;background:#10161c;box-shadow:inset 0 0 0 2px #2c3a48;padding:8px 10px;margin:6px 0"></div>
-  <div id="menuLoan" style="font-size:12px;line-height:1.7;text-align:left;background:#1c1210;box-shadow:inset 0 0 0 2px #4a2c2c;padding:8px 10px;margin:6px 0"></div>
+  <div id="menuLoan" style="display:none;font-size:12px;line-height:1.7;text-align:left;background:#1c1210;box-shadow:inset 0 0 0 2px #4a2c2c;padding:8px 10px;margin:6px 0"></div>
   <button class="go" id="mStart">▶ 싱글 모드 (CPU와 라운드)</button>
   <button class="go" id="mMulti" style="background:#12324a;color:#9fd8ff">🌐 멀티 모드 (온라인 대결)</button>
   <button class="go" id="mShop" style="background:#2a1f3d;color:#ffd98a">🛒 장비 상점</button>
@@ -156,13 +156,14 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="mDaily" style="background:#3b2a12;color:#ffd27a">🎯 데일리 챌린지 · 🏆 월례 주통배</button>
   <button class="go" id="mLedger" style="background:#1f2a3a;color:#cfe0ff">📒 가계부 (수입·지출)</button>
   <button class="go" id="mPrac" style="background:#22301a;color:#cfe8a8">🏌 연습장 · 프로 레슨</button>
-  <button class="go" id="mReal" style="background:#1d2a3a;color:#bcd8ff">📝 실제 스코어</button>
+  <button class="go" id="mReal" style="display:none">📝 실제 스코어</button>
   <button class="go" id="mRank" style="background:#2a2208;color:#ffe08a">🏆 실시간 랭킹 (자산 · 능력치 · 대결)</button>
   <button class="go" id="mGear" style="background:#2a1440;color:#e8d0ff">🛡 내 장비 · 능력치 (캐릭터 장비창)</button>
   <button class="go" id="mProf" style="background:#5a2610;color:#ffe3d3">👤 내 프로필 (활동 · 통계 · 가방)</button>
   <button class="go" id="mBag" style="display:none;background:#2a1c12;color:#ffcfa8">🎒 내 가방 (실제 클럽 · 비거리)</button>
   <button class="go" id="mAch" style="display:none;background:#241a2e;color:#e8c8ff">🎖 업적 · 칭호</button>
   <button class="go" id="mStat" style="display:none;background:#1a2a36;color:#bfe3ff;font-size:14px;padding:10px">📊 내 능력치 · 장착 장비 효과</button>
+  <button class="go" id="mSet" style="background:#1f2329;color:#e8eef4">⚙ 설정 (소리 · 진동 · 카메라 · 게임 안내)</button>
   <button class="go" id="mInfo" style="background:#2b2416;color:#ffe08a;font-size:14px;padding:10px">📖 게임 안내 · 업데이트 내역</button>
   <button class="go" id="mVoice" style="background:#1a1a1a;color:#fff;font-size:14px;padding:10px">🔊 음성 테스트</button>
   <button class="go" id="mMusic" style="background:#1a1a1a;color:#fff;font-size:14px;padding:10px">🎵 음악 켜짐</button>
@@ -243,13 +244,13 @@ tr.me td{background:rgba(255,182,39,.13)}
   <div class="sub">주통방 8인 완전체. 0포트·1포트·2포트가 한 조에서 붙습니다. 카드를 눌러 '나'를 고르세요. (화면 탭 → 파워 탭 → 정확도 탭)</div>
   <div class="box" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
     <div id="walletTxt" style="font-size:13px"></div>
-    <div style="display:flex;gap:6px"><button class="btn" id="shopBtn" type="button" style="font-size:12px">🛒 장비 상점</button><button class="btn" id="realBtn" type="button" style="font-size:12px">📝 실제 스코어</button></div>
+    <div style="display:flex;gap:6px"><button class="btn" id="shopBtn" type="button" style="font-size:12px">🛒 장비 상점</button><button class="btn" id="realBtn" type="button" style="display:none">📝 실제 스코어</button></div>
   </div>
   <div class="help" id="pickNote" style="margin:0 0 8px;color:#ffe08a;opacity:1;font-size:12.5px"></div>
   <div class="cards" id="cards"></div>
   <div class="opts">
     <label style="display:none">모드 <select id="oMode"><option value="s">싱글 (CPU와)</option><option value="m">멀티 (온라인 대결)</option></select></label>
-    <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="pcc">Stage 3 · 파타야 CC (파CC)</option><option value="grn">Stage 4 · 그린우드 (27홀 A·B·C)</option><option value="scr">보너스 · 삼화 스크린골프장</option><option value="gv">보너스 · 그린밸리 (2포트 금지구장)</option></select></label>
+    <label>스테이지 <select id="oCourse"><option value="bpk">Stage 1 · 방파콩 리버사이드 (입싸)</option><option value="rls">Stage 2 · 로열 레이크사이드 (렉싸)</option><option value="grn">Stage 3 · 그린우드 (27홀 A·B·C)</option><option value="scr">보너스 · 삼화 스크린골프장</option></select></label>
     <button class="btn" id="rouBtn" type="button">🎡 조작 돌림판</button>
     <label>구간 <select id="oPart"><option value="quick">3홀 맛보기</option><option value="front">앞 9홀</option><option value="back">뒤 9홀</option><option value="full">18홀 전체</option><option value="c" hidden>C코스 9홀</option><option value="bc" hidden>B+C 18홀</option><option value="ac" hidden>A+C 18홀</option></select></label>
     <label id="numLab">인원 <select id="oNum"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
@@ -426,8 +427,8 @@ function prep(h) { // 사전 계산
 // ================= 실제 코스 스코어카드 기반 코스 =================
 // 파/야드는 공개 스코어카드(화이트티) 실측값. 홀 모양·해저드 위치는 공개 지도 데이터가 없어 코스 특징만 반영한 근사치.
 const COURSES = {
- bpk: { name: '방파콩 리버사이드 CC', rain: .25, fw: 44, greenR: [17, 14], windMul: 1.35, slopeMul: .9, p3water: false, td: 2, latW: 0, bunkMul: 1.5,
-   note: '돌림판 고정 홈구장 · 강바람 · 파3 워터캐리 · 14번홀 오른쪽 물가 벌레 함정 (파·야드 실측, 18홀 배치는 가민 골프 앱 홀 지도 기준 · 강·호수 홀 많음)',
+ bpk: { name: '방파콩 리버사이드 CC', rain: .25, fw: 44, greenR: [17, 14], windMul: 1.35, slopeMul: 1.1, roughK: 1.3, p3water: false, td: 2, latW: 0, bunkMul: 1.5,
+   note: '돌림판 고정 홈구장 · 1990년 개장 평지 강변 코스 · 넓은 페어웨이지만 두꺼운 러프 · 빠른 그린 · 방파콩강 바람이 핵심 · 14번홀 오른쪽 물가 벌레 함정 (파·야드 실측, 18홀 배치 가민 홀 지도 기준)',
    par: [4,4,5,3,4,4,3,4,5, 4,4,5,3,4,4,3,4,5],
    yd:  [370,380,495,180,397,375,175,400,524, 374,370,490,148,380,350,170,310,505],
    // 홀별 배치: 이규만 부장 가민 골프 앱 홀 지도(2026-11-24) 판독 — 물 위치·크기, 도그렉, 페어웨이 벙커, 그린 벙커 수, 나무 밀도
@@ -451,13 +452,8 @@ const COURSES = {
      16: { noP3: true, water: [{ s: .5, lat: 'R', rx: 16, ry: 80, gap: 4 }], fb: [[.45, 'L', 8]], gbunk: 2, td: 2, name: '파3 · 오른쪽 강 따라' },
      17: { water: [{ s: .2, lat: 'C', ry: 9 }, { s: .55, lat: 'R', rx: 14, ry: 110, gap: 6 }], fb: [[.55, 'L', 9]], gbunk: 3, td: 2, name: '티 앞 물 건너 · 오른쪽 강 따라 좌 도그렉' },
      18: { water: [{ s: .52, lat: 'R', rx: 34, ry: 120, gap: 4 }, { s: .82, lat: 'C', ry: 9 }], fb: [[.4, 'L', 12], [.52, 'L', 10], [.45, 'l', 7], [.68, 'r', 7]], gbunk: 3, td: 2, name: '마지막 파5 · 오른쪽 큰 호수 + 그린 앞 개울 · 왼쪽 웨이스트 벙커' } } },
- gv: { name: '그린밸리 CC (2포트 금지구장)', fw: 26, greenR: [14, 12], windMul: 1, slopeMul: 1.3, p3water: true, bunkMul: 1.6, rain: .3, hard: true, td: 2, latW: .5,
-   note: '하드코어 모드: 좁은 페어웨이, 2포트 멤버 정확도 디버프 (파·야드 추정 ✱)', par: [4,4,3,5,4,4,3,5,4], yd: [380,395,175,520,370,405,190,530,400], special: {} },
- pcc: { name: '파타야 CC', rain: .2, fw: 38, greenR: [16, 14], windMul: .9, slopeMul: 1.5, p3water: false, td: 2, latW: .15,
-   note: '안경용 쿠폰(2,050밧) 입장 · 언덕 · 그린 경사 큼 · 끝나면 시암가든 뒤풀이 (파·야드 실측, 모양 근사)',
-   par: [4,4,5,4,3,4,3,5,4], yd: [390,313,482,392,165,299,175,514,411], special: {} , bunkMul: 1.4 },
- grn: { name: '그린우드 CC', fw: 28, greenR: [14, 12], windMul: .8, slopeMul: 1.1, p3water: false, bunkMul: 1.6, td: 3, latW: .15,
-   note: '27홀(A·B·C) · 피터 톰슨 설계 · 나무가 빽빽한 좁은 페어웨이 · B코스 개울, C코스 호수 (화이트티 실측 + 가민 홀 맵)',
+ grn: { name: '그린우드 CC', fw: 30, greenR: [12, 11], windMul: .8, slopeMul: 1.3, roughK: 1.45, p3water: false, bunkMul: 1.6, td: 3, latW: .15,
+   note: '27홀(A·B·C) · 피터 톰슨 설계 · 나무 줄지은 구릉 코스 · 좁고 빠른 그린을 벙커가 둘러쌈 · 러프는 레몬그라스라 빠지면 고생 · B코스 개울, C코스 호수 (화이트티 실측 + 가민 홀 맵)',
    nines: ['A', 'B', 'C'],
    par: [4,3,4,5,4,3,5,4,4, 4,3,4,5,3,4,4,5,4, 4,4,3,5,4,3,5,4,4],
    yd: [387,193,389,533,301,154,519,349,422, 343,163,388,525,150,352,384,464,358, 406,360,200,527,365,150,530,402,412],
@@ -491,7 +487,7 @@ const COURSES = {
      25: { fb: [[.3, 'L', 6], [.42, 'C', 6], [.6, 'r', 5], [.75, 'l', 6]], gbunk: 3, name: '긴 직선 파5' },
      26: { fb: [[.45, 'L', 7], [.55, 'r', 5]], gbunk: 2, name: '휘어지는 좁은 파4' },
      27: { water: [{ s: .06, lat: 'C', ry: 6 }, { s: .45, lat: 'R', rx: 26, ry: 210, gap: 10 }], fb: [[.4, 'R', 7], [.55, 'R', 8], [.7, 'R', 7], [.62, 'r', 4]], name: '오른쪽 호수 + 웨이스트 벙커 · 핸디캡 1번' } } },
- rls: { name: '로얄레이크사이드 GC', rain: .6, drv: .05, fw: 36, greenR: [15, 13], windMul: 1.1, slopeMul: 1, p3water: true, lakes: true, td: 2, bunkMul: 1.4,
+ rls: { name: '로얄레이크사이드 GC', rain: .6, drv: .05, fw: 36, greenR: [15, 13], windMul: 1.25, slopeMul: 1, p3water: true, lakes: true, td: 2, bunkMul: 1.7, bunkK: .75,
    note: '1,999밧 프로모션 · 방파콩강 하구, 코스를 두른 라군과 가로지르는 개울 · 넓은 페어웨이에 웨이스트 벙커 · 기본 배판 (파·화이트티 야드 실측, 7·10·14·18번홀 공개 코스 가이드 반영)',
    par: [5,4,3,4,4,3,5,4,4, 5,4,3,4,4,3,4,4,5],
    yd:  [495,352,157,371,340,174,492,356,402, 511,335,148,414,344,126,367,354,516],
@@ -594,7 +590,7 @@ const CLUBS = [
 const LIE = { tee: { d: 1.03, a: 1, top: 1 }, fairway: { d: 1, a: 1, top: 1 }, fringe: { d: .96, a: 1.05, top: 1.1 }, rough: { d: .82, a: 1.4, top: 1.8 }, trees: { d: .62, a: 1.6, top: 2 }, bunker: { d: .58, a: 1.7, top: 2.2 }, green: { d: 1, a: 1, top: 1 } };
 const ROLLM = { tee: 1, fairway: 1, fringe: .8, rough: .35, trees: .1, bunker: 0, green: .5 };
 const LIENAME = { tee: '티잉', fairway: '페어웨이', fringe: '프린지', rough: '러프', trees: '나무 밑', bunker: '벙커', green: '그린' };
-function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
+function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; { const CK = COURSES[G.course] || {}, k = lie === 'rough' ? (CK.roughK || 1) : lie === 'bunker' ? (CK.bunkK || 1) : 1; if (k !== 1) L = { d: 1 - (1 - L.d) * k, a: 1 + (L.a - 1) * k, top: 1 + (L.top - 1) * k }; } if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
 const rainImm = ch => ['gm', 'du', 'yt'].includes(ch.id) || (isMe(ch) && G.gear.rain);
 const immune = ch => ch.id === 'hw' || ch.id === 'jt';
 const moodF = st => { const m = (st.mood || 0) + (st.bonus || 0) + (st.cond || 0); return (m > 0 ? .88 : m < 0 ? 1.12 : 1) * clamp(1 - .06 * (st.beer || 0), .7, 1.4); };
@@ -868,7 +864,8 @@ const REAL_SEED = { sg: [{ d: '2026-11-21', s: 100 }, { d: '2026-11-22', s: 101 
 // 실제 가방 구성 (본인 골프 앱 기준)
 const REALBAG = { gm: [['D', '드라이버', '타이틀리스트 GT2'], ['3w', '3번 우드', '테일러메이드 스텔스2'], ['5w', '5번 우드', '타이틀리스트 TSi2'], ['5h', '5번 하이브리드', '테일러메이드 스텔스2'], ['5i', '5번 아이언', '타이틀리스트 T250'], ['6i', '6번 아이언', '타이틀리스트 T250'], ['7i', '7번 아이언', '타이틀리스트 T250'], ['8i', '8번 아이언', '타이틀리스트 T250'], ['9i', '9번 아이언', '타이틀리스트 T250'], ['Pw', '피칭웨지', '타이틀리스트 T250'], ['Gw', '갭웨지', '타이틀리스트 T250'], ['Aw', '어프로치 웨지', '클리블랜드 RTX6'], ['Sw', '샌드웨지', '타이틀리스트 보키 SM11'], ['Lw', '로브웨지', '타이틀리스트 보키 SM11'], ['P', '퍼터', '스카티 카메론 팬텀 5.5']] };
 function realAvg(id) { const a = ((SV.real[id] && SV.real[id].length) ? SV.real[id] : (REAL_SEED[id] || [])).slice(-3); return a.length ? a.reduce((x, y) => x + y.s, 0) / a.length : null; }
-const realF = ch => { if (G.multi) return 1; const a = realAvg(ch.id); if (a == null) return 1; const n = ((SV.real[ch.id] && SV.real[ch.id].length) ? SV.real[ch.id] : (REAL_SEED[ch.id] || [])).length; return clamp(1 + (a - BASE18[ch.id]) * .022 * Math.min(n, 3) / 3, .65, 1.6); };
+const realF = ch => { return 1; // 실제 스코어 기능 삭제(2026-11-27) — 실력 보정 없음
+  if (G.multi) return 1; const a = realAvg(ch.id); if (a == null) return 1; const n = ((SV.real[ch.id] && SV.real[ch.id].length) ? SV.real[ch.id] : (REAL_SEED[ch.id] || [])).length; return clamp(1 + (a - BASE18[ch.id]) * .022 * Math.min(n, 3) / 3, .65, 1.6); };
 
 // ================= 캐릭터 전용 스토리 (장마다 목표 달성 시 다음 장 해금) =================
 // 목표 판정용 c: { rank, n, money, st(통계), worst(홀 최악 오버파) }
@@ -958,13 +955,13 @@ function wear(slot, amt) { const id = equipOf(G.human.ch, slot); if (!id) return
 // ================= 월급 · 그린피 · 캐디 =================
 const DAILY_PAY = 1000, SALARY = 0, CADDIE_TIP = 400, LOCKER = 100, CART_FEE = n => Math.round(700 * n / 18 / 10) * 10, SELL_RATE = .5;
 // 18홀 기준 그린피(밧). bpk: 평일 1,300 / 주말 2,500, rls: 1,999 프로모션, pcc: 쿠폰가 2,050, gv·scr: 추정
-const GREENFEE = { bpk: d => (d === 0 || d === 6) ? 2500 : 1300, rls: () => 1999, pcc: () => 2050, gv: () => 2000, scr: () => 600 };
+const GREENFEE = { bpk: d => (d === 0 || d === 6) ? 2500 : 1300, rls: () => 1999, grn: d => (d === 0 || d === 6) ? 2000 : 1500, scr: () => 600 };
 function greenFee(k, n) { const f = (GREENFEE[k] || (() => 1500))(new Date().getDay()); return Math.round(f * n / 18 / 10) * 10; }
 // 회원권(10회분): 18홀 10회 가격의 약 70%. 라운드마다 친 홀 수만큼(18홀=1회) 차감되고 그린피는 0
-const MEMPRICE = { bpk: 11000, rls: 14000, pcc: 14500, gv: 14000, scr: 4000 };
+const MEMPRICE = { bpk: 11000, rls: 14000, grn: 12000, scr: 4000 };
 // 정회원권 (태국 실제 방식): 한 번 사면 그린피 무료(캐디피·카트비는 별도), 1년마다 연회비, 팔 때는 시세의 90%
 // 시세: 파타야CC 180,000 · 로얄레이크사이드 300,000 (태국 회원권 거래소 공시가), 나머지는 추정
-const MEMB = { bpk: [250000, 12000, 1], rls: [300000, 12000, 0], pcc: [180000, 12000, 0], gv: [400000, 15000, 1], grn: [150000, 10000, 1], scr: [30000, 0, 1] };
+const MEMB = { bpk: [250000, 12000, 1], rls: [300000, 12000, 0], grn: [150000, 10000, 1], scr: [30000, 0, 1] };
 const isMember = k => !!(SV.memb && SV.memb[k]);
 function membDue() { led('🎫 회원권 연회비'); if (!SV.memb) return; const now = Date.now(); for (const k of Object.keys(SV.memb)) { const m = SV.memb[k], fee = (MEMB[k] || [0, 0])[1]; if (!fee) continue; while (m.due && m.due <= now) { SV.wallet -= fee; m.due += 365 * 864e5; setTimeout(() => toast(`🎫 ${COURSES[k].name} 연회비 -${fee.toLocaleString()}밧`, '#ffd27a'), 1500); } } saveSV(); }
 function membHTML() { return `<div class="box"><h3>🎫 골프장 정회원권</h3><div style="font-size:11.5px;opacity:.85;margin-bottom:4px">태국 실제 방식: 한 번 사면 그 골프장 그린피 무료(캐디피·카트비는 별도), 1년마다 연회비 자동 차감, 팔 때는 시세의 90%. ✱표는 시세 추정.</div>` + Object.keys(MEMB).filter(k => COURSES[k]).map(k => { const [pr, yf, est] = MEMB[k], on = isMember(k); return `<div class="gear ${on ? 'eq' : ''}"><div>${COURSES[k].name}${est ? ' ✱' : ''}<small>회원권 ${pr.toLocaleString()}밧 · 연회비 ${yf ? yf.toLocaleString() + '밧' : '없음'} · 비회원 그린피 18홀 ${(GREENFEE[k] ? GREENFEE[k](new Date().getDay()) : 0).toLocaleString()}밧</small><small style="color:#7fe09a;opacity:1">${on ? `정회원 · 다음 연회비 ${new Date(SV.memb[k].due).toLocaleDateString('ko-KR')}` : '미보유'}${memLeft(k) > 0 ? ` · 예전 10회권 남은 ${memLeft(k)}회` : ''}</small></div>${on ? `<button class="btn" data-msell="${k}">팔기 ${Math.round(pr * .9).toLocaleString()}밧</button>` : `<button class="btn" data-memb="${k}" ${SV.wallet < pr + yf ? 'disabled' : ''}>${(pr + yf).toLocaleString()}밧</button>`}</div>`; }).join('') + '</div>'; }
@@ -986,7 +983,8 @@ const dayNum = () => { const d = new Date(); return Math.floor((d.getTime() - d.
 function loanAccrue() { led('🏦 대출 이자'); const L = SV.loan; if (!L || !(L.amt > 0)) { SV.loan = { amt: 0, last: dayNum() }; return 0; } const days = Math.max(0, dayNum() - (L.last || dayNum())); if (!days) return 0; const a0 = L.amt; L.amt = Math.round(L.amt * Math.pow(1 + LOAN_RATE, days)); L.last = dayNum(); return L.amt - a0; }
 function loanBorrow() { led('🏦 대출'); loanAccrue(); if (SV.loan.amt + LOAN_UNIT > LOAN_MAX) { toast('대출 한도 초과 (최대 ' + LOAN_MAX.toLocaleString() + '밧)', '#ff9a9a'); return; } SV.loan.amt += LOAN_UNIT; SV.loan.last = dayNum(); led('🏦 대출'); SV.wallet += LOAN_UNIT; saveSV(); toast('🏦 ' + LOAN_UNIT.toLocaleString() + '밧 대출 완료 · 이자 하루 1%', '#ffe08a'); beep(520, .12); showMenu(); }
 function loanRepay(all) { led('🏦 대출 상환'); loanAccrue(); const pay = Math.min(SV.loan.amt, Math.max(0, SV.wallet), all ? Infinity : LOAN_UNIT); if (pay <= 0) { toast('갚을 돈이 없습니다', '#ff9a9a'); return; } SV.loan.amt -= pay; led('🏦 대출 상환'); SV.wallet -= pay; saveSV(); toast('🏦 ' + pay.toLocaleString() + '밧 상환' + (SV.loan.amt ? '' : ' · 빚 청산!'), '#7fe09a'); beep(880, .12); showMenu(); }
-function drawLoan() { const el = $('#menuLoan'); if (!el) return; const inc = loanAccrue(); if (inc) saveSV(); const a = SV.loan.amt; el.innerHTML = `<b style="color:#ffb0a0">🏦 주통 캐피탈</b> <span style="opacity:.7">(한도 ${LOAN_MAX.toLocaleString()}밧 · 이자 하루 1% 복리</span><br>현재 빚: <b style="color:${a ? '#ff9a9a' : '#7fe09a'}">${a.toLocaleString()}밧</b>${inc ? ` <span style="color:#ff9a9a">(이자 +${inc.toLocaleString()}밧 붙음)</span>` : ''}<br><button id="lnB" style="font:inherit;padding:6px 10px;margin:4px 4px 0 0;background:#3a2020;color:#ffd0c0;border:0">+1만밧 빌리기</button><button id="lnR" style="font:inherit;padding:6px 10px;margin:4px 4px 0 0;background:#203a26;color:#c0ffd0;border:0">1만밧 갚기</button><button id="lnA" style="font:inherit;padding:6px 10px;margin:4px 0 0 0;background:#203a26;color:#c0ffd0;border:0">전액 갚기</button>`; $('#lnB').onclick = loanBorrow; $('#lnR').onclick = () => loanRepay(false); $('#lnA').onclick = () => loanRepay(true); $('#lnB').disabled = a + LOAN_UNIT > LOAN_MAX; $('#lnR').disabled = $('#lnA').disabled = !a; }
+function drawLoan() { const el = $('#menuLoan'); if (!el) return; el.style.display = 'none'; if (SV.loan && SV.loan.amt > 0) { loanAccrue(); const a = SV.loan.amt; led('🏦 대출 상환'); SV.wallet -= a; SV.loan.amt = 0; saveSV(); setTimeout(() => toast(`🏦 주통 캐피탈 영업 종료 — 남은 빚 ${a.toLocaleString()}밧 지갑에서 자동 상환`, '#ffd27a'), 1200); } return; // 캐피탈(대출) 기능 삭제 2026-11-27
+ const inc = loanAccrue(); if (inc) saveSV(); const a = SV.loan.amt; el.innerHTML = `<b style="color:#ffb0a0">🏦 주통 캐피탈</b> <span style="opacity:.7">(한도 ${LOAN_MAX.toLocaleString()}밧 · 이자 하루 1% 복리</span><br>현재 빚: <b style="color:${a ? '#ff9a9a' : '#7fe09a'}">${a.toLocaleString()}밧</b>${inc ? ` <span style="color:#ff9a9a">(이자 +${inc.toLocaleString()}밧 붙음)</span>` : ''}<br><button id="lnB" style="font:inherit;padding:6px 10px;margin:4px 4px 0 0;background:#3a2020;color:#ffd0c0;border:0">+1만밧 빌리기</button><button id="lnR" style="font:inherit;padding:6px 10px;margin:4px 4px 0 0;background:#203a26;color:#c0ffd0;border:0">1만밧 갚기</button><button id="lnA" style="font:inherit;padding:6px 10px;margin:4px 0 0 0;background:#203a26;color:#c0ffd0;border:0">전액 갚기</button>`; $('#lnB').onclick = loanBorrow; $('#lnR').onclick = () => loanRepay(false); $('#lnA').onclick = () => loanRepay(true); $('#lnB').disabled = a + LOAN_UNIT > LOAN_MAX; $('#lnR').disabled = $('#lnA').disabled = !a; }
 
 // ── 국장 투자: 실제 종가(서버 시세판 /stk) 기준, 게임 환율 1밧 = 45원 ──
 const KRW_PER_BAHT = 45, STK_FEE = .003;
@@ -1060,7 +1058,7 @@ function drawCards() {
     const d = document.createElement('div'); d.className = 'card' + (G.me === c.id ? ' me' : '') + (G.on.has(c.id) ? '' : ' off');
     const bar = v => `<i style="width:${clamp(v, 0, 1) * 100}%"></i>`;
     d.innerHTML = `<button class="tog">${G.me === c.id ? '나' : (G.on.has(c.id) ? '참가 ✓' : '제외')}</button><canvas class="av" width="16" height="17"></canvas><div class="nm" style="color:${c.ink}">${c.name}<span class="port p${c.port}">${c.port}포트</span><span class="lv">Lv.${lvOf(c.id)} · 📖${Math.min(((SV.story || {})[c.id] || 0), STORY[c.id].length)}/${STORY[c.id].length}</span></div><div class="tt">${c.title}</div>
-      <div class="st"><div><span>비거리</span>${bar((c.mult - .7) / .6)}</div><div><span>정확도</span>${bar(c.acc)}</div><div><span>퍼팅</span>${bar(c.putt)}</div></div><div class="tr">${c.skill}</div><div class="qt">${c.quote}${realAvg(c.id) != null ? `<br>📝 실제 최근 평균 ${realAvg(c.id).toFixed(1)}타 반영` : ''}</div>`;
+      <div class="st"><div><span>비거리</span>${bar((c.mult - .7) / .6)}</div><div><span>정확도</span>${bar(c.acc)}</div><div><span>퍼팅</span>${bar(c.putt)}</div></div><div class="tr">${c.skill}</div><div class="qt">${c.quote}</div>`;
     drawSprite(d.querySelector('canvas').getContext('2d'), c, 'idle', 0, 2, 1);
     d.onclick = async () => {
       if (SV.myCh) { if (c.id !== SV.myCh) d.querySelector('.tog').click(); return; }
@@ -1161,7 +1159,7 @@ function outroHTML(h) {
   return `<div class="story">${L.join('')}</div>`;
 }
 function showStock(cb, stock) { G.phase = 'stock'; const h = curHole(); $('#introT').textContent = `🎬 ${h.no}번홀 — 티업 전`; $('#stockBody').innerHTML = (G.hi === 0 ? storyIntroHTML(G.human.ch) : '') + introHTML(h) + (stock ? '<h3 style="color:#ffb627;margin:14px 0 4px">📰 아침 주식 시황</h3>' + G.stockHTML : ''); $('#sStock').scrollTop = 0; $('#sStock').classList.add('on'); $('#stockOk').onclick = () => { $('#sStock').classList.remove('on'); const e = G.stockEv, p = stock && e ? G.pl.find(q => q.ch.id === e.line[0]) : null; if (p) chat(p.ch.name, e.line[1], p.ch.ink); if (G.rain && !G.rainShown) { G.rainShown = true; chat('📡 정b특파원', '[속보] 남투엄 안따라이! 호우경보 발령, 폭우 지옥훈련 돌입', '#ff7a7a'); } cb(); }; }
-const WXPOS = { bpk: [13.60, 101.07], rls: [13.52, 101.00], pcc: [12.93, 101.05], gv: [13.63, 100.72] };
+const WXPOS = { bpk: [13.60, 101.07], rls: [13.52, 101.00], grn: [13.16, 101.23] };
 const WX = {};
 async function fetchWx(k) { const p = WXPOS[k]; if (!p) return null; if (WX[k] && Date.now() - WX[k].at < 600000) return WX[k];
   try { const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000); const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p[0]}&longitude=${p[1]}&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m&timezone=Asia%2FBangkok`, { signal: ctl.signal }); clearTimeout(to); const c = (await r.json()).current; if (!c || typeof c.wind_speed_10m !== 'number') return null;
@@ -1662,7 +1660,7 @@ function partOpts(sel, k) { const el = $(sel); if (!el) return; const nn = !!(CO
 const cn = () => { feeNote(); const k = $('#oCourse').value; partOpts('#oPart', k); if ((COURSES[k] || {}).nines) { $('#oPart option[value=back]').disabled = false; $('#oPart option[value=full]').disabled = false; } $('#courseNote').textContent = k === 'fan' ? '가상의 9홀 코스입니다.' : '📍 ' + COURSES[k].note; $('#oPart option[value=back]').disabled = k !== 'fan' && COURSES[k].par.length < 10; $('#oPart option[value=full]').disabled = k === 'fan' || COURSES[k].par.length < 18; if (($('#oPart').value === 'back' && $('#oPart option[value=back]').disabled) || ($('#oPart').value === 'full' && $('#oPart option[value=full]').disabled)) $('#oPart').value = 'front'; hcpUi(); };
 const hcpUi = () => { $('#oHcp').checked = false; };
 $('#oCourse').onchange = () => { cn(); wxNote(); }; cn(); $('#oWx').onchange = wxNote; wxNote(); $('#oPart').onchange = () => { feeNote(); hcpUi(); }; $('#oCaddie').onchange = feeNote;
-$('#rouBtn').onclick = () => { const opts = ['bpk', 'rls', 'pcc', 'scr', 'gv'], b = $('#rouBtn'); let i = 0; b.disabled = true; const res = R() < .8 ? 'bpk' : pick(opts); const iv = setInterval(() => { $('#oCourse').value = opts[i++ % opts.length]; cn(); beep(500 + (i % 5) * 60, .03); }, 90); setTimeout(() => { clearInterval(iv); $('#oCourse').value = res; cn(); b.disabled = false; wxNote(); b.textContent = res === 'bpk' ? '🎡 돌림판 결과는 리버사이드입니다' : '🎡 다시 돌리기 (조작 실패?)'; }, 1700); };
+$('#rouBtn').onclick = () => { const opts = ['bpk', 'rls', 'grn', 'scr'], b = $('#rouBtn'); let i = 0; b.disabled = true; const res = R() < .8 ? 'bpk' : pick(opts); const iv = setInterval(() => { $('#oCourse').value = opts[i++ % opts.length]; cn(); beep(500 + (i % 5) * 60, .03); }, 90); setTimeout(() => { clearInterval(iv); $('#oCourse').value = res; cn(); b.disabled = false; wxNote(); b.textContent = res === 'bpk' ? '🎡 돌림판 결과는 리버사이드입니다' : '🎡 다시 돌리기 (조작 실패?)'; }, 1700); };
 $('#goBtn').addEventListener('click', () => { try { if (window.matchMedia('(pointer:coarse)').matches && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { }); } catch (e) { } }, true);
 // ===== 장비 뽑기(가챠): 일반 60% 골프공 · 레어 27% 이전 모델 장비 · 에픽 10% 2026 최신 장비 · 전설 3% 골드 한정 장비 =====
 const GACHA_1 = 5000, GACHA_10 = 45000, GACHA_PITY = 50, GRADE = [['일반', '#cfd8e0', .60], ['레어', '#7fb8ff', .27], ['에픽', '#c88cff', .10], ['전설', '#ffcc33', .03]];
@@ -1743,10 +1741,15 @@ function bgmTick() { if (!SV.music || document.hidden) return; const b = BGM[bgm
 function bgmStart(song) { if (song) bgmSong = song; clearInterval(bgmTimer); bgmTimer = null; if (!SV.music) return; bgmTimer = setInterval(bgmTick, 60000 / BGM[bgmSong].bpm / 2); }
 function musicLabel() { $('#mMusic').textContent = SV.music ? '🎵 음악 켜짐' : '🔇 음악 꺼짐'; }
 if (SV.music === undefined) SV.music = true;
+// ⚙ 설정 화면: 흩어져 있던 설정을 한곳으로 (기존 입력칸·버튼을 그대로 옮겨서 동작은 같음)
+(() => { const o = mkOverlay('oSet'); o.style.display = 'none'; o.innerHTML = '<div class="box" style="max-width:380px;width:100%"><h3>⚙ 설정</h3><div id="setOpts" style="display:flex;flex-direction:column;gap:8px;font-size:14px"></div><h3 style="margin-top:12px">🔊 소리</h3><div id="setSnd"></div><h3 style="margin-top:12px">📖 정보</h3><div id="setInfo"></div><button class="go" id="setClose" style="margin-top:10px;background:#22303c;color:#fff">← 메뉴</button></div>';
+  const so = $('#setOpts'); ['oVoice', 'oVib', 'oZoom', 'oWx'].forEach(id => { const e = $('#' + id); if (e && e.parentElement) so.appendChild(e.parentElement); }); { const e = $('#oCadVoice'); if (e && e.parentElement) so.appendChild(e.parentElement); }
+  ['mMusic', 'mVoice'].forEach(id => { const b = $('#' + id); if (b) $('#setSnd').appendChild(b); }); { const b = $('#mInfo'); if (b) $('#setInfo').appendChild(b); }
+  $('#setClose').onclick = () => { o.style.display = 'none'; }; $('#mSet').onclick = () => { o.style.display = 'flex'; }; })();
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.44.0';
+const VERSION = 'v0.45.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1765,12 +1768,13 @@ const ABOUT = [
  ['연습', '시합 안 한 날 메뉴의 연습장·프로 레슨에서 드라이버·아이언·퍼팅을 따로 키웁니다.'],
  ['내구도', '미스샷이 나면 그 채의 내구도가 떨어지고 성능이 내려갑니다. 장비 상점에서 수리.'],
  ['캐디', '따라다니며 거리·바람·경사를 알려 줍니다. 지정(+1,000밧)은 안정적, 랜덤은 복불복으로 한 가지가 특급.'],
- ['성장', '내기로 번 바트로 실제 모델 장비를 사서 장착. 라운드마다 경험치로 레벨업. 매주 실제 스코어를 넣으면 캐릭터 실력에 반영.'],
+ ['성장', '내기로 번 바트로 실제 모델 장비를 사서 장착. 라운드마다 경험치로 레벨업.'],
  ['스테이지', '방파콩 리버사이드(입싸) · 로열 레이크사이드(렉싸) · 파타야 CC · 삼화 스크린골프장 · 그린밸리(2포트 금지구장).'],
  ['멀티', '메뉴에서 멀티 모드 → 방 만들기 또는 4자리 코드로 입장 → 방장이 시작. 각자 자기 폰에서 자기 캐릭터로 치고, 모두 홀아웃하면 정산. 인터넷 필요.'],
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.45.0', '2026-11-27', ['💬 클럽하우스 채팅: 최신 대화가 맨 위에 오도록 순서 변경', '⚙ 메뉴에 설정 한 곳으로 통합: 음악·대사 음성·진동·샷 카메라·실시간 날씨·캐디 목소리·음성 테스트·게임 안내를 "⚙ 설정" 버튼 하나에', '🏦 주통 캐피탈(대출) 삭제 — 남은 빚은 이자 정산 후 지갑에서 자동 상환', '📝 실제 스코어 기능 삭제 (입력 버튼 없앰 · 실제 스코어로 하던 실력 보정도 끔)', '🗑 파타야 CC · 그린밸리 삭제 (회원권·구장 보유자 없음 확인)', '⛳ 구장 특성 재조사 반영 (제미나이 + 공개 코스 리뷰 교차 확인): 방파콩 = 넓은 페어웨이지만 러프가 두꺼움(러프 페널티 1.3배) · 그린 빨라짐 · 강바람 유지 / 로얄레이크사이드 = 벙커가 더 많아졌지만 넓고 얕아서 탈출은 쉬움(벙커 페널티 0.75배) · 해풍 강화 / 그린우드 = 그린이 좁고 빠르고 굴곡 큼 · 레몬그라스 러프(러프 페널티 1.45배)', '그린우드 그린피 평일 1,500 · 주말 2,000밧', '스테이지 순서: 1 방파콩 · 2 로얄레이크사이드 · 3 그린우드 · 보너스 삼화 스크린']],
  ['v0.44.0', '2026-11-27', ['🛡 내 장비 · 능력치 (RPG식 캐릭터 장비창): 메뉴에 새 버튼. 가운데 내 캐릭터, 둘레에 드라이버·아이언·웨지·퍼터·볼 장비 칸(등급 색 · 내구도 막대), 칸을 누르면 보유 장비 중 골라서 바로 장착', '⚔ 전투력(종합 능력치) + 등급(C~SSS), 파워·정확도·퍼팅 막대(맨몸 vs 장비 효과), 장비 효과 합계, 스킬 한 화면에']],
  ['v0.43.1', '2026-11-27', ['🎁 업데이트 기념 무료 장비 뽑기 3회 전원 지급 (메뉴 들어오면 자동 지급, 상점 🎰 "기념 무료 뽑기" 버튼)', '🔧 장비 상점 맨 위에 "내 장비 내구도" 한눈에 보기 (낮은 순, 색 막대) + 일괄 수리 버튼 (한 번에 전부 100%)', '📈 주식 부분 매도: 25%·50%·전량 매도 + 금액 매도(원하는 밧만큼). 남은 수량·매입원가는 비율대로 유지', '메뉴에 장비 내구도 70% 미만이면 경고 + 바로 일괄 수리']],
  ['v0.43.0', '2026-11-27', ['⛳ 그린우드 CC 27홀(A·B·C) 완성: 화이트티 실측 야드·파(공개 스코어카드) + 가민 홀 맵(부장님 제공)으로 27홀 물·개울·벙커 배치. 구간에서 A·B·C 9홀 또는 A+B·B+C·A+C 18홀 선택', 'A코스: 3번 티샷 개울, 5번 왼쪽 호수, 8번 그린 앞 개울(왼쪽 도그렉), 9번 왼쪽 호수(핸디캡 1) · B코스: 1번 왼쪽 연못 두 개, 4번 호수+그린 앞 개울, 7번 개울 두 번 넘기기(핸디캡 1) · C코스: 1번 왼쪽 큰 호수, 5번 호수 넘기는 티샷, 6번 오른쪽 호수 파3, 9번 오른쪽 호수+웨이스트 벙커(핸디캡 1)', '홀 이름에 "C코스 5번"처럼 코스·홀 번호 표시', '스테이지 목록에 그린우드 추가 (전에는 상점·회원권에만 있고 선택이 안 됐음)', '🎯 어프로치 현실화: 게이지를 완벽히 맞춰도 짧은 어프로치가 핀에 딱 붙지 않고 3야드 안팎 흩어짐 (테스트 봇 9홀 -8타 → -1~+1타)']],
@@ -1882,7 +1886,7 @@ const CHANGELOG = [
 ];
 function drawInfo() { $('#infoBody').innerHTML = `<div class="box"><h3>게임 소개 <small style="opacity:.7">${VERSION}</small></h3>${ABOUT.map(a => `<div style="font-size:12.5px;line-height:1.6;margin:6px 0"><b style="color:#ffe08a">${a[0]}</b><br>${a[1]}</div>`).join('')}</div>` + CHANGELOG.map(c => `<div class="box"><h3>🆕 ${c[0]} <small style="opacity:.7">${c[1]}</small></h3><div style="font-size:12.5px;line-height:1.7">${c[2].map(t => '· ' + t).join('<br>')}</div></div>`).join(''); }
 // ================= 골프장 인수 (장기 목표): 산 사람이 오너, 다른 멤버가 멀티로 치면 그린피가 오너 지갑으로 =================
-const COURSE_PRICE = { scr: 2200000, grn: 10000000, gv: 15000000, pcc: 20000000, bpk: 30000000, rls: 30000000 }; // 스크린 = 실제 투자비 약 1억원(≈220만밧) 기준 비율
+const COURSE_PRICE = { scr: 2200000, grn: 10000000, bpk: 30000000, rls: 30000000 }; // 스크린 = 실제 투자비 약 1억원(≈220만밧) 기준 비율
 let OWN = {};
 const ownerOf = k => (OWN[k] && OWN[k].ch) ? OWN[k] : null;
 const buyPrice = k => { const o = ownerOf(k); return o ? Math.round(o.price * 1.3 / 1000) * 1000 : COURSE_PRICE[k]; };
@@ -2134,7 +2138,7 @@ function clubMarkRead() { clubUnread = 0; SV.clubRd = Date.now(); saveSV(); club
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function clubLock() { const off = !NET.ok, i = $('#clubIn'); if (!i) return; i.disabled = off; i.placeholder = off ? '🔴 서버 연결 후 채팅 가능 (접속한 사람끼리만)' : '메시지 입력'; document.querySelectorAll('#clubQuick button, #clubSend').forEach(b => { b.disabled = off; b.style.opacity = off ? .4 : 1; }); }
 setInterval(() => { try { clubLock(); } catch (e) { } }, 2000);
-function clubAdd(chId, text, tag, quiet) { const ch = CH.find(c => c.id === chId), el = $('#clubLog'), d = document.createElement('div'); d.innerHTML = `<b style="color:${ch ? ch.ink : '#ff7a7a'}">${ch ? ch.name : '📡 안내'}</b>${tag ? ` <small style="opacity:.6">${tag}</small>` : ''} ${esc(text).slice(0, 200)}`; el.appendChild(d); while (el.children.length > 250) el.removeChild(el.firstChild); el.scrollTop = el.scrollHeight; if (clubOpen && ch && !quiet) speak(ch.name, text); return d; }
+function clubAdd(chId, text, tag, quiet) { const ch = CH.find(c => c.id === chId), el = $('#clubLog'), d = document.createElement('div'); d.innerHTML = `<b style="color:${ch ? ch.ink : '#ff7a7a'}">${ch ? ch.name : '📡 안내'}</b>${tag ? ` <small style="opacity:.6">${tag}</small>` : ''} ${esc(text).slice(0, 200)}`; el.prepend(d); while (el.children.length > 250) el.removeChild(el.lastChild); el.scrollTop = 0; if (clubOpen && ch && !quiet) speak(ch.name, text); return d; }
 // 멀티: 멤버별 접속 여부 (/on 하트비트 기준)
 function onlState() { const r = {}; for (const v of Object.values(onl || {})) { if (!v || !v.ch || !v.ts) continue; if (!r[v.ch] || r[v.ch].ts < v.ts) r[v.ch] = v; } return r; }
 function onlMark(id, r) { const v = (r || onlState())[id]; if (!v) return ['⚪', '미접속', 0]; const ag = Date.now() - v.ts; if (ag < 90000) return ['🟢', v.st === 'play' ? '싱글 중' : v.st === 'multi' ? '멀티 중' : '접속 중', 2]; if (ag < 180000) return ['🟡', '방금 전', 1]; const m = Math.round(ag / 60000); return ['⚪', m < 60 ? m + '분 전' : m < 1440 ? Math.round(m / 60) + '시간 전' : Math.round(m / 1440) + '일 전', 0]; }
