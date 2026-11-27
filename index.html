@@ -216,8 +216,9 @@ tr.me td{background:rgba(255,182,39,.13)}
 </div></div>
 <div class="screen" id="sPrac"><div class="wrap" style="max-width:460px">
   <h1 style="font-size:22px">🏌 연습장 · 프로 레슨</h1>
-  <div class="sub">멀티 모드 시합(라운드)을 안 한 날에만 연습할 수 있습니다(싱글 연습 라운드는 해당 없음). 하루 3번까지. 연습 포인트 1점마다 그 분야 편차가 0.5% 줄어듭니다(분야별 최대 30점).</div>
+  <div class="sub">멀티 모드 시합(라운드)을 안 한 날에만 연습할 수 있습니다(싱글 연습 라운드는 해당 없음). 하루 5번까지. 레슨은 배운 분야 말고도 랜덤 분야 능력치가 덤으로 붙습니다. 연습 포인트 1점마다 그 분야 편차가 0.5% 줄어듭니다(분야별 최대 30점).</div>
   <div class="box" id="pracStat"></div>
+  <canvas id="pracCv" width="320" height="160" style="width:100%;max-width:420px;display:block;margin:0 auto 8px;image-rendering:pixelated;background:#14321c;border:2px solid #2c4a2c"></canvas>
   <div class="opts"><label>연습 분야 <select id="pracArea"><option value="d">드라이버·우드</option><option value="i">아이언·웨지</option><option value="p">퍼팅</option></select></label></div>
   <div id="pracBtns"></div>
   <div id="pracLog" style="font-size:12.5px;line-height:1.7;margin-top:8px"></div>
@@ -1749,7 +1750,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.45.0';
+const VERSION = 'v0.46.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1774,6 +1775,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.46.0', '2026-11-27', ['🏌 연습장 모션: 연습 누르면 내 캐릭터가 실제로 스윙하고 공이 날아감 — 드라이버는 거리 표시판 너머로, 아이언은 깃발로, 퍼팅은 컵으로 굴러감 (개인 연습 3구, 레슨 2구 · 레슨은 옆에 프로가 서서 한마디씩 지도)', '🎲 레슨 능력치 랜덤 부여: 배운 분야 점수 + 덤으로 랜덤 분야 +1~2점(한국인 프로 +1~3점), 가끔 "🌟 비법 전수" 드라이버·아이언·퍼팅 전부 +1점 (프로 12%, 한국인 프로 20%)']],
  ['v0.45.0', '2026-11-27', ['💬 클럽하우스 채팅: 최신 대화가 맨 위에 오도록 순서 변경', '⚙ 메뉴에 설정 한 곳으로 통합: 음악·대사 음성·진동·샷 카메라·실시간 날씨·캐디 목소리·음성 테스트·게임 안내를 "⚙ 설정" 버튼 하나에', '🏦 주통 캐피탈(대출) 삭제 — 남은 빚은 이자 정산 후 지갑에서 자동 상환', '📝 실제 스코어 기능 삭제 (입력 버튼 없앰 · 실제 스코어로 하던 실력 보정도 끔)', '🗑 파타야 CC · 그린밸리 삭제 (회원권·구장 보유자 없음 확인)', '⛳ 구장 특성 재조사 반영 (제미나이 + 공개 코스 리뷰 교차 확인): 방파콩 = 넓은 페어웨이지만 러프가 두꺼움(러프 페널티 1.3배) · 그린 빨라짐 · 강바람 유지 / 로얄레이크사이드 = 벙커가 더 많아졌지만 넓고 얕아서 탈출은 쉬움(벙커 페널티 0.75배) · 해풍 강화 / 그린우드 = 그린이 좁고 빠르고 굴곡 큼 · 레몬그라스 러프(러프 페널티 1.45배)', '그린우드 그린피 평일 1,500 · 주말 2,000밧', '스테이지 순서: 1 방파콩 · 2 로얄레이크사이드 · 3 그린우드 · 보너스 삼화 스크린']],
  ['v0.44.0', '2026-11-27', ['🛡 내 장비 · 능력치 (RPG식 캐릭터 장비창): 메뉴에 새 버튼. 가운데 내 캐릭터, 둘레에 드라이버·아이언·웨지·퍼터·볼 장비 칸(등급 색 · 내구도 막대), 칸을 누르면 보유 장비 중 골라서 바로 장착', '⚔ 전투력(종합 능력치) + 등급(C~SSS), 파워·정확도·퍼팅 막대(맨몸 vs 장비 효과), 장비 효과 합계, 스킬 한 화면에']],
  ['v0.43.1', '2026-11-27', ['🎁 업데이트 기념 무료 장비 뽑기 3회 전원 지급 (메뉴 들어오면 자동 지급, 상점 🎰 "기념 무료 뽑기" 버튼)', '🔧 장비 상점 맨 위에 "내 장비 내구도" 한눈에 보기 (낮은 순, 색 막대) + 일괄 수리 버튼 (한 번에 전부 100%)', '📈 주식 부분 매도: 25%·50%·전량 매도 + 금액 매도(원하는 밧만큼). 남은 수량·매입원가는 비율대로 유지', '메뉴에 장비 내구도 70% 미만이면 경고 + 바로 일괄 수리']],
@@ -2058,8 +2060,27 @@ $('#toMenu').onclick = showMenu;
 function drawPrac() { SV.tr = SV.tr || { d: 0, i: 0, p: 0 }; if (SV.prDay !== today()) { SV.prDay = today(); SV.prN = 0; } const played = SV.lastRound === today(), left = PRAC_DAY - (SV.prN || 0);
   $('#pracStat').innerHTML = `💰 지갑 <b style="color:#ffb627">${SV.wallet.toLocaleString()}밧</b><br>연습 포인트 — 드라이버 ${trPts('d')} · 아이언 ${trPts('i')} · 퍼팅 ${trPts('p')} (각 30점 만점)<br>${played ? '<span style="color:#ff9a9a">오늘은 멀티 시합을 한 날이라 연습할 수 없습니다. 내일 오세요.</span>' : `오늘 남은 연습 ${left}번`}`;
   const el = $('#pracBtns'); el.innerHTML = ''; PRAC.forEach(p => { const b = document.createElement('button'); b.className = 'go'; b.style.cssText = 'font-size:14px;padding:11px;background:#22301a;color:#cfe8a8'; b.innerHTML = `${p[1]} — ${p[2].toLocaleString()}밧 <small>(+${p[3]}점${p[4] < 1 ? ', 성공률 ' + Math.round(p[4] * 100) + '%' : ''})</small>`; b.disabled = played || left <= 0 || SV.wallet < p[2];
-    b.onclick = () => { const k = $('#pracArea').value, nm = { d: '드라이버', i: '아이언', p: '퍼팅' }[k]; led('🏌 연습장·레슨'); SV.wallet -= p[2]; SV.prN = (SV.prN || 0) + 1; const ok = R() < p[4], full = trPts(k) >= 30; if (ok && !full) SV.tr[k] = Math.min(30, (SV.tr[k] || 0) + p[3]); saveSV(); beep(ok ? 880 : 220, .12);
-      $('#pracLog').insertAdjacentHTML('afterbegin', `<div>${p[1]} · ${nm} — ${full ? '이미 만점입니다 (돈만 썼습니다)' : ok ? `감 잡았다! +${p[3]}점` : '오늘은 감이 안 온다... 효과 없음'}</div>`); { const dm = dqPrac(); if (dm) { toast('📋 ' + dm, '#ffe08a'); $('#pracLog').insertAdjacentHTML('afterbegin', `<div style="color:#ffe08a">📋 일일 퀘스트 ${dm} (스탬프)</div>`); } } drawPrac(); }; el.appendChild(b); }); }
+    b.onclick = () => { if (G.pracBusy) return; const k = $('#pracArea').value, nm = { d: '드라이버', i: '아이언', p: '퍼팅' }[k]; led('🏌 연습장·레슨'); SV.wallet -= p[2]; SV.prN = (SV.prN || 0) + 1; const ok = R() < p[4], full = trPts(k) >= 30; if (ok && !full) SV.tr[k] = Math.min(30, (SV.tr[k] || 0) + p[3]);
+      // 레슨은 배운 분야 말고도 능력치가 랜덤으로 붙음 (프로 +1~2, 한국인 프로 +1~3 · 가끔 '비법 전수' 전 분야 +1)
+      let bonus = ''; if (p[0] !== 'range') { const ks = ['d', 'i', 'p'], NM = { d: '드라이버', i: '아이언', p: '퍼팅' }; if (R() < (p[0] === 'kpro' ? .2 : .12)) { ks.forEach(x => SV.tr[x] = Math.min(30, (SV.tr[x] || 0) + 1)); bonus = '🌟 비법 전수! 드라이버·아이언·퍼팅 전부 +1점'; } else { const x = ks[Math.floor(R() * 3)], n = 1 + Math.floor(R() * (p[0] === 'kpro' ? 3 : 2)); if ((SV.tr[x] || 0) < 30) { SV.tr[x] = Math.min(30, (SV.tr[x] || 0) + n); bonus = `🎲 덤으로 ${NM[x]} +${n}점`; } else bonus = `🎲 덤(${NM[x]})은 이미 만점`; } }
+      saveSV(); G.pracBusy = true; el.querySelectorAll('button').forEach(x => x.disabled = true);
+      pracAnim(k, p[0], ok && !full, () => { G.pracBusy = false; beep(ok ? 880 : 220, .12);
+      $('#pracLog').insertAdjacentHTML('afterbegin', `<div>${p[1]} · ${nm} — ${full ? '이미 만점입니다 (돈만 썼습니다)' : ok ? `감 잡았다! +${p[3]}점` : '오늘은 감이 안 온다... 효과 없음'}${bonus ? ` <b style="color:#ffe08a">${bonus}</b>` : ''}</div>`); if (bonus) toast(bonus, '#ffe08a'); { const dm = dqPrac(); if (dm) { toast('📋 ' + dm, '#ffe08a'); $('#pracLog').insertAdjacentHTML('afterbegin', `<div style="color:#ffe08a">📋 일일 퀘스트 ${dm} (스탬프)</div>`); } } drawPrac(); }); }; el.appendChild(b); }); try { pracIdle(); } catch (e) { } }
+// 연습장 모션: 캐릭터가 실제로 스윙하고 공이 날아감 (드라이버=멀리, 아이언=깃발, 퍼팅=컵으로 굴러감), 레슨은 옆에 프로가 서서 지도
+const PRO_CH = { id: 'pro', color: '#f5f5f5', hair: '#3a2a1a' };
+function pracScene(x, k, lesson) { const W = 320, H = 160; x.fillStyle = k === 'p' ? '#2f7a3a' : '#1f5a2c'; x.fillRect(0, 0, W, H); if (k !== 'p') { x.fillStyle = '#7ec8ff'; x.fillRect(0, 0, W, 46); for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? '#2a6a36' : '#24622f'; x.fillRect(0, 46 + i * 19, W, 19); } x.fillStyle = '#fff'; [100, 150, 200, 250].forEach((d, i) => { const px = 60 + i * 60; x.fillRect(px, 52, 1, 8); x.font = '8px monospace'; x.fillText(d + 'y', px - 8, 70); }); if (k === 'i') { x.fillStyle = '#ddd'; x.fillRect(214, 58, 1, 18); x.fillStyle = '#e2434b'; x.fillRect(215, 58, 8, 5); } }
+  else { x.fillStyle = '#3d9a4a'; x.fillRect(0, 0, W, H); x.fillStyle = '#111'; x.beginPath(); x.ellipse(260, 96, 6, 3, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#ddd'; x.fillRect(260, 66, 1, 30); x.fillStyle = '#ffcc33'; x.fillRect(261, 66, 9, 5); }
+  x.fillStyle = '#3a2a1a'; x.fillRect(14, 128, 60, 6); if (lesson) { drawSprite(x, PRO_CH, 'idle', 74, 92, 2); x.fillStyle = '#fff'; x.font = '9px sans-serif'; x.fillText(lesson === 'kpro' ? '한국인 프로' : '태국 프로', 70, 88); } }
+function pracIdle() { const cv = $('#pracCv'); if (!cv) return; const x = cv.getContext('2d'), c = CH.find(z => z.id === (SV.myCh || G.me)); if (!c) return; const k = ($('#pracArea') || {}).value || 'd'; pracScene(x, k, null); drawSprite(x, c, 'idle', 18, 92, 2); x.fillStyle = '#fff'; x.fillRect(44, 126, 3, 3); }
+function pracAnim(k, kind, good, done) { const cv = $('#pracCv'); if (!cv) { done(); return; } const x = cv.getContext('2d'), c = CH.find(z => z.id === (SV.myCh || G.me)), balls = kind === 'range' ? 3 : 2, T1 = 1700; let t0 = performance.now(), n = 0; const lesson = kind === 'range' ? null : kind;
+  const tips = { d: ['체중 이동!', '헤드업 금지', '피니시 끝까지'], i: ['다운블로!', '공 먼저 맞히고', '손목 고정'], p: ['어깨로 스트로크', '머리 고정', '거리감 먼저'] }[k];
+  const tgt = i => { const r = (good ? .5 : 1.6) * (Math.random() - .5); return k === 'd' ? { x: 200 + Math.random() * 90, y: 60 + r * 30 } : k === 'i' ? { x: 214 + r * 40, y: 72 + r * 10 } : { x: 260 + r * 30 * (good ? .4 : 1), y: 96 + r * 6 }; };
+  let tg = tgt(0); const step = now => { const t = (now - t0) / T1; pracScene(x, k, lesson); const fr = t < .25 ? 'idle' : t < .45 ? 'back' : 'follow'; drawSprite(x, c, fr, 18, 92, 2);
+    if (lesson && t < .6) { x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(96, 40, 110, 18); x.fillStyle = '#ffe08a'; x.font = '10px sans-serif'; x.fillText('💬 ' + tips[n % tips.length], 100, 53); }
+    const sx = 44, sy = 127; if (t < .45) { x.fillStyle = '#fff'; x.fillRect(sx, sy - 1, 3, 3); } else { const u = Math.min(1, (t - .45) / .5); const bx = sx + (tg.x - sx) * u, by = k === 'p' ? sy + (tg.y - sy) * u : sy + (tg.y - sy) * u - Math.sin(u * Math.PI) * (k === 'd' ? 70 : 50); x.fillStyle = '#fff'; x.fillRect(bx, by, 3, 3); if (u >= 1) { x.font = 'bold 12px sans-serif'; x.fillStyle = good ? '#9fffb0' : '#ff9a9a'; x.fillText(k === 'p' ? (good && Math.abs(tg.x - 260) < 6 ? '땡그랑! 🕳' : good ? '아깝다!' : '짧다…') : k === 'd' ? `${Math.round(100 + (tg.x - 60) / 60 * 50)}y ${good ? '굿샷!' : '슬라이스…'}` : good ? '핀 근처!' : '빗나감…', 120, 30); } }
+    if (t < 1) requestAnimationFrame(step); else if (++n < balls) { t0 = performance.now(); tg = tgt(n); requestAnimationFrame(step); } else setTimeout(() => { done(); }, 250); };
+  requestAnimationFrame(step); }
+$('#pracArea') && $('#pracArea').addEventListener('change', () => { try { pracIdle(); } catch (e) { } });
 $('#mStk').onclick = async () => { $('#stkLog').innerHTML = ''; drawStk(); $('#sStk').classList.add('on'); await stkLoad(); drawStk(); };
 $('#stkClose').onclick = () => { $('#sStk').classList.remove('on'); showMenu(); };
 // ===== 홀인원 보상: 골프장 홀인원 상금 + 보험금 + 전설 뽑기권 + 경험치·스탬프 =====
