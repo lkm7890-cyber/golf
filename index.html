@@ -626,6 +626,16 @@ function clubMax(ch, club, lie) { if (club.putter) return 50; const gm_ = isMe(c
 function zoneOf(ch, human) { return (.04 + .07 * ch.acc) * ((human && G.easy) ? 1.6 : 1) * (human ? (G.zmod || 1) : 1); } // 이 범위 안이면 '나이스샷' (오차 0)
 
 const SHAPEN = { fade: '↪ 페이드 (살짝 오른쪽으로 휨)', draw: '↩ 드로우 (살짝 왼쪽, 더 굴러감)', slice: '🍌 슬라이스! 오른쪽으로 크게 휨', hook: '🪝 훅! 왼쪽으로 감겨 굴러감', bigslice: '💥 바나나 슬라이스... 옆 홀 방향', duckhook: '🦆 덕훅! 왼쪽으로 꽂힘' };
+// ===== 현실 환경 (v0.48): 그린 스피드·기온·건기/우기 페어웨이 =====
+// 스팀프(ft): 실제 후기 기준 — 로얄레이크사이드 9.5, 서밋 윈드밀·그린우드 빠름, 방파콩 빠른 편. 10ft = 기준
+const STIMP = { bpk: 10, rls: 9.5, grn: 10.5, swm: 11, scr: 9, fan: 9.5 };
+function stimpNow() { const b = STIMP[G.course] || 10; return +(b * (G.rain ? .88 : 1) * (G.tod === 'dawn' ? .96 : 1)).toFixed(1); } // 비·새벽 이슬 → 느림
+const gSpd = () => stimpNow() / 10;
+function bkkMonth() { return new Date(Date.now() + 7 * 3600e3).getUTCMonth() + 1; }
+function firmF() { const dry = [11, 12, 1, 2, 3, 4].includes(bkkMonth()); return (dry ? 1.1 : .9) * (G.rain ? .75 : 1); } // 태국 건기(11~4월) 땅이 단단해 런↑, 우기(5~10월) 런↓
+function airT() { const w = typeof WX !== 'undefined' && WX[G.course]; return (w && isFinite(w.t)) ? w.t : (G.tod === 'night' ? 27 : G.tod === 'dawn' ? 25 : 32); }
+function tempF() { return 1 + clamp(airT() - 21, -10, 18) * .0018; } // 따뜻한 공기 = 공기 밀도↓ = 비거리↑ (약 10°C당 +1.8%)
+function envText() { const T = Math.round(airT()), tf = (tempF() - 1) * 100, ff = Math.round((firmF() - 1) * 100); return `🟢 그린 ${stimpNow()}ft${stimpNow() >= 10.5 ? ' (빠름)' : stimpNow() <= 9.2 ? ' (느림)' : ''} · 🌡 ${T}°C 비거리 ${tf >= 0 ? '+' : ''}${tf.toFixed(1)}% · ${[11, 12, 1, 2, 3, 4].includes(bkkMonth()) ? '🏜 건기' : '🌧 우기'} 런 ${ff >= 0 ? '+' : ''}${ff}%`; }
 const MISSK = 3.0; // 큰 미스 증폭 (게이지 45% 밖부터)
 // 샷 계산. 사람/CPU 공용. p: 파워(0~1), a: 정확도(-1~1)
 function takeShot(h, st, club, aim, p, a, wind) {
@@ -640,6 +650,7 @@ function takeShot(h, st, club, aim, p, a, wind) {
   if (ch.id === 'gy' && G.hi === 1) carry *= 1.08;
   if (G.course === 'scr' && ch.id === 'sg' && (club.id === 'W' || club.id === 'D')) carry *= .7;
   if (G.rain) carry *= .96;
+  carry *= tempF();
   if (st.awake && club.id === 'W' && lie === 'tee') { eAmp *= .6; st.awake = false; ev.push('awake'); }
   if (st.tee && ch.caddie && R() < ch.caddie) { ev.push('caddie'); carry *= .5; }
   const r = R(); const tm = (isMe(ch) ? G.gear.miss : 1) * (ch.id === 'du' ? .5 : 1) * ((st.perm && !immune(ch)) ? (ch.id === 'sg' ? 4 : 2) : 1); const pt = (ch.top || .04) * L.top * tm;
@@ -657,7 +668,7 @@ function takeShot(h, st, club, aim, p, a, wind) {
   const tLand = terr(h, landF);
   let fin = landF, tFin = tLand;
   if (tLand !== 'water' && tLand !== 'ob') {
-    const rm = ROLLM[tLand] || 0, rollLen = (carry * club.roll * rm + rollExtra * (rm > 0 ? 1 : 0)) * (/hook|draw/.test(shp) ? 1.25 : /slice|fade/.test(shp) ? .75 : 1);
+    const rm = ROLLM[tLand] || 0, rollLen = (carry * club.roll * rm + rollExtra * (rm > 0 ? 1 : 0)) * (/hook|draw/.test(shp) ? 1.25 : /slice|fade/.test(shp) ? .75 : 1) * (tLand === 'green' ? gSpd() : firmF());
     fin = { x: landF.x + d.x * rollLen, y: landF.y + d.y * rollLen }; tFin = terr(h, fin);
   }
   if (tFin === 'bunker') ev.push('bunker');
@@ -677,7 +688,7 @@ function putt(h, st, aim, p, a) {
   let eAmp = TUNE.puttErr * 3.4 * (1.55 - ch.putt * .9) * (onG ? 1 : 1.8) * ((ch.id === 'gm' && roll <= 10) ? .5 : 1) * realF(ch) * lvF(ch) * trF(ch, CLUBS[7]) * (isMe(ch) ? G.gear.putt : 1) * ((G.course === 'scr' && ch.id === 'sg') ? 1.4 : 1) * ((ch.three && roll > 8) ? ch.three : 1) * moodF(st) * jtF(ch) * (st.tilt || 1) * ((st.human && G.easy) ? .55 : 1) * ((onG && !st.human && G.pl.some(q => q.ch.id === 'gy') && ch.id !== 'gy') ? 1.12 : 1);
   if (Math.abs(a) < zoneOf(ch, st.human) * .8) a = st.human ? clamp(randn() * TUNE.hPl / (TUNE.puttErr * 3.4 * .884), -3, 3) : clamp(randn() * .05, -.12, .12); // 사람: 게이지를 맞춰도 실제 아마추어처럼 라인이 조금씩 빗나감 (퍼트 능력치·장비가 클수록 덜 빗나감) // 퍼트도 미세한 라인 편차
   if (st.human) roll *= 1 + clamp(randn() * TUNE.hPr, -.2, .2); // 퍼트 거리감 편차
-  const ang = aim + rad(a * eAmp), d = dirv(ang), k = onG ? roll / 10 : roll / 30;
+  if (onG) roll *= gSpd(); const ang = aim + rad(a * eAmp), d = dirv(ang), k = onG ? roll / 10 * gSpd() : roll / 30;
   const E = { x: from.x + d.x * roll + h.slope[0] * k, y: from.y + d.y * roll + h.slope[1] * k };
   const pin = h.pinPos, vx = E.x - from.x, vy = E.y - from.y, L2 = vx * vx + vy * vy || 1e-9;
   const t = ((pin.x - from.x) * vx + (pin.y - from.y) * vy) / L2, qx = from.x + vx * t, qy = from.y + vy * t;
@@ -755,8 +766,8 @@ function aiShot(h, st, wind) {
     const offs = c.putter ? [0] : [-12, -8, -4, 0, 4, 8, 12];
     for (const off of offs) {
       let aim, pw;
-      if (c.putter) { const k = (lie === 'green' ? dp / 10 : dp / 30); const tp = { x: h.pinPos.x - h.slope[0] * k * .9, y: h.pinPos.y - h.slope[1] * k * .9 }; aim = Math.atan2(tp.x - st.pos.x, tp.y - st.pos.y); pw = clamp((dp + .35) / (50 * (lie === 'green' ? 1 : .9)), 0, 1); }
-      else { aim = baseAim(h, st.pos, mx) + rad(off); pw = dp <= mx * .98 ? clamp(dp / mx, .25, 1) : 1; }
+      if (c.putter) { const gs = lie === 'green' ? gSpd() * (1 + .05 * Math.sin(dp * 7.31 + ch.putt * 13)) : 1, k = (lie === 'green' ? dp / 10 * gs : dp / 30); const tp = { x: h.pinPos.x - h.slope[0] * k * .9, y: h.pinPos.y - h.slope[1] * k * .9 }; aim = Math.atan2(tp.x - st.pos.x, tp.y - st.pos.y); pw = clamp((dp + .35) / (50 * (lie === 'green' ? gs : .9)), 0, 1); }
+      else { aim = baseAim(h, st.pos, mx) + rad(off); pw = dp <= mx * tempF() * .98 ? clamp(dp / (mx * tempF()), .25, 1) : 1; }
       let sum = 0; const N = c.putter ? 5 : 8;
       for (let i = 0; i < N; i++) {
         const tmp = { ch, pos: st.pos, lie, tee: st.tee, awake: st.awake };
@@ -1227,6 +1238,7 @@ function startHole() {
     if (sgp && sgp.cond > 0) chat('📡 정b특파원', '[속보] 정b 83타 각성 모드 돌입, 1포트 긴장', '#ff7a7a'); else if (sgp && sgp.cond < 0) chat('📡 정b특파원', '[속보] 백슬기 강림... 앞으로는 8자를 보지 않겠다', '#ff7a7a');
     if (G.rain && R() < .15) chat('📡 AI특파원', '⚡ 천둥! 타 미 파 롱, 끌랍 클럽하우 러이 (30분 대피 후 재개)', '#ff7a7a');
     swmHole(h);
+    if (G.hi === 0) setTimeout(() => { try { chat('🧢 캐디', envText(), '#bfe8c8'); } catch (e) { } }, 1800);
     if (perm) chat('권어진', '(웃참 실패) ㅋㅋㅋㅋ 부장님 머리...', '#ffb3c9');
     if (G.course === 'bpk' && h.no === 14) { const g = G.pl.find(p => p.ch.id === 'gy'); chat(g ? '안경용' : '📡 AI특파원', '14번홀 티샷 오른쪽 물가 벌레 조심', g ? g.ch.ink : '#ff7a7a'); }
     if (G.pl.some(p => p.ch.id === 'du') && h.water.length && R() < .6) chat('윤대욱', `태국 물웅덩이 안에 지뢰 많으니 다들 조심하세요 (이 홀 해저드 ${h.water.length}곳)`, '#cfd8df');
@@ -1287,13 +1299,13 @@ function beginShot() {
 }
 function setHint() { const t = { aim: '👆 조준·클럽 확인 후 화면을 탭하면 스윙 시작', power: G.easy ? '👆 ① 노란 선에 올 때 탭! (파워 · 한 번 왕복)' : '👆 ① 노란 선 근처에서 탭! (파워 · 두 번 왕복)', acc: '👆 ② 가운데 초록 칸에서 탭! (정확도)', fly: '', wait: '' }; $('#hint').textContent = t[G.phase] || ''; }
 function curClub() { return CLUBS[G.ci]; }
-function aimAngle() { const h = curHole(), st = G.human, c = curClub(); if (c.putter) { const k = (G.easy && st.lie === 'green') ? dist(st.pos, h.pinPos) / 10 : 0; const tp = { x: h.pinPos.x - h.slope[0] * k, y: h.pinPos.y - h.slope[1] * k }; return Math.atan2(tp.x - st.pos.x, tp.y - st.pos.y) + rad(G.aimOff); } return baseAim(h, st.pos, clubMax(st.ch, c, st.lie)) + rad(G.aimOff); }
+function aimAngle() { const h = curHole(), st = G.human, c = curClub(); if (c.putter) { const k = (G.easy && st.lie === 'green') ? dist(st.pos, h.pinPos) / 10 * gSpd() : 0; const tp = { x: h.pinPos.x - h.slope[0] * k, y: h.pinPos.y - h.slope[1] * k }; return Math.atan2(tp.x - st.pos.x, tp.y - st.pos.y) + rad(G.aimOff); } return baseAim(h, st.pos, clubMax(st.ch, c, st.lie)) + rad(G.aimOff); }
 function updateAim() {
   const h = curHole(), st = G.human, c = curClub(); const dp = dist(st.pos, h.pinPos), mx = clubMax(st.ch, c, st.lie);
   $('#clubName').innerHTML = `${c.n}<small>${c.putter ? '핀까지 ' + dp.toFixed(1) + 'y · 게이지 끝 ' + pTier(dp) + 'y' : '최대 ' + Math.round(mx) + 'y · 핀 ' + Math.round(dp) + 'y'}</small>`;
   $('#slopeTxt').textContent = st.lie === 'green' ? `경사 ${slopeText(h)}` : '';
 }
-function slopeText(h) { const sx = h.slope[0], sy = h.slope[1]; const m = Math.hypot(sx, sy); const a = Math.atan2(sx, sy); const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖']; const ar = arrows[Math.round(((a + TAU) % TAU) / (Math.PI / 4)) % 8]; return `${ar} ${(m * 10).toFixed(1)}`; }
+function slopeText(h) { const sx = h.slope[0], sy = h.slope[1]; const m = Math.hypot(sx, sy); const a = Math.atan2(sx, sy); const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖']; const ar = arrows[Math.round(((a + TAU) % TAU) / (Math.PI / 4)) % 8]; return `${ar} ${(m * 10).toFixed(1)} · 스피드 ${stimpNow()}ft`; }
 function changeClub(dv) { if (G.phase !== 'aim') return; const st = G.human, h = curHole(), ok = i => !(i === 0 && st.lie !== 'tee' && st.lie !== 'fairway') && !(CLUBS[i].putter && !canPutt(h, st)); let n = G.ci; for (let q = 0; q < CLUBS.length; q++) { n = (n + dv + CLUBS.length) % CLUBS.length; if (ok(n)) break; } G.ci = n; G.aimOff = 0; updateAim(); beep(520, .04); }
 function adjAim(dd) { if (G.phase !== 'aim') return; G.aimOff = clamp(G.aimOff + dd, -45, 45); }
 
@@ -1313,14 +1325,14 @@ function setupMeter() {
   const st = G.human, c = curClub(), h = curHole(), dp = dist(st.pos, h.pinPos), mx = clubMax(st.ch, c, st.lie);
   const g = $('#pguide'); let gp = null;
   st.ptier = c.putter ? pTier(dp) : 0;
-  if (c.putter) gp = (dp + .35) / (st.ptier * (st.lie === 'green' ? 1 : .9)); else if (dp <= mx) gp = dp / mx;
+  if (c.putter) gp = (dp + .35) / (st.ptier * (st.lie === 'green' ? gSpd() : .9)); else if (dp <= mx * tempF()) gp = dp / (mx * tempF());
   G.guideP = (gp != null && gp <= 1) ? gp : null; if (gp != null && gp <= 1) { g.style.display = 'block'; g.style.left = (gp * 100) + '%'; } else g.style.display = 'none';
   const z = zoneOf(st.ch) * 100; $('#azone').style.left = (50 - z) + '%'; $('#azone').style.width = (z * 2) + '%'; paintAcc(zoneOf(st.ch, true));
   $('#ptxt').textContent = ''; $('#atxt').textContent = ''; $('#pfill').style.width = '0%'; $('#acur').style.left = '0%';
 }
 function launch() {
   const h = curHole(), st = G.human, c = curClub();
-  let pwv = clamp(G.pw, 0, 1); if (G.easy) { const dp = dist(st.pos, h.pinPos), mx = clubMax(st.ch, c, st.lie), gp = c.putter ? (dp + .35) / ((st.ptier || 50) * (st.lie === 'green' ? 1 : .9)) : (dp <= mx ? dp / mx : null); if (gp != null && Math.abs(pwv - gp) < (.05 + (G.cad ? .06 * G.cad.s.dist : 0))) pwv = gp; if (!c.putter && pwv > .94) pwv = 1; }
+  let pwv = clamp(G.pw, 0, 1); if (G.easy) { const dp = dist(st.pos, h.pinPos), mx = clubMax(st.ch, c, st.lie), gp = c.putter ? (dp + .35) / ((st.ptier || 50) * (st.lie === 'green' ? gSpd() : .9)) : (dp <= mx ? dp / mx : null); if (gp != null && Math.abs(pwv - gp) < (.05 + (G.cad ? .06 * G.cad.s.dist : 0))) pwv = gp; if (!c.putter && pwv > .94) pwv = 1; }
   G.lastAim = aimAngle(); G.lastPw = pwv; const dp0 = dist(st.pos, h.pinPos), tee0 = st.strokes === 0; const res = takeShot(h, st, c, G.lastAim, pwv, G.acc, st.noWind ? { x: 0, y: 0 } : G.wind); st.noWind = false; if (c.id === 'D' && tee0 && !res.ob && res.tFin !== 'water' && res.tFin !== 'ob') G.myLong = Math.max(G.myLong || 0, Math.round(dist(st.pos, res.fin || st.pos))); if (c.putter && res.holed) G.myPutt = Math.max(G.myPutt || 0, Math.round(dp0 * 10) / 10);
   G.A = { res, t: 0, tf: c.putter ? .25 : .55 + res.carry / 210 * 1.3, tr: c.putter ? .5 + res.carry / 30 : .6, ph: 'fly' };
   G.phase = 'fly'; G.pw0 = G.pw; $('#swing').textContent = '...';
@@ -1797,7 +1809,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.47.5';
+const VERSION = 'v0.48.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1822,6 +1834,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.48.0', '2026-11-27', ['🟢 그린 스피드(스팀프) 구장별 적용: 로얄레이크사이드 9.5 · 방파콩 10 · 그린우드 10.5 · 서밋 윈드밀 11ft — 빠른 그린은 같은 힘에 더 구르고 경사도 더 탐. 비 오면 12% 느려지고 새벽 이슬도 살짝 느림', '🌡 실제 기온 반영: 따뜻할수록 공기가 가벼워 비거리↑ (10°C당 약 +1.8%, 실시간 날씨 쓰면 현지 기온)', '🏜 태국 건기(11~4월) 페어웨이 단단 → 런 +10%, 우기(5~10월) -10%, 비 오면 더 줄어듦', '🧢 첫 홀에 캐디가 오늘 그린 스피드·기온·런 상태를 알려줌, 그린 위 경사 표시에도 스피드 표시', '캐디 가이드(파워 표시)·CPU도 그린 스피드와 기온을 읽고 침']],
  ['v0.47.5', '2026-11-27', ['🖼 결과 카드에 구장 정보 표시: 골프장 이름 · 코스(A·B 등)/홀 수 · 야간·우중 · 멀티/따로치기 · 내기 방식', '🐞 결과 카드 긴 줄이 잘리던 문제 수정 (같이 치기 주소 끝 /golf 잘림 등) — 자동 줄바꿈']],
  ['v0.47.4', '2026-11-27', ['🧢 방파콩 리버사이드 캐디 정보 반영 (공식 예약 안내 기준): 캐디피 400밧(18홀) 별도 · 캐디팁 최소 400밧 · 카트 750밧 — 멀티 체크인 비용·안내에 표시', '🎫 방파콩 그린피 쿠폰 안내: 5장 4,500밧(평일, 2027-02-26까지)']],
  ['v0.47.3', '2026-11-27', ['💬 캐릭터 멘트 대폭 확대: 8명 상황별 대사(티샷 시작·물·OB·쪼루·보기·굿샷·버디·승리) 193줄 추가 — 같은 말 반복 줄어듦']],
