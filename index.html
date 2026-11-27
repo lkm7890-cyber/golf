@@ -1546,16 +1546,16 @@ function finalScreen() { try { resumeClear(); } catch (e) { }
   $('#fAward').innerHTML = aw.map(s => `<span>${s}</span>`).join('');
   $('#fNews').innerHTML = G.allNews.slice(-14).map(s => `· ${s}`).join('<br>') || '·';
   $('#fTable').innerHTML = scoreTable(G.nHoles);
-  G.summary = `[판통 느와르: 주통배 골프 ${VERSION}] ⛳ ${G.course === 'fan' ? '주통방 가상 코스' : COURSES[G.course].name} (${G.nHoles}홀)\n` + order.map((t, i) => `${i + 1}위 ${t.p.ch.name} ${t.g}타${t.hd ? '(핸디-' + t.hd + ')' : ''} ${fmtPar(t.g - t.par)} / 홀승 ${t.wins} / ${t.tot >= 0 ? '+' : ''}${t.tot.toLocaleString()}바트${t.p.cadPen ? ` (🧢캐디 직격 위로금 -${t.p.cadPen.toLocaleString()} 포함)` : ''}`).join('\n') + '\n' + aw.join('\n') + (T.some(a => a.p.cadPen) ? '\n※ 합계가 0이 아닌 건 캐디 직격 위로금(캐디에게 지급) 때문' : '') + '\n👉 같이 치기: https://lkm7890-cyber.github.io/golf/';
+  G.cardCourse = `⛳ ${G.course === 'fan' ? '주통방 가상 코스' : COURSES[G.course].name} · ${(G.course !== 'fan' && partName(G.course, G.part)) || G.nHoles + '홀'}${G.tod === 'night' ? ' · 🌙 야간' : ''}${G.rain ? ' · ☔ 우중' : ''}${G.multi ? ' · 🌐 멀티' : G.async ? ' · 📨 따로 치기' : ''}${G.bet ? ' · ' + ({ tadang: '타당', skins: '스킨스', jopok: '조폭', vegas: '라스베이거스' }[G.bet] || '') : ''}`; G.summary = `[판통 느와르: 주통배 골프 ${VERSION}] ${G.cardCourse}\n` + order.map((t, i) => `${i + 1}위 ${t.p.ch.name} ${t.g}타${t.hd ? '(핸디-' + t.hd + ')' : ''} ${fmtPar(t.g - t.par)} / 홀승 ${t.wins} / ${t.tot >= 0 ? '+' : ''}${t.tot.toLocaleString()}바트${t.p.cadPen ? ` (🧢캐디 직격 위로금 -${t.p.cadPen.toLocaleString()} 포함)` : ''}`).join('\n') + '\n' + aw.join('\n') + (T.some(a => a.p.cadPen) ? '\n※ 합계가 0이 아닌 건 캐디 직격 위로금(캐디에게 지급) 때문' : '') + '\n👉 같이 치기: https://lkm7890-cyber.github.io/golf/';
   try { boardSave(order); endExtras(); } catch (e) { }
   try { if (G.async) asyncSubmit(); } catch (e) { }
   $('#sFinal').classList.add('on'); $('#top').style.display = 'none'; $('#bottom').style.display = 'none';
 }
 // 결과 카드: 결과 요약을 도트 느낌 이미지로 그려 카톡 등으로 공유 (지원 안 되면 이미지 저장)
-function cardMake() { const lines = String(G.summary || '').split('\n').filter(Boolean), W = 720, H = 140 + lines.length * 40 + 60, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+function cardMake() { const W = 720, fit = (t, f) => { const m = document.createElement('canvas').getContext('2d'); m.font = f; const out = []; let cur = ''; for (const ch of t) { if (m.measureText(cur + ch).width > W - 80) { out.push(cur); cur = '   ' + ch; } else cur += ch; } out.push(cur); return out; }, src = String(G.summary || '').split('\n').filter(Boolean).slice(1), lines = [].concat(...src.map(l => fit(l, (/^\d위/.test(l) ? 'bold ' : '') + '26px sans-serif'))), H = 186 + lines.length * 40 + 60, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
   const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d1a12'); g.addColorStop(1, '#1d3a24'); x.fillStyle = g; x.fillRect(0, 0, W, H); x.strokeStyle = '#ffb627'; x.lineWidth = 6; x.strokeRect(10, 10, W - 20, H - 20);
-  x.fillStyle = '#ffb627'; x.font = 'bold 40px sans-serif'; x.fillText('판통 느와르 · 주통배 골프', 36, 70); x.fillStyle = '#9fe0ff'; x.font = '22px sans-serif'; x.fillText(new Date().toLocaleString('ko-KR') + ' · ' + VERSION, 36, 104);
-  lines.slice(1).forEach((l, i) => { x.fillStyle = i === 0 ? '#ffe08a' : /^1위/.test(l) ? '#7fe09a' : /^[2-9]위/.test(l) ? '#e8efe6' : '#cfd8e0'; x.font = (/^\d위/.test(l) ? 'bold ' : '') + '26px sans-serif'; x.fillText(l.slice(0, 42), 36, 150 + i * 40); });
+  x.fillStyle = '#ffb627'; x.font = 'bold 40px sans-serif'; x.fillText('판통 느와르 · 주통배 골프', 36, 70); x.fillStyle = '#9fe0ff'; x.font = '22px sans-serif'; x.fillText(new Date().toLocaleString('ko-KR') + ' · ' + VERSION, 36, 104); x.fillStyle = '#ffe08a'; x.font = 'bold 26px sans-serif'; fit(G.cardCourse || '', 'bold 26px sans-serif').slice(0, 2).forEach((l, i) => x.fillText(l, 36, 146 + i * 32));
+  lines.forEach((l, i) => { x.fillStyle = /^1위/.test(l) ? '#ffd54a' : /^[2-9]위/.test(l) ? '#e8efe6' : '#cfd8e0'; x.font = (/^\d위/.test(l) ? 'bold ' : '') + '26px sans-serif'; x.fillText(l, 36, 196 + i * 40); });
   x.fillStyle = '#7fb8ff'; x.font = '20px sans-serif'; x.fillText('lkm7890-cyber.github.io/golf', 36, H - 30); return c; }
 async function cardShare() { const c = cardMake(); const blob = await new Promise(r => c.toBlob(r, 'image/png')); const f = new File([blob], '주통배_결과.png', { type: 'image/png' }); try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: '주통배 골프 결과' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '주통배_결과.png'; document.body.appendChild(a); a.click(); a.remove(); toast('🖼 결과 카드 이미지를 저장했어요 (카톡에 사진으로 보내세요)', '#9fffb0'); }
 $('#cardBtn').onclick = () => cardShare().catch(() => toast('이미지 공유 실패', '#ff9a9a'));
@@ -1698,7 +1698,7 @@ window.addEventListener('keyup', e => { if (e.code === 'ArrowLeft') keys.L = 0; 
 setInterval(() => { if (keys.L) adjAim(-.6); if (keys.R) adjAim(.6); }, 55);
 
 // ================= 테스트/디버그 훅 =================
-window.__golf = { TUNE, get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { TUNE, cardMake: () => cardMake(), get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -1797,7 +1797,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.47.4';
+const VERSION = 'v0.47.5';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1822,6 +1822,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.47.5', '2026-11-27', ['🖼 결과 카드에 구장 정보 표시: 골프장 이름 · 코스(A·B 등)/홀 수 · 야간·우중 · 멀티/따로치기 · 내기 방식', '🐞 결과 카드 긴 줄이 잘리던 문제 수정 (같이 치기 주소 끝 /golf 잘림 등) — 자동 줄바꿈']],
  ['v0.47.4', '2026-11-27', ['🧢 방파콩 리버사이드 캐디 정보 반영 (공식 예약 안내 기준): 캐디피 400밧(18홀) 별도 · 캐디팁 최소 400밧 · 카트 750밧 — 멀티 체크인 비용·안내에 표시', '🎫 방파콩 그린피 쿠폰 안내: 5장 4,500밧(평일, 2027-02-26까지)']],
  ['v0.47.3', '2026-11-27', ['💬 캐릭터 멘트 대폭 확대: 8명 상황별 대사(티샷 시작·물·OB·쪼루·보기·굿샷·버디·승리) 193줄 추가 — 같은 말 반복 줄어듦']],
  ['v0.47.2', '2026-11-27', ['📒 가계부를 내 프로필 안으로 이동 (프로필 상단 바로가기 "📒 가계부") — 메뉴 버튼 정리']],
