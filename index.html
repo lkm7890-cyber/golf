@@ -159,7 +159,7 @@ tr.me td{background:rgba(255,182,39,.13)}
   <button class="go" id="mReal" style="display:none">📝 실제 스코어</button>
   <button class="go" id="mRank" style="background:#2a2208;color:#ffe08a">🏆 실시간 랭킹 (자산 · 능력치 · 대결)</button>
   <button class="go" id="mGear" style="background:#2a1440;color:#e8d0ff">🛡 내 장비 · 능력치 (캐릭터 장비창)</button>
-  <button class="go" id="mRpg" style="background:linear-gradient(90deg,#3a1420,#1a2440);color:#ffd7a0">⚔ 주통 RPG — 골프장 던전 (골프 지갑·장비 연동)</button>
+  <button class="go" id="mRpg" style="background:linear-gradient(90deg,#3a1420,#1a2440);color:#ffd7a0">⚔ 주통 RPG — 디아블로식 골프장 던전 (지갑·장비 연동)</button>
   <button class="go" id="mProf" style="background:#5a2610;color:#ffe3d3">👤 내 프로필 (활동 · 통계 · 가방 · 가계부)</button>
   <button class="go" id="mBag" style="display:none;background:#2a1c12;color:#ffcfa8">🎒 내 가방 (실제 클럽 · 비거리)</button>
   <button class="go" id="mAch" style="display:none;background:#241a2e;color:#e8c8ff">🎖 업적 · 칭호</button>
@@ -1729,116 +1729,189 @@ window.addEventListener('keyup', e => { if (e.code === 'ArrowLeft') keys.L = 0; 
 setInterval(() => { if (keys.L) adjAim(-.6); if (keys.R) adjAim(.6); }, 55);
 
 // ================= 테스트/디버그 훅 =================
-// ================= ⚔ 주통 RPG (v0.50) — 골프 지갑·레벨·장비와 연동되는 턴제 던전 =================
-// 캐릭터별 직업: 실제 멤버 특성(골프 게임 캐릭터 설정)을 바탕으로 정함. 맵 = 실제 골프장, 입장료 = 그 골프장 9홀 그린피
+// ================= ⚔ 주통 RPG (v0.51) — 디아블로2 스타일 실시간 도트 액션 RPG =================
+// 실시간 이동·공격, 몬스터 무리, HP/MP 구슬, 아이템 드롭(일반·매직·레어·유니크), 인벤토리. 골프 지갑·능력치·장비 연동, 코스별 입장 레벨
 const RJOB = {
-  sg: { job: '특파원 음유시인', ic: '🎤', hp: 1.1, atk: 1.05, def: 1.05, mag: 1.1, trait: '물 몬스터에게 받는 피해 +20% (물귀신 체질)', sk: [
-    { n: '[속보] 사기 진작', d: '3턴 공격력 +40%', mp: 6, f: (S) => { S.buf.atk = 1.4; S.buf.t = 3; return '📡 [속보] 정b 각성! 공격력 상승'; } },
-    { n: '공중부양 점프샷', d: '피해 ×2.5 · 명중 70%', mp: 8, f: (S) => rHit(S, 2.5, .7, '🪂 공중부양 점프샷') },
-    { n: '총무 정산', d: '피해 ×1 + 골드 강탈', mp: 5, f: (S) => { const r = rHit(S, 1, .95, '💼 총무 정산'); const g = Math.round(S.fee * .05); S.gold += g; return r + ` · 💰 +${g}밧 징수`; } }] },
-  yt: { job: '법인장 나이트', ic: '🛡', hp: 1.15, atk: 1.15, def: 1.1, mag: .7, trait: '보스에게 주는 피해 +15% (배판 체질)', sk: [
-    { n: '배판 일격', d: '피해 ×2.5 · 실패 시 반동', mp: 8, f: (S) => { if (Math.random() < .7) return rHit(S, 2.5, 1, '💰 배판 일격'); const d = Math.round(S.hpMax * .08); S.hp -= d; return `💸 배판 실패… 반동 -${d}`; } },
-    { n: '핑 드라이버 강타', d: '피해 ×1.7 · 확정 명중', mp: 5, f: (S) => rHit(S, 1.7, 1, '🏌 핑 드라이버 강타') },
-    { n: '홀인원의 기운', d: '6% 확률 즉사 (보스 제외)', mp: 10, f: (S) => (!S.m.boss && Math.random() < .06) ? (S.m.hp = 0, '⛳ 홀인원!!! 일격에 쓰러뜨림') : rHit(S, 1.2, .9, '⛳ 홀인원 노림수(아쉽)') }] },
-  gy: { job: '의장 팔라딘', ic: '📜', hp: 1.2, atk: 1.0, def: 1.2, mag: 1.0, trait: '매 턴 HP 2% 회복 (싱글의 여유)', sk: [
-    { n: '감봉 선고', d: '적 공격력 -35% (전투 중)', mp: 6, f: (S) => { S.m.atk = Math.round(S.m.atk * .65); return '📜 의장 직권 감봉 선고! 적 공격력 하락'; } },
-    { n: '싱글의 가호', d: 'HP 35% 회복', mp: 7, f: (S) => rHeal(S, .35, '🙏 싱글의 가호') },
-    { n: '69타 일격', d: '피해 ×2 · 치명 확률↑', mp: 8, f: (S) => rHit(S, 2, .95, '🔥 69타 일격', .35) }] },
-  gm: { job: 'AI 커맨드 마법사', ic: '🧙', hp: 1.0, atk: .9, def: .95, mag: 1.45, trait: '마법 피해 +20% · 퍼터신(치명타 기본 15%)', sk: [
-    { n: '데이터 분석', d: '3턴 동안 치명타 확정', mp: 6, f: (S) => { S.buf.crit = 3; return '📊 커맨드센터 분석 완료 — 약점 노출!'; } },
-    { n: '퍼터신 마탄', d: '마법 피해 ×2.4', mp: 8, f: (S) => rHit(S, 2.4, .97, '🧲 퍼터신 마탄', 0, true) },
-    { n: '삼투펀치', d: '3연타 (각 ×0.8)', mp: 9, f: (S) => [0, 1, 2].map(() => rHit(S, .8, .9, '👊')).join(' ') }] },
-  hw: { job: '역지표 갬블러', ic: '🎲', hp: 1.0, atk: 1.0, def: .9, mag: 1.0, trait: '도망 성공률 100% (회장 특권)', sk: [
-    { n: '역지표 주사위', d: '피해 ×0~3.5 랜덤', mp: 5, f: (S) => { const m = +(Math.random() * 3.5).toFixed(1); return m < .3 ? '🎲 역지표 발동… 헛스윙 (×0)' : rHit(S, m, 1, `🎲 주사위 ×${m}`); } },
-    { n: '도시락 타임', d: 'HP 30% + MP 5 회복', mp: 0, f: (S) => { S.mp = Math.min(S.mpMax, S.mp + 5); return rHeal(S, .3, '🍱 회장 도시락'); } },
-    { n: '물타기', d: '피해 ×1.4 · 실패 시 한 번 더', mp: 6, f: (S) => { const a = rHit(S, 1.4, .7, '🌊 물타기'); return /빗나감/.test(a) ? a + ' → ' + rHit(S, 1.4, .7, '🌊 추가 물타기') : a; } }] },
-  du: { job: '정품 연금술사', ic: '⚗', hp: 1.05, atk: .9, def: 1.0, mag: 1.15, trait: '전투 골드 +25% (현실파 실무형)', sk: [
-    { n: '정품 포션', d: 'HP 45% 회복', mp: 7, f: (S) => rHeal(S, .45, '🧪 정품 로트 포션') },
-    { n: '로트 추적', d: '독: 3턴간 매 턴 피해', mp: 6, f: (S) => { S.m.psn = 3; return '🔎 로트 추적 개시 — 적 중독'; } },
-    { n: 'QR 정산', d: '피해 ×1.3 + 골드', mp: 5, f: (S) => { const g = Math.round(S.fee * .06); S.gold += g; return rHit(S, 1.3, .95, '📱 QR 정산') + ` · 💰 +${g}밧`; } }] },
-  jt: { job: '장투 수도승', ic: '🧘', hp: 1.1, atk: 1.0, def: 1.05, mag: 1.0, trait: '매 턴 공격력 +6% 누적 (복리 효과)', sk: [
-    { n: '버티기', d: '이번 턴 받는 피해 -70%', mp: 4, f: (S) => { S.guard = .3; return '🧘 장투 버티기 — 조정은 견딘다'; } },
-    { n: '장기보유 일격', d: '피해 ×(1 + 턴수×0.25)', mp: 8, f: (S) => rHit(S, 1 + S.turn * .25, .95, `📈 ${S.turn}턴 보유 일격`) },
-    { n: '은둔고수 명상', d: 'MP 전부 회복', mp: 0, f: (S) => { S.mp = S.mpMax; return '🕯 은둔고수 명상 — 기력 충전'; } }] },
-  ej: { job: '막내 레인저', ic: '🏹', hp: .95, atk: 1.05, def: .9, mag: .9, trait: '항상 선공 · 회피 15% (1분 칼답)', sk: [
-    { n: '넵넵넵 3연사', d: '3연타 (각 ×0.75)', mp: 6, f: (S) => [0, 1, 2].map(() => rHit(S, .75, .92, '🏹 넵!')).join(' ') },
-    { n: '레디골프', d: '2턴 회피 확정', mp: 6, f: (S) => { S.buf.dodge = 2; return '⚡ 레디골프! 몸이 가볍다'; } },
-    { n: '커피 셔틀', d: 'HP 25% + MP 3', mp: 0, f: (S) => { S.mp = Math.min(S.mpMax, S.mp + 3); return rHeal(S, .25, '☕ 커피 셔틀'); } }] } };
-// 맵 = 실제 골프장 (구장 특성·사건사고를 몬스터로)
+  sg: { job: '특파원 음유시인', ic: '🎤', hp: 1.1, atk: 1.05, def: 1.05, mag: 1.1, trait: '물 몬스터에게 받는 피해 +20% (물귀신 체질)' },
+  yt: { job: '법인장 나이트', ic: '🛡', hp: 1.15, atk: 1.15, def: 1.1, mag: .7, trait: '보스에게 주는 피해 +15% (배판 체질)' },
+  gy: { job: '의장 팔라딘', ic: '📜', hp: 1.2, atk: 1.0, def: 1.2, mag: 1.0, trait: '초당 HP 1% 회복 (싱글의 여유)' },
+  gm: { job: 'AI 커맨드 마법사', ic: '🧙', hp: 1.0, atk: .9, def: .95, mag: 1.45, trait: '원거리 마법 공격 · 치명타 기본 15% (퍼터신)' },
+  hw: { job: '역지표 갬블러', ic: '🎲', hp: 1.0, atk: 1.05, def: .95, mag: 1.0, trait: '공격 피해 0.3~2.2배 랜덤 (역지표)' },
+  du: { job: '정품 연금술사', ic: '⚗', hp: 1.05, atk: .95, def: 1.0, mag: 1.15, trait: '골드 획득 +25% · 아이템 드롭 +30% (현실파 실무형)' },
+  jt: { job: '장투 수도승', ic: '🧘', hp: 1.1, atk: 1.0, def: 1.05, mag: 1.0, trait: '같은 층에 오래 있을수록 공격력↑ (복리, 최대 +60%)' },
+  ej: { job: '막내 레인저', ic: '🏹', hp: .95, atk: 1.05, def: .9, mag: .9, trait: '이동속도 +20% · 원거리 화살 공격 (1분 칼답)' } };
+// 직업별 액션 스킬 (t: 종류, v: 수치, cd: 쿨타임 초)
+const ASK = {
+  sg: [{ n: '[속보] 사기 진작', mp: 8, cd: 10, t: 'buff', v: 1.5, ic: '📡' }, { n: '공중부양 점프샷', mp: 10, cd: 4, t: 'aoe', v: 2.2, ic: '🪂' }, { n: '총무 정산', mp: 6, cd: 6, t: 'gold', v: 1.4, ic: '💼' }],
+  yt: [{ n: '배판 일격', mp: 8, cd: 4, t: 'nuke', v: 3, ic: '💰' }, { n: '핑 드라이버 휠윈드', mp: 12, cd: 6, t: 'aoe', v: 1.8, ic: '🌀' }, { n: '홀인원의 기운', mp: 14, cd: 15, t: 'exec', v: .3, ic: '⛳' }],
+  gy: [{ n: '감봉 선고', mp: 8, cd: 10, t: 'weak', v: .6, ic: '📜' }, { n: '싱글의 가호', mp: 10, cd: 8, t: 'heal', v: .4, ic: '🙏' }, { n: '69타 해머', mp: 10, cd: 4, t: 'aoe', v: 2, ic: '🔨' }],
+  gm: [{ n: '데이터 분석', mp: 8, cd: 10, t: 'crit', v: 5, ic: '📊' }, { n: '퍼터신 마탄', mp: 7, cd: 1.5, t: 'bolt', v: 2.6, ic: '🧲' }, { n: '삼투 노바', mp: 14, cd: 5, t: 'aoe', v: 2.4, ic: '💫' }],
+  hw: [{ n: '역지표 주사위', mp: 6, cd: 3, t: 'nuke', v: 0, ic: '🎲' }, { n: '도시락 타임', mp: 0, cd: 12, t: 'heal', v: .35, ic: '🍱' }, { n: '물타기 연타', mp: 10, cd: 5, t: 'multi', v: 1.2, ic: '🌊' }],
+  du: [{ n: '정품 포션 투척', mp: 10, cd: 8, t: 'heal', v: .45, ic: '🧪' }, { n: '로트 추적 독구름', mp: 10, cd: 6, t: 'poison', v: .5, ic: '☠' }, { n: 'QR 정산', mp: 6, cd: 6, t: 'gold', v: 1.6, ic: '📱' }],
+  jt: [{ n: '버티기', mp: 8, cd: 10, t: 'guard', v: .3, ic: '🧘' }, { n: '장기보유 일격', mp: 10, cd: 5, t: 'nuke', v: 3.2, ic: '📈' }, { n: '은둔고수 명상', mp: 0, cd: 15, t: 'mana', v: 1, ic: '🕯' }],
+  ej: [{ n: '넵넵넵 3연사', mp: 8, cd: 2.5, t: 'multi', v: 1, ic: '🏹' }, { n: '레디골프', mp: 8, cd: 10, t: 'dodge', v: 3, ic: '⚡' }, { n: '커피 셔틀', mp: 0, cd: 12, t: 'heal', v: .3, ic: '☕' }] };
+// 맵 = 실제 골프장. lv: 입장 레벨, tier: 난이도·보상 배율
 const RMAP = {
-  bpk: { bg: ['#13324a', '#1f5a3a'], mon: [['🐍', '물뱀', 1, 'w'], ['🪱', '범람 거머리', 1.1, 'w'], ['🌬', '강바람 정령', 1.2], ['🐟', '강 메기 졸개', 1.15, 'w']], boss: ['🐋', '범람한 방파콩강의 주인', 'w'] },
-  rls: { bg: ['#1a3550', '#24543c'], mon: [['🧟', '6볼 단체팀원', 1.1], ['🐦', '하구 갈매기', 1], ['🥷', '라커룸 옷도둑', 1.2], ['⛵', '폭주 요트', 1.15, 'w']], boss: ['👥', '6볼 단체팀장', ''] },
-  grn: { bg: ['#1c3a1c', '#3a4a22'], mon: [['🦎', '왕도마뱀', 1.15], ['⏳', '모래 벙커 귀신', 1.1], ['🐗', '언덕 멧돼지', 1.2], ['🐍', '러프 코브라', 1.25]], boss: ['👻', '노블플레이스의 망령', ''] },
-  swm: { bg: ['#05070f', '#141a2a'], mon: [['👻', '정전 유령', 1.2], ['🦋', '야간 나방떼', 1.1], ['✈', '이착륙 굉음 마수', 1.3], ['🐍', '호수 물뱀', 1.2, 'w']], boss: ['🗼', '꺼진 조명탑 골렘', ''] },
-  scr: { bg: ['#1a1a2e', '#2a2a44'], mon: [['🟢', '버그 슬라임', .9], ['📺', '렉 걸린 화면 정령', 1], ['🔌', '전원 코드 뱀', 1.05]], boss: ['🖥', '삼화 스크린 서버', ''] } };
-const RPG_DAY_RUNS = 3, RFLOORS = 9;
-function rpgSV() { SV.rpg = SV.rpg || { lv: 1, xp: 0, day: '', runs: 0, best: {}, pot: 0 }; const d = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); if (SV.rpg.day !== d) { SV.rpg.day = d; SV.rpg.runs = 0; } return SV.rpg; }
-function rpgStats(c) { const R_ = rpgSV(), J = RJOB[c.id], A = abil(c), L = lvOf(c.id) + R_.lv; // 골프 능력치(파워·정확·퍼팅, 장비 포함)와 골프 레벨 + RPG 레벨이 전투력
-  return { lv: R_.lv, hpMax: Math.round((90 + L * 9) * J.hp), atk: Math.round((A.p * .22 + L * 1.6) * J.atk), def: Math.round((A.a * .12 + L * 1.1) * J.def), mag: Math.round((A.u * .22 + L * 1.6) * J.mag), crit: c.id === 'gm' ? .15 : .06 + A.a / 2000, mpMax: 20 + Math.floor(L / 2) }; }
-let RS = null;
-function rHit(S, mul, acc, nm, critB = 0, magic = false) { if (Math.random() > acc) return `${nm} — 빗나감!`; const base = (magic ? S.mag * (S.id === 'gm' ? 1.2 : 1) : S.atk) * (S.buf.t > 0 ? S.buf.atk : 1) * (S.id === 'jt' ? 1 + .06 * S.turn : 1) * (S.m.boss && S.id === 'yt' ? 1.15 : 1);
-  const cr = S.buf.crit > 0 || Math.random() < S.crit + critB; let d = Math.max(1, Math.round(base * mul * (.9 + Math.random() * .2) - S.m.def * .5)); if (cr) d = Math.round(d * 1.8); S.m.hp -= d; return `${nm} ${cr ? '💥치명 ' : ''}-${d}`; }
-function rHeal(S, f, nm) { const h = Math.round(S.hpMax * f); S.hp = Math.min(S.hpMax, S.hp + h); return `${nm} +${h} HP`; }
-function rMon(S) { const M = RMAP[S.map], fl = S.floor, boss = fl === RFLOORS, t = boss ? [M.boss[0], M.boss[1], 1.6, M.boss[2]] : M.mon[Math.floor(Math.random() * M.mon.length)], sc = (1 + fl * .12) * t[2] * (1 + (S.lv - 1) * .08) * (S.map === 'swm' ? 1.12 : 1);
-  return { ic: t[0], n: (boss ? '👑 ' : '') + t[1], w: t[3] === 'w', boss, hp: Math.round(55 * sc * (boss ? 2 : 1)), hpMax: Math.round(55 * sc * (boss ? 2 : 1)), atk: Math.round(11 * sc), def: Math.round(4 * sc), psn: 0, gold: Math.round(S.fee * (boss ? .5 : .1) * (.8 + Math.random() * .4)) }; }
-function rpgOpen() { const c = CH.find(x => x.id === SV.myCh); if (!c) { whoAmI(); return; } let o = $('#rpgBox'); if (!o) { o = document.createElement('div'); o.id = 'rpgBox'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:radial-gradient(ellipse at top,#22142e,#07080b 70%);overflow:auto;padding:12px;color:#e8efe6'; document.body.appendChild(o); } o.style.display = 'block'; rpgLobby(); }
-function rpgClose() { const o = $('#rpgBox'); if (o) o.style.display = 'none'; RS = null; try { drawMe && drawMe(); } catch (e) { } }
-function rpgLobby() { const c = CH.find(x => x.id === SV.myCh), J = RJOB[c.id], st = rpgStats(c), R_ = rpgSV(), o = $('#rpgBox');
-  const maps = Object.keys(RMAP).filter(k => COURSES[k]).map(k => { const fee = greenFee(k, 9), b = R_.best[k] || 0; return `<button data-rmap="${k}" style="font:inherit;width:100%;margin:4px 0;padding:10px;border:1px solid #3a4a5a;background:linear-gradient(90deg,${RMAP[k].bg[0]},${RMAP[k].bg[1]});color:#fff;text-align:left"><b>${RMAP[k].boss[0]} ${COURSES[k].name}</b> <span style="float:right;color:#ffd54a">입장 ${fee.toLocaleString()}밧</span><br><small style="opacity:.8">보스: ${RMAP[k].boss[1]} · 최고 ${b ? (b > RFLOORS ? '🏆 클리어' : b + '층') : '도전 전'}</small></button>`; }).join('');
-  o.innerHTML = `<div style="max-width:460px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:4px 0;color:#ffd54a">⚔ 주통 RPG</h3><button id="rpgX" style="font:inherit;background:#ffb627;border:0;padding:6px 12px">← 메뉴</button></div>
-  <div style="display:flex;gap:10px;align-items:center;background:#141a22;border:1px solid #2a3440;padding:8px;margin:6px 0"><canvas id="rpgMe" width="64" height="72" style="image-rendering:pixelated;width:64px;height:72px;background:#0d1117"></canvas>
-  <div style="font-size:13px;line-height:1.5"><b style="color:${c.ink}">${c.name}</b> · ${J.ic} ${J.job} <span style="color:#9fe0ff">RPG Lv.${st.lv}</span> (골프 Lv.${lvOf(c.id)})<br>❤ ${st.hpMax} · ⚔ ${st.atk} · 🛡 ${st.def} · ✨ ${st.mag} · 💧MP ${st.mpMax}<br><small style="opacity:.75">특성: ${J.trait}</small><br><small style="opacity:.75">💰 지갑 ${SV.wallet.toLocaleString()}밧 · 🍺 회복 맥주 ${R_.pot}개 · 오늘 입장 ${R_.runs}/${RPG_DAY_RUNS}</small></div></div>
-  <div style="font-size:12px;opacity:.8;margin:6px 0">능력치는 골프 파워·정확도·퍼팅과 장착 장비, 골프 레벨을 그대로 따릅니다. 입장료는 그 골프장 실제 9홀 그린피(평일/주말), 몬스터가 떨군 밧은 골프 지갑으로 들어갑니다. 9층 보스를 잡으면 클리어 보너스.</div>
-  ${maps}<button id="rpgPot" style="font:inherit;width:100%;margin:8px 0 4px;padding:10px;border:0;background:#2a3a1a;color:#d8ffb0">🍺 회복 맥주 사기 (HP 50% · 200밧)</button>
-  <div style="font-size:12px;opacity:.7;margin-top:6px">스킬: ${J.sk.map(s => `<b>${s.n}</b>(${s.d}, MP${s.mp})`).join(' · ')}</div></div>`;
+  scr: { lv: 1, tier: .7, g: ['#2a2a44', '#3a3a5c', '#22223a'], water: '#3b4a8a', mon: [['🟢', '버그 슬라임', 1], ['📺', '렉 걸린 화면 정령', 1.1], ['🔌', '전원 코드 뱀', 1.05]], boss: ['🖥', '삼화 스크린 서버'] },
+  bpk: { lv: 1, tier: 1, g: ['#2f6a34', '#3f8a44', '#c9b27a'], water: '#2a5a8a', mon: [['🐍', '물뱀', 1, 1], ['🪱', '범람 거머리', 1.1, 1], ['🌬', '강바람 정령', 1.15], ['🐟', '강 메기 졸개', 1.1, 1]], boss: ['🐋', '범람한 방파콩강의 주인', 1] },
+  rls: { lv: 4, tier: 1.4, g: ['#2c6438', '#3b8a4a', '#d8c08a'], water: '#2a6a9a', mon: [['🧟', '6볼 단체팀원', 1.1], ['🐦', '하구 갈매기', .9], ['🥷', '라커룸 옷도둑', 1.2], ['⛵', '폭주 요트', 1.15, 1]], boss: ['👥', '6볼 단체팀장'] },
+  grn: { lv: 8, tier: 1.9, g: ['#2a5a24', '#3a7a30', '#d0b880'], water: '#2a5070', mon: [['🦎', '왕도마뱀', 1.15], ['⏳', '모래 벙커 귀신', 1.1], ['🐗', '언덕 멧돼지', 1.25], ['🐍', '러프 코브라', 1.2]], boss: ['👻', '노블플레이스의 망령'] },
+  swm: { lv: 12, tier: 2.5, g: ['#14301a', '#1e4424', '#6a5a3a'], water: '#16244a', night: 1, mon: [['👻', '정전 유령', 1.2], ['🦋', '야간 나방떼', 1], ['✈', '이착륙 굉음 마수', 1.3], ['🐍', '호수 물뱀', 1.2, 1]], boss: ['🗼', '꺼진 조명탑 골렘'] } };
+const RPG_DAY_RUNS = 3, RFLOORS = 9, WW = 760, WH = 980;
+// 아이템: 슬롯별 베이스 + 등급별 옵션. 유니크는 멤버 오마주 이름
+const IBASE = { wp: [['🏌', '드라이버'], ['⛳', '아이언'], ['🧲', '퍼터']], hd: [['🧢', '골프모자']], gl: [['🧤', '골프장갑']], ar: [['👕', '골프웨어']], bt: [['👟', '골프화']] };
+const ISLOT = { wp: '무기', hd: '모자', gl: '장갑', ar: '옷', bt: '신발' };
+const IRAR = [['일반', '#e8e8e8', 0], ['매직', '#6f8dff', 1], ['레어', '#ffe55a', 2], ['유니크', '#c8a050', 3]];
+const IUNI = { wp: ['카즈하의 핑 드라이버', '69타의 증명', '퍼터신의 지팡이'], hd: ['총무 모자 (정산 완료)', '역지표 왕관'], gl: ['넵넵 장갑', '장투의 인내 장갑'], ar: ['법인장 수트', '은둔고수 도복'], bt: ['1분 칼답 골프화', '6볼 탈출화'] };
+const IAFX = [['atk', '공격력', 3], ['def', '방어', 2], ['hp', 'HP', 10], ['crit', '치명%', 2], ['spd', '이동%', 3], ['gold', '골드%', 5], ['ls', '흡혈%', 1.5]];
+function rpgSV() { SV.rpg = SV.rpg || {}; const R_ = SV.rpg; R_.lv = R_.lv || 1; R_.xp = R_.xp || 0; R_.best = R_.best || {}; R_.pot = R_.pot | 0; R_.inv = R_.inv || []; R_.eq = R_.eq || {}; const d = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); if (R_.day !== d) { R_.day = d; R_.runs = 0; } return R_; }
+function itemGen(tier, fl, rmin = 0) { const sl = pick(Object.keys(IBASE)), b = pick(IBASE[sl]), r = Math.random(); let ra = r < .02 ? 3 : r < .12 ? 2 : r < .4 ? 1 : 0; ra = Math.max(ra, rmin); const pw = tier * (1 + fl * .12), it = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), sl, ic: b[0], ra, n: ra === 3 ? pick(IUNI[sl]) : (ra === 2 ? pick(['폭풍의', '전설 직전', '버디 사냥꾼의', '그린 지배자의']) + ' ' : ra === 1 ? pick(['예리한', '단단한', '가벼운', '행운의']) + ' ' : '') + b[1], fx: {} };
+  const main = sl === 'wp' ? 'atk' : sl === 'bt' ? 'spd' : sl === 'gl' ? 'crit' : 'def'; it.fx[main] = Math.round(IAFX.find(a => a[0] === main)[2] * pw * (1 + ra * .35) * 10) / 10;
+  for (let i = 0; i < [0, 1, 3, 4][ra]; i++) { const a = pick(IAFX); it.fx[a[0]] = Math.round(((it.fx[a[0]] || 0) + a[2] * pw * (.6 + Math.random() * .8)) * 10) / 10; }
+  it.val = Math.round([30, 90, 280, 900][ra] * tier); return it; }
+function itemTxt(it) { return Object.entries(it.fx).map(([k, v]) => `+${v} ${IAFX.find(a => a[0] === k)[1]}`).join(' · '); }
+function rpgStats(c) { const R_ = rpgSV(), J = RJOB[c.id], A = abil(c), L = lvOf(c.id) + R_.lv, e = { atk: 0, def: 0, hp: 0, crit: 0, spd: 0, gold: 0, ls: 0 }; for (const it of Object.values(R_.eq)) if (it) for (const [k, v] of Object.entries(it.fx)) e[k] = (e[k] || 0) + v; // 골프 능력치(장비 포함) + 골프 레벨 + RPG 레벨 + RPG 아이템
+  return { lv: R_.lv, hpMax: Math.round((90 + L * 9) * J.hp + e.hp), atk: Math.round((A.p * .22 + L * 1.6) * J.atk + e.atk), def: Math.round((A.a * .12 + L * 1.1) * J.def + e.def), mag: Math.round((A.u * .22 + L * 1.6) * J.mag + e.atk * .8), crit: (c.id === 'gm' ? .15 : .06 + A.a / 2000) + e.crit / 100, spd: (c.id === 'ej' ? 1.2 : 1) * (1 + e.spd / 100), gold: 1 + e.gold / 100 + (c.id === 'du' ? .25 : 0), ls: e.ls / 100, mpMax: 24 + Math.floor(L / 2) }; }
+let RS = null, RAF = 0; const ICACHE = {};
+function pixIcon(ic, sz) { const k = ic + sz; if (ICACHE[k]) return ICACHE[k]; const s = 14, c = document.createElement('canvas'); c.width = s; c.height = s; const x = c.getContext('2d'); x.font = '12px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ic, s / 2, s / 2 + 1); const o = document.createElement('canvas'); o.width = sz; o.height = sz; const y = o.getContext('2d'); y.imageSmoothingEnabled = false; y.drawImage(c, 0, 0, sz, sz); ICACHE[k] = o; return o; } // 이모지를 14px로 그린 뒤 확대 = 도트 느낌
+function rpgOpen() { const c = CH.find(x => x.id === SV.myCh); if (!c) { whoAmI(); return; } let o = $('#rpgBox'); if (!o) { o = document.createElement('div'); o.id = 'rpgBox'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:radial-gradient(ellipse at top,#2a1010,#07080b 70%);overflow:auto;padding:12px;color:#e8efe6;touch-action:manipulation'; document.body.appendChild(o); } o.style.display = 'block'; rpgLobby(); }
+function rpgClose() { cancelAnimationFrame(RAF); RS = null; const o = $('#rpgBox'); if (o) o.style.display = 'none'; try { drawMe && drawMe(); } catch (e) { } }
+function rpgLobby(tab) { cancelAnimationFrame(RAF); const c = CH.find(x => x.id === SV.myCh), J = RJOB[c.id], st = rpgStats(c), R_ = rpgSV(), o = $('#rpgBox'), need = 40 + R_.lv * 35;
+  const maps = Object.keys(RMAP).filter(k => COURSES[k]).map(k => { const M = RMAP[k], fee = greenFee(k, 9), b = R_.best[k] || 0, lock = R_.lv < M.lv; return `<button data-rmap="${k}" ${lock ? 'disabled' : ''} style="font:inherit;width:100%;margin:4px 0;padding:10px;border:1px solid #5a3a2a;background:linear-gradient(90deg,${M.g[0]},${M.g[1]});color:#fff;text-align:left;opacity:${lock ? .45 : 1}"><b>${M.boss[0]} ${COURSES[k].name}</b> <span style="float:right;color:#ffd54a">${lock ? '🔒 RPG Lv.' + M.lv + ' 필요' : '입장 ' + fee.toLocaleString() + '밧'}</span><br><small style="opacity:.85">입장 Lv.${M.lv} · 난이도 ×${M.tier} · 보스: ${M.boss[1]} · 최고 ${b ? (b > RFLOORS ? '🏆 클리어' : b + '번홀') : '도전 전'}</small></button>`; }).join('');
+  const slotRow = Object.keys(ISLOT).map(s => { const it = R_.eq[s]; return `<button data-ueq="${s}" style="font:inherit;font-size:11px;padding:6px 2px;border:1px solid ${it ? IRAR[it.ra][1] : '#333'};background:#120c0c;color:${it ? IRAR[it.ra][1] : '#777'};min-height:58px">${it ? it.ic : '·'}<br>${ISLOT[s]}<br><span style="font-size:10px">${it ? it.n.slice(0, 8) : '없음'}</span></button>`; }).join('');
+  const bag = R_.inv.map((it, i) => `<div style="border:1px solid ${IRAR[it.ra][1]}55;padding:6px;margin:3px 0;font-size:12px"><span style="color:${IRAR[it.ra][1]}">${it.ic} [${IRAR[it.ra][0]}] ${it.n}</span> <small style="opacity:.75">(${ISLOT[it.sl]})</small><br><small>${itemTxt(it)}</small><span style="float:right"><button data-eq="${i}" style="font:inherit;font-size:11px;border:0;background:#2a3a5a;color:#fff;padding:3px 8px">장착</button> <button data-sell="${i}" style="font:inherit;font-size:11px;border:0;background:#4a2a1a;color:#ffd27a;padding:3px 8px">판매 ${it.val}밧</button></span></div>`).join('') || '<div style="opacity:.6;font-size:12px">가방이 비었습니다. 던전에서 아이템을 주우세요.</div>';
+  o.innerHTML = `<div style="max-width:460px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:4px 0;color:#ff8a4a;letter-spacing:2px">⚔ 주통 RPG</h3><button id="rpgX" style="font:inherit;background:#ffb627;border:0;padding:6px 12px">← 메뉴</button></div>
+  <div style="display:flex;gap:10px;align-items:center;background:#170e0e;border:1px solid #4a2a20;padding:8px;margin:6px 0"><canvas id="rpgMe" width="64" height="72" style="image-rendering:pixelated;width:64px;height:72px;background:#0d0909"></canvas>
+  <div style="font-size:13px;line-height:1.5"><b style="color:${c.ink}">${c.name}</b> · ${J.ic} ${J.job}<br><span style="color:#ffd54a">RPG Lv.${R_.lv}</span> <small>(경험치 ${R_.xp}/${need}) · 골프 Lv.${lvOf(c.id)}</small><br>❤ ${st.hpMax} · ⚔ ${st.atk} · 🛡 ${st.def} · ✨ ${st.mag} · 💧 ${st.mpMax}<br><small style="opacity:.75">특성: ${J.trait}</small><br><small style="opacity:.75">💰 지갑 ${SV.wallet.toLocaleString()}밧 · 🍺 회복 맥주 ${R_.pot} · 오늘 입장 ${R_.runs}/${RPG_DAY_RUNS}</small></div></div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">${slotRow}</div>
+  <div style="font-size:12px;opacity:.8;margin:8px 0">🎮 화면을 누르면 그쪽으로 이동, 몬스터를 누르면 공격 (가까우면 자동 공격). 아래 스킬 3개 · 🍺 맥주. 몬스터를 다 잡으면 깃발(홀컵)이 나타나고, 밟으면 다음 홀 → 9번홀 보스. 입장료 = 실제 9홀 그린피, 주운 밧·아이템 판매금은 골프 지갑으로.</div>
+  ${maps}<button id="rpgPot" style="font:inherit;width:100%;margin:8px 0 4px;padding:10px;border:0;background:#3a1a1a;color:#ffb0b0">🍺 회복 맥주 사기 (HP 50% · 200밧)</button>
+  <h4 style="margin:10px 0 4px;color:#ffd54a">🎒 가방 (${R_.inv.length}/24)</h4>${bag}
+  <div style="font-size:12px;opacity:.7;margin-top:6px">스킬: ${ASK[c.id].map(s => `${s.ic} <b>${s.n}</b>(MP${s.mp}·${s.cd}초)`).join(' · ')}</div></div>`;
   try { const cv = $('#rpgMe'), x = cv.getContext('2d'); x.imageSmoothingEnabled = false; drawSprite(x, c, 0, 4, 2, 3.4); } catch (e) { }
   $('#rpgX').onclick = rpgClose;
   $('#rpgPot').onclick = () => { if (SV.wallet < 200) { toast('지갑이 부족합니다', '#ff9a9a'); return; } led('🍺 RPG 회복 맥주'); SV.wallet -= 200; R_.pot++; saveSV(); rpgLobby(); };
-  o.querySelectorAll('[data-rmap]').forEach(b => b.onclick = () => rpgStart(b.dataset.rmap)); }
-function rpgStart(k) { const c = CH.find(x => x.id === SV.myCh), R_ = rpgSV(), fee = greenFee(k, 9);
+  o.querySelectorAll('[data-rmap]').forEach(b => b.onclick = () => rpgStart(b.dataset.rmap));
+  o.querySelectorAll('[data-eq]').forEach(b => b.onclick = () => { const i = +b.dataset.eq, it = R_.inv[i], old = R_.eq[it.sl]; R_.eq[it.sl] = it; R_.inv.splice(i, 1); if (old) R_.inv.push(old); saveSV(); rpgLobby(); });
+  o.querySelectorAll('[data-ueq]').forEach(b => b.onclick = () => { const s = b.dataset.ueq, it = R_.eq[s]; if (!it || R_.inv.length >= 24) return; R_.inv.push(it); delete R_.eq[s]; saveSV(); rpgLobby(); });
+  o.querySelectorAll('[data-sell]').forEach(b => b.onclick = () => { const i = +b.dataset.sell, it = R_.inv[i]; led('⚔ RPG 아이템 판매'); SV.wallet += it.val; R_.inv.splice(i, 1); saveSV(); toast(`${it.n} 판매 +${it.val}밧`, '#ffd54a'); rpgLobby(); }); }
+function rpgStart(k) { const c = CH.find(x => x.id === SV.myCh), R_ = rpgSV(), M = RMAP[k], fee = greenFee(k, 9);
+  if (R_.lv < M.lv) { toast(`RPG Lv.${M.lv}부터 입장할 수 있어요`, '#ffd27a'); return; }
   if (R_.runs >= RPG_DAY_RUNS) { toast(`오늘 입장 ${RPG_DAY_RUNS}회 다 썼어요 — 내일 다시`, '#ffd27a'); return; }
   if (SV.wallet < fee) { toast(`입장료 ${fee.toLocaleString()}밧이 부족합니다`, '#ff9a9a'); return; }
   led('⚔ RPG 입장료 · ' + COURSES[k].name); SV.wallet -= fee; R_.runs++; saveSV();
-  const st = rpgStats(c); RS = Object.assign({ id: c.id, c, map: k, fee, floor: 1, turn: 0, gold: 0, buf: { atk: 1, t: 0, crit: 0, dodge: 0 }, guard: 1, log: [] }, st); RS.hp = st.hpMax; RS.mp = st.mpMax; RS.m = rMon(RS);
-  RS.log.push(`🏌 ${COURSES[k].name} 던전 입장 (입장료 -${fee.toLocaleString()}밧)`, `${RS.m.ic} ${RS.m.n} 출현!`); rpgDraw(); }
-function rpgDraw() { const S = RS, o = $('#rpgBox'), J = RJOB[S.id], M = RMAP[S.map], bar = (v, m, c) => `<div style="height:8px;background:#222;border:1px solid #444"><div style="height:100%;width:${Math.max(0, v / m * 100)}%;background:${c}"></div></div>`;
-  o.innerHTML = `<div style="max-width:460px;margin:0 auto"><div style="display:flex;justify-content:space-between;font-size:13px"><b style="color:#ffd54a">${COURSES[S.map].name} · ${S.floor}번홀 ${S.floor === RFLOORS ? '(보스)' : ''}</b><span>💰 획득 ${S.gold.toLocaleString()}밧</span></div>
-  <canvas id="rpgCv" width="320" height="150" style="width:100%;image-rendering:pixelated;margin:6px 0;border:1px solid #333"></canvas>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px"><div>${S.c.name} ❤ ${Math.max(0, S.hp)}/${S.hpMax}${bar(S.hp, S.hpMax, '#5fd16f')}💧 ${S.mp}/${S.mpMax}${bar(S.mp, S.mpMax, '#4aa3ff')}</div><div>${S.m.n} ❤ ${Math.max(0, S.m.hp)}/${S.m.hpMax}${bar(S.m.hp, S.m.hpMax, '#ff6a5a')}${S.m.psn ? '☠ 중독 ' + S.m.psn : ''}</div></div>
-  <div id="rpgLog" style="height:96px;overflow:auto;background:#0d1117;border:1px solid #2a3440;padding:6px;font-size:12px;margin:6px 0;line-height:1.45">${S.log.slice(-8).map(l => `<div>${l}</div>`).join('')}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${[['atk', '⚔ 기본 공격', '']].concat(J.sk.map((s, i) => ['s' + i, s.n, `MP${s.mp}`])).map(([k, n, m]) => `<button data-ract="${k}" style="font:inherit;font-size:13px;padding:10px 4px;border:0;background:${k === 'atk' ? '#3a2a14' : '#1f2a44'};color:#fff">${n}<br><small style="opacity:.7">${m}</small></button>`).join('')}
-  <button data-ract="pot" style="font:inherit;font-size:13px;padding:10px 4px;border:0;background:#2a3a1a;color:#d8ffb0">🍺 맥주 (${rpgSV().pot})</button><button data-ract="run" style="font:inherit;font-size:13px;padding:10px 4px;border:0;background:#3a1a1a;color:#ffb0b0">🏳 기권(획득 밧 챙겨 나가기)</button></div></div>`;
-  const cv = $('#rpgCv'), x = cv.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, M.bg[0]); g.addColorStop(1, M.bg[1]); x.fillStyle = g; x.fillRect(0, 0, 320, 150); x.fillStyle = 'rgba(255,255,255,.06)'; for (let i = 0; i < 6; i++) x.fillRect(0, 100 + i * 9, 320, 3);
-  if (S.map === 'swm') { const lg = x.createRadialGradient(80, 110, 0, 80, 110, 70); lg.addColorStop(0, 'rgba(255,220,140,.35)'); lg.addColorStop(1, 'rgba(255,220,140,0)'); x.fillStyle = lg; x.fillRect(0, 0, 320, 150); }
-  x.imageSmoothingEnabled = false; try { drawSprite(x, S.c, S.anim ? 1 : 0, 50, 62, 4); } catch (e) { } x.font = (S.m.boss ? 64 : 52) + 'px serif'; x.textAlign = 'center'; x.fillText(S.m.ic, 240 + (S.hitFx ? 6 : 0), 115); S.anim = 0; S.hitFx = 0;
-  const lg = $('#rpgLog'); lg.scrollTop = lg.scrollHeight; o.querySelectorAll('[data-ract]').forEach(b => b.onclick = () => rpgAct(b.dataset.ract)); }
-function rpgAct(k) { const S = RS; if (!S || S.over) return; const J = RJOB[S.id]; let msg = '';
-  if (k === 'run') { rpgEnd(false, true); return; }
-  if (k === 'pot') { const R_ = rpgSV(); if (!R_.pot) { toast('맥주가 없어요 (로비에서 구매)', '#ffd27a'); return; } R_.pot--; saveSV(); msg = rHeal(S, .5, '🍺 시원한 맥주'); }
-  else if (k === 'atk') msg = S.id === 'gm' ? rHit(S, .85, .93, '🪄 AI 지팡이', 0, true) : rHit(S, 1, .93, '⚔ 기본 공격');
-  else { const sk = J.sk[+k.slice(1)]; if (S.mp < sk.mp) { toast('MP 부족', '#ffd27a'); return; } S.mp -= sk.mp; msg = sk.f(S); }
-  S.turn++; S.anim = 1; S.hitFx = 1; S.log.push(msg);
-  if (S.m.psn > 0 && S.m.hp > 0) { const d = Math.round(S.m.hpMax * .07); S.m.hp -= d; S.m.psn--; S.log.push(`☠ 독 피해 -${d}`); }
-  if (S.m.hp <= 0) { const g = Math.round(S.m.gold * (S.id === 'du' ? 1.25 : 1)); S.gold += g; S.log.push(`🎉 ${S.m.n} 처치! 💰 +${g.toLocaleString()}밧`); rpgXp(S.m.boss ? 60 : 12);
-    if (S.floor >= RFLOORS) { rpgEnd(true); return; } S.floor++; S.mp = Math.min(S.mpMax, S.mp + 4); { const hh = Math.round(S.hpMax * .18); S.hp = Math.min(S.hpMax, S.hp + hh); S.log.push(`🚶 다음 티로 이동하며 숨 고르기 +${hh} HP`); } S.m = rMon(S); S.log.push(`⛳ ${S.floor}번홀 — ${S.m.ic} ${S.m.n} 출현!`); rpgDraw(); return; }
-  // 적의 턴
-  if (S.buf.t > 0) S.buf.t--; if (S.buf.crit > 0) S.buf.crit--;
-  const dodge = S.buf.dodge > 0 || (S.id === 'ej' && Math.random() < .15); if (S.buf.dodge > 0) S.buf.dodge--;
-  if (dodge) S.log.push(`💨 ${S.m.n}의 공격을 피했다!`); else { let d = Math.max(1, Math.round(S.m.atk * (.85 + Math.random() * .3) - S.def * .4)); if (S.m.w && S.id === 'sg') d = Math.round(d * 1.2); d = Math.round(d * S.guard); S.hp -= d; S.log.push(`${S.m.ic} ${S.m.n}의 공격 -${d}${S.m.w && S.id === 'sg' ? ' (물귀신 체질!)' : ''}`); }
-  S.guard = 1; if (S.id === 'gy') S.hp = Math.min(S.hpMax, S.hp + Math.round(S.hpMax * .02)); S.mp = Math.min(S.mpMax, S.mp + 1);
-  if (S.hp <= 0) { rpgEnd(false); return; } rpgDraw(); }
-function rpgXp(n) { const R_ = rpgSV(); R_.xp += n; const need = l => 40 + l * 35; while (R_.xp >= need(R_.lv)) { R_.xp -= need(R_.lv); R_.lv++; toast(`⚔ RPG 레벨 업! Lv.${R_.lv}`, '#9fffb0'); } }
-function rpgEnd(win, quit) { const S = RS; S.over = true; const R_ = rpgSV(); let bonus = 0; if (win) { bonus = Math.round(S.fee * .4); S.gold += bonus; }
-  const bestNow = win ? RFLOORS + 1 : S.floor - (quit ? 0 : 1); R_.best[S.map] = Math.max(R_.best[S.map] || 0, bestNow);
-  if (S.gold > 0) { led('⚔ RPG 전리품 · ' + COURSES[S.map].name); SV.wallet += S.gold; } saveSV();
-  const net = S.gold - S.fee, o = $('#rpgBox');
-  o.innerHTML = `<div style="max-width:420px;margin:40px auto;text-align:center"><div style="font-size:44px">${win ? '🏆' : quit ? '🏳' : '💀'}</div><h3 style="color:${win ? '#ffd54a' : '#ff9a9a'}">${win ? COURSES[S.map].name + ' 던전 클리어!' : quit ? '기권 — 전리품 챙겨 철수' : S.floor + '번홀에서 쓰러짐… 캐디가 카트로 실어 나옴'}</h3>
-  <div style="font-size:14px;line-height:1.8">입장료 -${S.fee.toLocaleString()}밧<br>전리품 +${(S.gold - bonus).toLocaleString()}밧${win ? `<br>클리어 보너스 +${bonus.toLocaleString()}밧` : ''}<br><b style="color:${net >= 0 ? '#7fe09a' : '#ff9a9a'}">손익 ${net >= 0 ? '+' : ''}${net.toLocaleString()}밧</b> · 지갑 ${SV.wallet.toLocaleString()}밧</div>
+  const st = rpgStats(c); RS = Object.assign({ id: c.id, c, map: k, M, fee, floor: 1, got: [], cds: [0, 0, 0], buf: { atk: 0, crit: 0, dodge: 0, guard: 0 }, msg: [], over: false, t: 0 }, st); RS.hp = st.hpMax; RS.mp = st.mpMax;
+  rpgFloor(); rpgView(); }
+function rpgFloor() { const S = RS, M = S.M; S.px = WW / 2; S.py = WH - 80; S.tx = S.px; S.ty = S.py; S.tgt = null; S.flag = null; S.ft = 0; S.atkCd = 0; S.proj = []; S.drops = []; S.fx = []; S.mons = [];
+  // 지형: 러프 바탕 + 페어웨이 띠 + 벙커 + 연못(통과 불가) + 나무
+  const r = mulb((Date.now() % 1e6) + S.floor * 97); S.ponds = []; S.bunk = []; S.trees = [];
+  for (let i = 0; i < 2 + Math.floor(r() * 2); i++) S.ponds.push({ x: 120 + r() * (WW - 240), y: 180 + r() * (WH - 420), rx: 40 + r() * 50, ry: 30 + r() * 40 });
+  for (let i = 0; i < 4; i++) S.bunk.push({ x: 80 + r() * (WW - 160), y: 120 + r() * (WH - 260), rx: 22 + r() * 22, ry: 14 + r() * 14 });
+  for (let i = 0; i < 26; i++) { const side = r() < .5; S.trees.push({ x: side ? 20 + r() * 90 : WW - 20 - r() * 90, y: 30 + r() * (WH - 60) }); }
+  const boss = S.floor === RFLOORS, n = boss ? 4 : 5 + Math.floor(S.floor * .8);
+  for (let i = 0; i < n; i++) S.mons.push(rpgMon(false, r)); if (boss) S.mons.push(rpgMon(true, r));
+  rpgMsg(boss ? `👑 ${S.floor}번홀 — 보스 ${M.boss[1]} 등장!` : `⛳ ${S.floor}번홀 — 몬스터 ${n}마리`); }
+function rpgMon(boss, r) { const S = RS, M = S.M, t = boss ? [M.boss[0], M.boss[1], 1.8, M.boss[2]] : M.mon[Math.floor(r() * M.mon.length)], sc = M.tier * (1 + S.floor * .11) * t[2]; let x, y, k = 0; do { x = 140 + r() * (WW - 280); y = 60 + r() * (WH - 300); k++; } while (rpgBlocked(x, y) && k < 30);
+  const hp = Math.round(48 * sc * (boss ? 9 : 1)); return { ic: t[0], n: t[1], w: !!t[3], boss, x, y, hp, max: hp, atk: Math.round(7 * sc * (boss ? 1.6 : 1)), spd: (boss ? 34 : 44 + r() * 22) * (S.map === 'swm' ? 1.1 : 1), r: boss ? 26 : 13, cd: 0, psn: 0, weak: 1, hit: 0 }; }
+function rpgBlocked(x, y) { const S = RS; for (const p of S.ponds) if (((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 < 1) return true; return x < 8 || y < 8 || x > WW - 8 || y > WH - 8; }
+function rpgStep(o, kx, ky, gx, gy, v) { const dx = gx - o[kx], dy = gy - o[ky], d = Math.hypot(dx, dy); if (d < .5) return false; const a0 = Math.atan2(dy, dx), st = Math.min(v, d); for (const off of [0, .6, -.6, 1.2, -1.2, 1.8, -1.8]) { const a = a0 + off * (o.sw || 1), nx = o[kx] + Math.cos(a) * st, ny = o[ky] + Math.sin(a) * st; if (!rpgBlocked(nx, ny)) { o[kx] = nx; o[ky] = ny; if (off) o.sw = Math.sign(off) * (o.sw ? Math.abs(o.sw) : 1); return true; } } return false; } // 연못에 막히면 옆으로 돌아감
+function rpgMsg(t) { RS.msg.push({ t, at: performance.now() }); if (RS.msg.length > 4) RS.msg.shift(); }
+function rpgFx(x, y, t, c) { RS.fx.push({ x, y, t, c, a: 1 }); }
+function rpgView() { const S = RS, o = $('#rpgBox'), sk = ASK[S.id];
+  o.innerHTML = `<div style="max-width:480px;margin:0 auto;position:relative"><canvas id="rpgCv" width="360" height="520" style="width:100%;image-rendering:pixelated;display:block;border:2px solid #3a2418;touch-action:none;background:#000"></canvas>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px">${sk.map((s, i) => `<button data-sk="${i}" style="font:inherit;font-size:11px;padding:8px 2px;border:1px solid #5a3a2a;background:#1a1010;color:#ffd7a0;position:relative;overflow:hidden"><span style="font-size:18px">${s.ic}</span><br>${s.n.slice(0, 6)}<br><small style="opacity:.7">MP${s.mp}</small><i id="cd${i}" style="position:absolute;left:0;bottom:0;width:100%;background:rgba(0,0,0,.65);height:0"></i></button>`).join('')}
+  <button id="rpgPotB" style="font:inherit;font-size:11px;padding:8px 2px;border:1px solid #5a2a2a;background:#2a0f0f;color:#ffb0b0"><span style="font-size:18px">🍺</span><br>맥주<br><small id="potN">${rpgSV().pot}</small></button><button id="rpgOut" style="font:inherit;font-size:11px;padding:8px 2px;border:1px solid #333;background:#111;color:#aaa"><span style="font-size:18px">🏳</span><br>귀환<br><small>전리품 챙김</small></button></div></div>`;
+  const cv = $('#rpgCv'), toW = e => { const b = cv.getBoundingClientRect(), sx = (e.clientX - b.left) / b.width * 360, sy = (e.clientY - b.top) / b.height * 520; return { x: S.cx + sx, y: S.cy + sy }; };
+  let down = false; const press = e => { if (S.over) return; const p = toW(e); const m = S.mons.find(m => m.hp > 0 && Math.hypot(m.x - p.x, m.y - p.y) < m.r + 14); if (m) { S.tgt = m; } else { S.tgt = null; S.tx = p.x; S.ty = p.y; } };
+  cv.onpointerdown = e => { down = true; press(e); }; cv.onpointermove = e => { if (down && !S.tgt) press(e); }; cv.onpointerup = cv.onpointerleave = () => { down = false; };
+  o.querySelectorAll('[data-sk]').forEach(b => b.onclick = () => rpgSkill(+b.dataset.sk)); $('#rpgPotB').onclick = rpgPotion; $('#rpgOut').onclick = () => rpgEnd(false, true);
+  let last = performance.now(); const loop = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; if (!RS || RS !== S) return; rpgTick(dt); rpgRender(); if (!S.over) RAF = requestAnimationFrame(loop); }; cancelAnimationFrame(RAF); RAF = requestAnimationFrame(loop); }
+function rpgDmg(mul, magic) { const S = RS; let d = (magic ? S.mag : S.atk) * mul * (S.buf.atk > 0 ? 1.5 : 1) * (S.id === 'jt' ? 1 + Math.min(.6, S.ft * .02) : 1) * (S.id === 'hw' ? .3 + Math.random() * 1.9 : 1) * (.9 + Math.random() * .2); const cr = S.buf.crit > 0 || Math.random() < S.crit; if (cr) d *= 1.9; return [Math.max(1, Math.round(d)), cr]; }
+function rpgHitMon(m, mul, magic) { const S = RS; if (m.hp <= 0) return; let [d, cr] = rpgDmg(mul, magic); if (m.boss && S.id === 'yt') d = Math.round(d * 1.15); m.hp -= d; m.hit = .15; rpgFx(m.x, m.y - m.r, (cr ? '💥' : '') + d, cr ? '#ffd54a' : '#fff'); if (S.ls) S.hp = Math.min(S.hpMax, S.hp + d * S.ls); if (m.hp <= 0) rpgKill(m); }
+function rpgKill(m) { const S = RS, tier = S.M.tier, g = Math.round(S.fee * (m.boss ? .35 : .018) * (.7 + Math.random() * .6) * S.gold); S.drops.push({ x: m.x, y: m.y, k: 'gold', v: g });
+  const dropP = (m.boss ? 1 : .06) * (S.id === 'du' ? 1.3 : 1); if (Math.random() < dropP) S.drops.push({ x: m.x + 12, y: m.y + 6, k: 'item', it: itemGen(tier, S.floor, m.boss ? 1 : 0) }); if (m.boss) S.drops.push({ x: m.x - 14, y: m.y + 8, k: 'item', it: itemGen(tier, S.floor, Math.random() < .35 ? 2 : 1) });
+  if (Math.random() < .06) S.drops.push({ x: m.x - 8, y: m.y - 8, k: 'pot' }); rpgXp(Math.round((m.boss ? 70 : 6 + S.floor) * tier)); if (S.tgt === m) S.tgt = null; }
+function rpgSkill(i) { const S = RS; if (!S || S.over) return; const s = ASK[S.id][i]; if (S.cds[i] > 0) return; if (S.mp < s.mp) { rpgMsg('💧 MP 부족'); return; } S.mp -= s.mp; S.cds[i] = s.cd;
+  const live = S.mons.filter(m => m.hp > 0), near = live.sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py)), tg = (S.tgt && S.tgt.hp > 0) ? S.tgt : near[0];
+  if (s.t === 'buff') { S.buf.atk = 8; rpgMsg(s.ic + ' ' + s.n + ' — 공격력 +50%'); }
+  else if (s.t === 'crit') { S.buf.crit = s.v; rpgMsg(s.ic + ' 약점 노출 — 치명타 확정'); }
+  else if (s.t === 'dodge') { S.buf.dodge = s.v; rpgMsg(s.ic + ' 레디골프 — 무적'); }
+  else if (s.t === 'guard') { S.buf.guard = 6; rpgMsg(s.ic + ' 버티기 — 받는 피해 -70%'); }
+  else if (s.t === 'heal') { const h = Math.round(S.hpMax * s.v); S.hp = Math.min(S.hpMax, S.hp + h); rpgFx(S.px, S.py - 30, '+' + h, '#7fe09a'); }
+  else if (s.t === 'mana') { S.mp = S.mpMax; rpgFx(S.px, S.py - 30, 'MP 충전', '#7fb8ff'); }
+  else if (s.t === 'aoe') { S.fx.push({ ring: 1, x: S.px, y: S.py, r: 10, a: 1 }); live.filter(m => Math.hypot(m.x - S.px, m.y - S.py) < 95).forEach(m => rpgHitMon(m, s.v, S.id === 'gm')); }
+  else if (s.t === 'weak') { live.filter(m => Math.hypot(m.x - S.px, m.y - S.py) < 160).forEach(m => { m.weak = s.v; rpgFx(m.x, m.y - m.r, '감봉', '#ff9a8f'); }); }
+  else if (s.t === 'poison') { S.fx.push({ ring: 2, x: S.px, y: S.py, r: 10, a: 1 }); live.filter(m => Math.hypot(m.x - S.px, m.y - S.py) < 120).forEach(m => m.psn = 5); }
+  else if (s.t === 'gold') { if (tg && Math.hypot(tg.x - S.px, tg.y - S.py) < 120) { rpgHitMon(tg, s.v); const g = Math.round(S.fee * .03 * S.gold); S.drops.push({ x: tg.x, y: tg.y, k: 'gold', v: g }); } }
+  else if (tg) { if (s.t === 'exec') { if (!tg.boss && tg.hp / tg.max < .5 || Math.random() < .08 && !tg.boss) { tg.hp = 0; rpgFx(tg.x, tg.y - tg.r, '⛳홀인원!', '#ffd54a'); rpgKill(tg); } else rpgHitMon(tg, 1.5); }
+    else if (s.t === 'nuke') { if (Math.hypot(tg.x - S.px, tg.y - S.py) < 140) rpgHitMon(tg, s.v || (Math.random() * 3.5)); }
+    else if (s.t === 'bolt' || s.t === 'multi') { const k = s.t === 'multi' ? 3 : 1; for (let j = 0; j < k; j++) { const a = Math.atan2(tg.y - S.py, tg.x - S.px) + (j - (k - 1) / 2) * .18; S.proj.push({ x: S.px, y: S.py - 10, vx: Math.cos(a) * 320, vy: Math.sin(a) * 320, mul: s.v, mag: S.id === 'gm', ic: s.ic, life: 1.2 }); } } } }
+function rpgPotion() { const S = RS, R_ = rpgSV(); if (!S || S.over) return; if (!R_.pot) { rpgMsg('🍺 맥주 없음 (로비에서 구매)'); return; } R_.pot--; const h = Math.round(S.hpMax * .5); S.hp = Math.min(S.hpMax, S.hp + h); rpgFx(S.px, S.py - 30, '🍺+' + h, '#7fe09a'); const n = $('#potN'); if (n) n.textContent = R_.pot; }
+function rpgTick(dt) { const S = RS; S.t += dt; S.ft += dt; for (const k in S.buf) if (S.buf[k] > 0) S.buf[k] -= dt; S.cds = S.cds.map(c => Math.max(0, c - dt)); ASK[S.id].forEach((s, i) => { const e = $('#cd' + i); if (e) e.style.height = (S.cds[i] / s.cd * 100) + '%'; });
+  S.mp = Math.min(S.mpMax, S.mp + dt * (1.2 + S.mpMax * .02)); S.hp = Math.min(S.hpMax, S.hp + S.hpMax * (S.id === 'gy' ? .015 : .005) * dt);
+  const live = S.mons.filter(m => m.hp > 0);
+  // 플레이어: 목표 몬스터 추적·자동 공격, 아니면 지정 위치로 이동
+  const ranged = S.id === 'gm' || S.id === 'ej', rng = ranged ? 150 : 30; let tg = S.tgt && S.tgt.hp > 0 ? S.tgt : null;
+  if (!tg && Math.hypot(S.tx - S.px, S.ty - S.py) < 4) { const n = live.find(m => Math.hypot(m.x - S.px, m.y - S.py) < (ranged ? 150 : 60)); if (n) tg = n; }
+  let gx = S.tx, gy = S.ty; if (tg) { const d = Math.hypot(tg.x - S.px, tg.y - S.py); if (d <= rng + tg.r) { gx = S.px; gy = S.py; S.atkCd -= dt; if (S.atkCd <= 0) { S.atkCd = ranged ? .6 : .45; S.face = tg.x < S.px ? -1 : 1; S.swing = .18; if (ranged) { const a = Math.atan2(tg.y - S.py, tg.x - S.px); S.proj.push({ x: S.px, y: S.py - 10, vx: Math.cos(a) * 300, vy: Math.sin(a) * 300, mul: 1, mag: S.id === 'gm', ic: S.id === 'gm' ? '✨' : '➶', life: 1 }); } else rpgHitMon(tg, 1); } } else { gx = tg.x; gy = tg.y; } }
+  const dx = gx - S.px, dy = gy - S.py, dd = Math.hypot(dx, dy); if (dd > 2) { rpgStep(S, 'px', 'py', gx, gy, 95 * S.spd * dt); S.walk = (S.walk || 0) + dt; S.face = dx < 0 ? -1 : 1; }
+  S.swing = Math.max(0, (S.swing || 0) - dt);
+  // 투사체
+  for (const p of S.proj) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; for (const m of live) if (m.hp > 0 && Math.hypot(m.x - p.x, m.y - p.y) < m.r + 6) { rpgHitMon(m, p.mul, p.mag); p.life = 0; break; } } S.proj = S.proj.filter(p => p.life > 0);
+  // 몬스터 AI
+  for (const m of live) { m.hit = Math.max(0, m.hit - dt); if (m.psn > 0) { m.psn -= dt; m.hp -= m.max * .06 * dt; if (m.hp <= 0) { rpgKill(m); continue; } }
+    const d = Math.hypot(S.px - m.x, S.py - m.y); if (d < (m.boss ? 400 : 170) && d > m.r + 10) { rpgStep(m, 'x', 'y', S.px, S.py, m.spd * dt); }
+    m.cd -= dt; if (d < m.r + 16 && m.cd <= 0) { m.cd = m.boss ? 1.4 : 1.4 + Math.random() * .4; if (S.buf.dodge > 0 || (S.id === 'ej' && Math.random() < .12)) { rpgFx(S.px, S.py - 30, '회피', '#9fe0ff'); continue; } let dm = Math.max(1, Math.round(m.atk * m.weak * (.85 + Math.random() * .3) - S.def * .35)); if (m.w && S.id === 'sg') dm = Math.round(dm * 1.2); if (S.buf.guard > 0) dm = Math.round(dm * .3); S.hp -= dm; S.hurt = .2; rpgFx(S.px, S.py - 34, '-' + dm, '#ff6a5a'); }
+    if (m.boss && Math.random() < dt * .25) { S.fx.push({ ring: 3, x: m.x, y: m.y, r: 10, a: 1 }); if (d < 110 && S.buf.dodge <= 0) { const dm = Math.round(m.atk * .8 * (S.buf.guard > 0 ? .3 : 1)); S.hp -= dm; rpgFx(S.px, S.py - 34, '-' + dm, '#ff6a5a'); } } }
+  // 줍기
+  for (const dr of S.drops) if (!dr.got && Math.hypot(dr.x - S.px, dr.y - S.py) < 22) { dr.got = 1; if (dr.k === 'gold') { S.gold_ = (S.gold_ || 0) + dr.v; rpgFx(dr.x, dr.y - 10, '+' + dr.v + '밧', '#ffd54a'); } else if (dr.k === 'pot') { rpgSV().pot++; rpgFx(dr.x, dr.y - 10, '🍺 +1', '#7fe09a'); const n = $('#potN'); if (n) n.textContent = rpgSV().pot; } else { S.got.push(dr.it); rpgMsg(`🎁 [${IRAR[dr.it.ra][0]}] ${dr.it.n}`); } }
+  S.drops = S.drops.filter(d => !d.got);
+  S.fx.forEach(f => { f.a -= dt * (f.ring ? 1.6 : 1); if (f.ring) f.r += dt * 220; else f.y -= dt * 30; }); S.fx = S.fx.filter(f => f.a > 0);
+  if (!live.some(m => m.hp > 0) && !S.flag) { S.flag = { x: WW / 2, y: 70 }; rpgMsg(S.floor === RFLOORS ? '🏆 보스 격파! 깃발로 가서 마무리' : '🚩 홀 클리어 — 위쪽 깃발(홀컵)로 이동'); }
+  if (S.flag && Math.hypot(S.flag.x - S.px, S.flag.y - S.py) < 26) { if (S.floor >= RFLOORS) { rpgEnd(true); return; } S.floor++; S.hp = Math.min(S.hpMax, S.hp + S.hpMax * .15); rpgFloor(); }
+  if (S.hp <= 0) { S.hp = 0; rpgEnd(false); } }
+function rpgRender() { const S = RS, cv = $('#rpgCv'); if (!cv) return; const x = cv.getContext('2d'), M = S.M, VW = 360, VH = 520; S.cx = clamp(S.px - VW / 2, 0, WW - VW); S.cy = clamp(S.py - VH / 2 - 40, 0, WH - VH); const X = v => Math.round(v - S.cx), Y = v => Math.round(v - S.cy);
+  x.imageSmoothingEnabled = false; x.fillStyle = M.g[0]; x.fillRect(0, 0, VW, VH);
+  // 러프 질감 + 페어웨이 띠 (도트 타일)
+  for (let ty = Math.floor(S.cy / 16) * 16; ty < S.cy + VH; ty += 16) for (let tx = Math.floor(S.cx / 16) * 16; tx < S.cx + VW; tx += 16) { const h = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if (h % 7 === 0) { x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(X(tx) + 4, Y(ty) + 6, 3, 3); } if (Math.abs(tx + 8 - WW / 2) < 150) { x.fillStyle = (Math.floor(ty / 32) % 2) ? M.g[1] : shade(M.g[1], .93); x.fillRect(X(tx), Y(ty), 16, 16); } }
+  for (const b of S.bunk) { x.fillStyle = M.g[2]; x.beginPath(); x.ellipse(X(b.x), Y(b.y), b.rx, b.ry, 0, 0, TAU); x.fill(); }
+  for (const p of S.ponds) { x.fillStyle = M.water; x.beginPath(); x.ellipse(X(p.x), Y(p.y), p.rx, p.ry, 0, 0, TAU); x.fill(); x.fillStyle = 'rgba(255,255,255,.15)'; x.fillRect(X(p.x) - 10, Y(p.y) - 4, 14, 2); }
+  for (const t of S.trees) { x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(X(t.x) - 9, Y(t.y) + 6, 18, 5); x.fillStyle = '#1d4a22'; x.fillRect(X(t.x) - 8, Y(t.y) - 12, 16, 16); x.fillStyle = '#2d6a30'; x.fillRect(X(t.x) - 6, Y(t.y) - 12, 8, 8); x.fillStyle = '#5a3a1a'; x.fillRect(X(t.x) - 2, Y(t.y) + 4, 4, 6); }
+  if (S.flag) { x.fillStyle = '#111'; x.beginPath(); x.ellipse(X(S.flag.x), Y(S.flag.y) + 8, 9, 4, 0, 0, TAU); x.fill(); x.fillStyle = '#ddd'; x.fillRect(X(S.flag.x), Y(S.flag.y) - 28, 2, 36); x.fillStyle = Math.sin(S.t * 6) > 0 ? '#ff3a3a' : '#ff6a3a'; x.fillRect(X(S.flag.x) + 2, Y(S.flag.y) - 28, 14, 9); }
+  for (const d of S.drops) { if (d.k === 'gold') { x.fillStyle = '#ffd54a'; x.fillRect(X(d.x) - 4, Y(d.y) - 2, 8, 5); x.fillStyle = '#b8902a'; x.fillRect(X(d.x) - 2, Y(d.y) - 4, 5, 3); } else { const ic = d.k === 'pot' ? '🍺' : d.it.ic; x.drawImage(pixIcon(ic, 22), X(d.x) - 11, Y(d.y) - 11); if (d.k === 'item') { x.fillStyle = IRAR[d.it.ra][1]; x.font = '9px monospace'; x.textAlign = 'center'; x.fillText(d.it.n.slice(0, 10), X(d.x), Y(d.y) - 14); } } }
+  // 몬스터
+  for (const m of S.mons) if (m.hp > 0) { const sz = m.boss ? 60 : 30; x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(X(m.x), Y(m.y) + sz * .35, sz * .35, sz * .12, 0, 0, TAU); x.fill(); x.globalAlpha = m.hit > 0 ? .55 : 1; x.drawImage(pixIcon(m.ic, sz), X(m.x) - sz / 2, Y(m.y) - sz / 2 + Math.sin(S.t * 6 + m.x) * 1.5); x.globalAlpha = 1;
+    if (m.psn > 0) { x.fillStyle = 'rgba(120,255,80,.35)'; x.fillRect(X(m.x) - sz / 2, Y(m.y) - sz / 2, sz, sz); }
+    if (m.hp < m.max || m.boss) { x.fillStyle = '#300'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32, 4); x.fillStyle = m.boss ? '#ffb627' : '#e33'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32 * m.hp / m.max, 4); }
+    if (S.tgt === m) { x.strokeStyle = '#ffd54a'; x.strokeRect(X(m.x) - sz / 2 - 2, Y(m.y) - sz / 2 - 2, sz + 4, sz + 4); } }
+  // 플레이어 (골프 게임 도트 캐릭터 그대로)
+  x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(X(S.px), Y(S.py) + 2, 12, 4, 0, 0, TAU); x.fill(); x.globalAlpha = S.hurt > 0 ? .6 : 1; S.hurt = Math.max(0, (S.hurt || 0) - .016);
+  x.save(); x.translate(X(S.px), Y(S.py)); if (S.face < 0) x.scale(-1, 1); try { drawSprite(x, S.c, S.swing > 0 ? 1 : (Math.floor((S.walk || 0) * 6) % 2), -16, -38 - (S.swing > 0 ? 2 : 0), 2.2); } catch (e) { } x.restore(); x.globalAlpha = 1;
+  if (S.buf.dodge > 0 || S.buf.guard > 0) { x.strokeStyle = S.buf.guard > 0 ? '#ffd27a' : '#9fe0ff'; x.beginPath(); x.arc(X(S.px), Y(S.py) - 14, 22, 0, TAU); x.stroke(); }
+  for (const p of S.proj) x.drawImage(pixIcon(p.ic, 16), X(p.x) - 8, Y(p.y) - 8);
+  for (const f of S.fx) { x.globalAlpha = Math.max(0, f.a); if (f.ring) { x.strokeStyle = f.ring === 2 ? '#7fff50' : f.ring === 3 ? '#ff5a3a' : '#ffd54a'; x.lineWidth = 3; x.beginPath(); x.arc(X(f.x), Y(f.y), f.r, 0, TAU); x.stroke(); x.lineWidth = 1; } else { x.fillStyle = f.c; x.font = 'bold 13px monospace'; x.textAlign = 'center'; x.fillText(f.t, X(f.x), Y(f.y)); } } x.globalAlpha = 1;
+  // 서밋 윈드밀은 야간: 주변만 밝음
+  if (M.night) { const g = x.createRadialGradient(X(S.px), Y(S.py), 30, X(S.px), Y(S.py), 170); g.addColorStop(0, 'rgba(0,0,10,0)'); g.addColorStop(1, 'rgba(0,0,10,.88)'); x.fillStyle = g; x.fillRect(0, 0, VW, VH); }
+  // HUD: 디아블로풍 HP(빨강)·MP(파랑) 구슬
+  const orb = (cx, v, mx, c1, c2) => { x.fillStyle = '#1a0d08'; x.beginPath(); x.arc(cx, VH - 34, 30, 0, TAU); x.fill(); x.save(); x.beginPath(); x.arc(cx, VH - 34, 26, 0, TAU); x.clip(); const f = Math.max(0, v / mx); x.fillStyle = '#100'; x.fillRect(cx - 26, VH - 60, 52, 52); const gg = x.createLinearGradient(0, VH - 60, 0, VH - 8); gg.addColorStop(0, c1); gg.addColorStop(1, c2); x.fillStyle = gg; x.fillRect(cx - 26, VH - 8 - 52 * f, 52, 52 * f); x.restore(); x.strokeStyle = '#8a6a3a'; x.lineWidth = 3; x.beginPath(); x.arc(cx, VH - 34, 28, 0, TAU); x.stroke(); x.lineWidth = 1; x.fillStyle = '#fff'; x.font = 'bold 11px monospace'; x.textAlign = 'center'; x.fillText(Math.round(v), cx, VH - 30); };
+  orb(36, S.hp, S.hpMax, '#ff4a3a', '#8a0a0a'); orb(VW - 36, S.mp, S.mpMax, '#5a8aff', '#0a1a6a');
+  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0, 0, VW, 22); x.fillStyle = '#ffd54a'; x.font = 'bold 12px monospace'; x.textAlign = 'left'; x.fillText(`${COURSES[S.map].name} ${S.floor}/${RFLOORS}홀`, 6, 15); x.textAlign = 'right'; x.fillText(`💰${(S.gold_ || 0).toLocaleString()} 🎁${S.got.length} 👾${S.mons.filter(m => m.hp > 0).length}`, VW - 6, 15);
+  const now = performance.now(); S.msg = S.msg.filter(m => now - m.at < 3500); x.textAlign = 'center'; x.font = 'bold 12px sans-serif'; S.msg.forEach((m, i) => { x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(40, 30 + i * 18, VW - 80, 16); x.fillStyle = '#ffe0a0'; x.fillText(m.t, VW / 2, 42 + i * 18); }); }
+function rpgXp(n) { const R_ = rpgSV(); R_.xp += n; const need = l => 40 + l * 35; while (R_.xp >= need(R_.lv)) { R_.xp -= need(R_.lv); R_.lv++; if (RS) { const st = rpgStats(RS.c); Object.assign(RS, { hpMax: st.hpMax, atk: st.atk, def: st.def, mag: st.mag, mpMax: st.mpMax }); RS.hp = Math.min(RS.hpMax, RS.hp + RS.hpMax * .3); rpgMsg(`⭐ 레벨 업! RPG Lv.${R_.lv} (HP 30% 회복)`); } else toast(`⚔ RPG 레벨 업! Lv.${R_.lv}`, '#9fffb0'); } }
+function rpgEnd(win, quit) { const S = RS; if (!S || S.over) return; S.over = true; cancelAnimationFrame(RAF); const R_ = rpgSV(); let bonus = 0; if (win) bonus = Math.round(S.fee * .3);
+  const gold = (S.gold_ || 0) + bonus, bestNow = win ? RFLOORS + 1 : S.floor - (quit ? 0 : 1); R_.best[S.map] = Math.max(R_.best[S.map] || 0, bestNow);
+  let lost = 0; if (!win && !quit) { lost = Math.floor(S.got.length / 2); S.got.splice(0, lost); } // 쓰러지면 주운 아이템 절반을 잃음 (디아블로처럼 시체에 남김)
+  const room = Math.max(0, 24 - R_.inv.length), keep = S.got.slice(0, room), over = S.got.slice(room), auto = over.reduce((a, it) => a + it.val, 0); R_.inv.push(...keep);
+  if (gold + auto > 0) { led('⚔ RPG 전리품 · ' + COURSES[S.map].name); SV.wallet += gold + auto; } saveSV();
+  const net = gold + auto - S.fee, o = $('#rpgBox');
+  o.innerHTML = `<div style="max-width:420px;margin:40px auto;text-align:center"><div style="font-size:44px">${win ? '🏆' : quit ? '🏳' : '💀'}</div><h3 style="color:${win ? '#ffd54a' : '#ff9a9a'}">${win ? COURSES[S.map].name + ' 던전 클리어!' : quit ? '귀환 — 전리품 챙겨 철수' : S.floor + '번홀에서 쓰러짐… 캐디가 카트로 실어 나옴'}</h3>
+  <div style="font-size:14px;line-height:1.8">입장료 -${S.fee.toLocaleString()}밧<br>주운 밧 +${(S.gold_ || 0).toLocaleString()}밧${win ? `<br>클리어 보너스 +${bonus.toLocaleString()}밧` : ''}${auto ? `<br>가방 가득 → 자동 판매 +${auto.toLocaleString()}밧` : ''}<br>🎁 아이템 ${keep.length}개 가방으로${lost ? ` (쓰러지며 ${lost}개 잃음)` : ''}<br><b style="color:${net >= 0 ? '#7fe09a' : '#ff9a9a'}">현금 손익 ${net >= 0 ? '+' : ''}${net.toLocaleString()}밧</b> · 지갑 ${SV.wallet.toLocaleString()}밧</div>
+  ${keep.map(it => `<div style="color:${IRAR[it.ra][1]};font-size:12px">${it.ic} [${IRAR[it.ra][0]}] ${it.n} — ${itemTxt(it)}</div>`).join('')}
   <button id="rpgBack" style="font:inherit;margin-top:14px;padding:10px 20px;border:0;background:#ffb627">로비로</button></div>`;
   $('#rpgBack').onclick = () => { RS = null; rpgLobby(); };
-  try { if (win && NET.ok) chat('📡 AI특파원', `[속보] ${S.c.name}, ${COURSES[S.map].name} 던전 보스 ${RMAP[S.map].boss[1]} 격파!`, '#ffd54a'); } catch (e) { } }
+  try { if (win && NET.ok) chat('📡 AI특파원', `[속보] ${S.c.name}, ${COURSES[S.map].name} 던전 보스 ${S.M.boss[1]} 격파!`, '#ffd54a'); } catch (e) { } }
 
-window.__golf = { TUNE, rpgOpen: () => rpgOpen(), rpgStart: k => rpgStart(k), rpgAct: k => rpgAct(k), get RS() { return RS; }, cardMake: () => cardMake(), get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { TUNE, rpgOpen: () => rpgOpen(), rpgStart: k => rpgStart(k), rpgSkill: i => rpgSkill(i), rpgTick: d => rpgTick(d), rpgEnd: (w, q) => rpgEnd(w, q), get RS() { return RS; }, itemGen: (a, b, c) => itemGen(a, b, c), cardMake: () => cardMake(), get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -1937,7 +2010,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.50.0';
+const VERSION = 'v0.51.0';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1962,6 +2035,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.51.0', '2026-11-28', ['⚔ 주통 RPG를 디아블로2 스타일 실시간 도트 액션으로 전면 개편: 화면 터치로 이동·공격, 몬스터 무리가 쫓아옴, 빨강 HP·파랑 MP 구슬, 스킬 쿨타임', '🎁 아이템 드롭: 일반(흰)·매직(파랑)·레어(노랑)·유니크(금색) — 드라이버·아이언·퍼터·모자·장갑·옷·신발, 랜덤 옵션(공격·방어·HP·치명·이동·골드·흡혈), 유니크는 멤버 오마주(카즈하의 핑 드라이버, 69타의 증명, 퍼터신의 지팡이…)', '🎒 가방·장착 5칸, 아이템 판매금은 골프 지갑으로. 쓰러지면 주운 아이템 절반 잃음', '🔒 코스별 입장 레벨: 스크린·방파콩 Lv.1 → 로얄레이크 Lv.4 → 그린우드 Lv.8 → 서밋 윈드밀 Lv.12 (야간: 주변만 보임)', '⛳ 홀마다 몬스터를 다 잡으면 깃발(홀컵)이 생기고 밟으면 다음 홀, 9번홀 보스']],
  ['v0.50.0', '2026-11-28', ['⚔ 신규: 주통 RPG — 골프장이 던전! 9번홀마다 몬스터, 9번홀 보스', '🧙 멤버별 직업: 정b 특파원 음유시인 · 안IS 법인장 나이트 · 안BJ 의장 팔라딘 · 이B AI 커맨드 마법사 · 신B 역지표 갬블러 · 대우기 정품 연금술사 · K대표 장투 수도승 · 어진 막내 레인저 (직업별 스킬 3개·특성)', '🗺 맵 = 실제 골프장: 방파콩(범람 메기 보스)·로얄레이크(6볼 단체팀장)·그린우드(왕도마뱀·노블플레이스 망령)·서밋 윈드밀(꺼진 조명탑 골렘)·스크린', '💰 골프 지갑 연동: 입장료 = 그 골프장 실제 9홀 그린피, 몬스터 전리품·클리어 보너스는 골프 지갑으로, 가계부 기록. 하루 3회 입장', '🛡 전투력 = 골프 파워·정확도·퍼팅 + 장착 장비 + 골프 레벨 + RPG 레벨']],
  ['v0.49.1', '2026-11-28', ['🌙 서밋 윈드밀 야간 조명 강화: 빛 밖은 훨씬 어둡게, 조명 빛무리는 작고 진하게 + 노란 나트륨등 빛깔 — 낮과 확실히 구분']],
  ['v0.49.0', '2026-11-28', ['📰 구장별 사건사고·이벤트 (서밋 윈드밀처럼, 실제 소식·후기 + 제미나이 교차 조사)', '🌊 방파콩: 10월 방파콩강 범람 후유증 — 젖은 페어웨이(런 -20%)·침수 수리지, 강바람 강한 날(+25%), 음료 스탠드(체력+3), 쿠폰 소식', '⛵ 로얄레이크사이드: 그린 스피드 데이(+1ft, 제미나이 아이디어), 6볼 단체팀 슬로플레이(체력↓), 하구 바닷바람(+20%), 요트 선착장, 라커룸 옷 분실 해프닝(후기 오마주)', '🦎 그린우드: 새 벙커 모래 푹신(벙커 탈출↓), 왕도마뱀 횡단, 언덕 오르막 홀(체력↓), 빠르고 좁은 그린 소식']],
