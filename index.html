@@ -1988,7 +1988,7 @@ function rpgMon(bt, r, ti) { bt = bt === true ? 4 : (bt | 0); const S = RS, M = 
   const af = []; const nA = [0, 0, S.floor >= 12 ? 2 : 1, 3, 0][bt]; while (af.length < nA) { const ks = Object.keys(BAFX), a = ks[Math.floor(r() * ks.length)]; if (!af.includes(a)) af.push(a); }
   const lvk = 1 + lv * .005, hm = lvk * (bt ? 1.1 : 3.2) * [1, S.floor >= 6 ? 2.5 : 2, 4, 6, 9][bt] * (af.includes('tuf') ? 1.5 : 1), am = lvk * (bt ? .5 : .34) * [1, S.floor >= 6 ? 2.2 : 2, 1.6, 1.8, 1.6][bt] * (af.includes('str') ? 1.35 : 1);
   const hp = Math.round(48 * MOBK.hp * sc * hm * (1 + .45 * ((S.allies || []).length))); return { lv, ic: t[0], n: t[1], w: !!t[3], boss: bt > 0, bt, af, an: af.map(a => BAFX[a]), ph: 1, sp_: 2 + r() * 2, x, y, hp, max: hp, atk: Math.round(7 * MOBK.atk * sc * am), spd: (bt === 4 ? 34 : (44 + r() * 22) * (bt ? .85 : 1)) * (S.map === 'swm' ? 1.1 : 1) * (af.includes('spd') ? 1.5 : 1), r: [13, 17, 19, 21, 26][bt], cd: 0, psn: 0, weak: 1, hit: 0 }; }
-function rpgBlocked(x, y) { const S = RS; for (const p of S.ponds) if (((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 < 1 && !(p.br != null && Math.abs(x - p.br) < 26)) return true; return x < 8 || y < 8 || x > WW - 8 || y > WH - 8; }
+function rpgBlocked(x, y) { const S = RS; for (const p of S.ponds) if (((x - p.x) / (p.rx + 12)) ** 2 + ((y - p.y) / (p.ry + 8)) ** 2 < 1 && !(p.br != null && Math.abs(x - p.br) < 22)) return true; /* 물가 여유 12px: 캐릭터 몸이 물에 걸쳐 보이지 않게 */ return x < 8 || y < 8 || x > WW - 8 || y > WH - 8; }
 function rpgStep(o, kx, ky, gx, gy, v) { const dx = gx - o[kx], dy = gy - o[ky], d = Math.hypot(dx, dy); if (d < .5) return false; const a0 = Math.atan2(dy, dx), st = Math.min(v, d); for (const off of [0, .6, -.6, 1.2, -1.2, 1.8, -1.8]) { const a = a0 + off * (o.sw || 1), nx = o[kx] + Math.cos(a) * st, ny = o[ky] + Math.sin(a) * st; if (!rpgBlocked(nx, ny)) { o[kx] = nx; o[ky] = ny; if (off) o.sw = Math.sign(off) * (o.sw ? Math.abs(o.sw) : 1); return true; } } return false; } // 연못에 막히면 옆으로 돌아감
 function rpgBurst(x, y, c, n, sp = 90, up = 0) { const S = RS; S.pt = S.pt || []; for (let i = 0; i < n; i++) { const a = Math.random() * TAU, v = sp * (.4 + Math.random() * .8); S.pt.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - up, life: .35 + Math.random() * .35, c, sz: 2 + Math.floor(Math.random() * 3) }); } if (S.pt.length > 260) S.pt.splice(0, S.pt.length - 260); } // 도트 파티클
 function rpgSlash(x0, y0, x1, y1, c = '#fff', w = 1) { const S = RS; S.sl = S.sl || []; S.sl.push({ x: (x0 + x1) / 2, y: (y0 + y1) / 2 - 12, a: Math.atan2(y1 - y0, x1 - x0), life: .2, c, w }); } // 근접 베기 궤적
@@ -2330,7 +2330,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.59.0';
+const VERSION = 'v0.59.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -2355,7 +2355,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
-   ['v0.59.0', '2026-11-28', ['✨ 디아블로식 장비 드롭 연출: 매직(파란)·레어(노란)·유니크(금빛 불기둥) 빛기둥이 솟고, 장비가 튀어 오르며 바닥에 빛 고리, 등급별 효과음', '★ 유니크 드롭은 화면 흔들림 + 주황빛 번쩍 + 불꽃 파편이 계속 솟음 + 전용 팡파레·진동, 레어는 노란 번쩍', '🍺 맥주 10병 미만으로 입장하면 한 번 물어봄 (취소하면 입장 안 함)', '👑 모든 보스(챔피언·유니크·슈퍼 유니크·최종)는 그린 근처에 소환 — 홀을 따라 올라가 그린에서 보스전', '빛기둥을 볼 수 있게 좋은 장비는 잠시(매직 1.4초·레어 1.8초·유니크 2.4초) 바닥에 머문 뒤 자석으로 날아옴, 바닥 장비 이름에 검은 테두리']],
+   ['v0.59.1', '2026-11-28', ['🔧 캐릭터가 물 위에 서 있는 것처럼 보이던 버그 수정: 물 충돌을 발밑 한 점으로만 검사해서 몸이 물에 걸쳐 들어갔음 — 물가에 여유 거리를 둬 물 밖에서 멈춤']],
+ ['v0.59.0', '2026-11-28', ['✨ 디아블로식 장비 드롭 연출: 매직(파란)·레어(노란)·유니크(금빛 불기둥) 빛기둥이 솟고, 장비가 튀어 오르며 바닥에 빛 고리, 등급별 효과음', '★ 유니크 드롭은 화면 흔들림 + 주황빛 번쩍 + 불꽃 파편이 계속 솟음 + 전용 팡파레·진동, 레어는 노란 번쩍', '🍺 맥주 10병 미만으로 입장하면 한 번 물어봄 (취소하면 입장 안 함)', '👑 모든 보스(챔피언·유니크·슈퍼 유니크·최종)는 그린 근처에 소환 — 홀을 따라 올라가 그린에서 보스전', '빛기둥을 볼 수 있게 좋은 장비는 잠시(매직 1.4초·레어 1.8초·유니크 2.4초) 바닥에 머문 뒤 자석으로 날아옴, 바닥 장비 이름에 검은 테두리']],
  ['v0.58.7', '2026-11-28', ['🩸 안 죽던 진짜 원인 2: 방어력을 피해에서 고정값으로 빼서, 장비 방어가 높으면 몬스터 한 방이 1~2밖에 안 들어왔음 (받는 피해 1/초) — 방어력을 % 감소로 변경 (방어 74면 33% 감소, 방어 150이면 50% 감소)']],
  ['v0.58.6', '2026-11-28', ['🎯 레벨 차 미스 강화: 내 공격은 기본 5% + 몬스터가 1레벨 높을 때마다 +4.5% 빗나감 (최대 60%, 낮은 몬스터는 2%), 몬스터 공격도 AC에 레벨 차 반영 (내가 높으면 몬스터가 더 빗나감, 낮으면 더 맞음) · "MISS" 표시']],
  ['v0.58.5', '2026-11-28', ['🔨 강화 연출: 리니지처럼 장비가 빛나며 망치로 3번 땅땅땅(불꽃·진동) → 성공은 금빛 폭발+팡파레, 실패는 회색 연기, 하락은 붉게 금 가며 흔들림, 보호권은 파란 방패', '🎁 장비 상자 열기·🎲 옵션 재설정도 같은 연출 (상자가 흔들리다 열리고 등급 색으로 번쩍)']],
