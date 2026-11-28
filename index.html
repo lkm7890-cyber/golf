@@ -1737,7 +1737,7 @@ const RJOB = {
   gy: { job: '의장 팔라딘', ic: '📜', hp: 1.2, atk: 1.0, def: 1.2, mag: 1.0, trait: '초당 HP 1% 회복 (싱글의 여유)' },
   gm: { job: 'AI 커맨드 마법사', ic: '🧙', hp: 1.0, atk: .9, def: .95, mag: 1.45, trait: '원거리 마법 공격 · 치명타 기본 15% (퍼터신)' },
   hw: { job: '역지표 갬블러', ic: '🎲', hp: 1.0, atk: 1.05, def: .95, mag: 1.0, trait: '공격 피해 0.3~2.2배 랜덤 (역지표)' },
-  du: { job: '정품 연금술사', ic: '⚗', hp: 1.05, atk: .95, def: 1.0, mag: 1.15, trait: '골드 획득 +25% · 아이템 드롭 +30% (현실파 실무형)' },
+  du: { job: '정품 연금술사', ic: '⚗', hp: 1.05, atk: .95, def: 1.0, mag: 1.15, trait: '골드 획득 +15% · 아이템 드롭 +30% (현실파 실무형)' },
   jt: { job: '장투 수도승', ic: '🧘', hp: 1.1, atk: 1.0, def: 1.05, mag: 1.0, trait: '같은 층에 오래 있을수록 공격력↑ (복리, 최대 +60%)' },
   ej: { job: '막내 레인저', ic: '🏹', hp: .95, atk: 1.05, def: .9, mag: .9, trait: '이동속도 +20% · 원거리 화살 공격 (1분 칼답)' } };
 // 직업별 액션 스킬 (t: 종류, v: 수치, cd: 쿨타임 초)
@@ -1747,17 +1747,19 @@ const ASK = {
   gy: [{ n: '감봉 선고', mp: 8, cd: 10, t: 'weak', v: .6, ic: '📜' }, { n: '싱글의 가호', mp: 10, cd: 8, t: 'heal', v: .4, ic: '🙏' }, { n: '69타 해머', mp: 10, cd: 4, t: 'aoe', v: 2, ic: '🔨' }],
   gm: [{ n: '데이터 분석', mp: 8, cd: 10, t: 'crit', v: 5, ic: '📊' }, { n: '퍼터신 마탄', mp: 7, cd: 1.5, t: 'bolt', v: 2.6, ic: '🧲' }, { n: '삼투 노바', mp: 14, cd: 5, t: 'aoe', v: 2.4, ic: '💫' }],
   hw: [{ n: '역지표 주사위', mp: 6, cd: 3, t: 'nuke', v: 0, ic: '🎲' }, { n: '도시락 타임', mp: 0, cd: 12, t: 'heal', v: .35, ic: '🍱' }, { n: '물타기 연타', mp: 10, cd: 5, t: 'multi', v: 1.2, ic: '🌊' }],
-  du: [{ n: '정품 포션 투척', mp: 10, cd: 8, t: 'heal', v: .45, ic: '🧪' }, { n: '로트 추적 독구름', mp: 10, cd: 6, t: 'poison', v: .5, ic: '☠' }, { n: 'QR 정산', mp: 6, cd: 6, t: 'gold', v: 1.6, ic: '📱' }],
+  du: [{ n: '정품 포션 투척', mp: 10, cd: 8, t: 'heal', v: .45, ic: '🧪' }, { n: '로트 추적 독구름', mp: 10, cd: 6, t: 'poison', v: .5, ic: '☠' }, { n: 'QR 정산', mp: 6, cd: 8, t: 'gold', v: 1.3, ic: '📱' }],
   jt: [{ n: '버티기', mp: 8, cd: 10, t: 'guard', v: .3, ic: '🧘' }, { n: '장기보유 일격', mp: 10, cd: 5, t: 'nuke', v: 3.2, ic: '📈' }, { n: '은둔고수 명상', mp: 0, cd: 15, t: 'mana', v: 1, ic: '🕯' }],
   ej: [{ n: '넵넵넵 3연사', mp: 8, cd: 2.5, t: 'multi', v: 1, ic: '🏹' }, { n: '레디골프', mp: 8, cd: 10, t: 'dodge', v: 3, ic: '⚡' }, { n: '커피 셔틀', mp: 0, cd: 12, t: 'heal', v: .3, ic: '☕' }] };
 // 맵 = 실제 골프장. lv: 입장 레벨, tier: 난이도·보상 배율
 const RMAP = {
   scr: { lv: 1, tier: .7, g: ['#2a2a44', '#3a3a5c', '#22223a'], water: '#3b4a8a', mon: [['🟢', '버그 슬라임', 1], ['📺', '렉 걸린 화면 정령', 1.1], ['🔌', '전원 코드 뱀', 1.05]], boss: ['🖥', '삼화 스크린 서버'] },
-  bpk: { lv: 1, tier: 1, g: ['#2f6a34', '#3f8a44', '#c9b27a'], water: '#2a5a8a', mon: [['🐍', '물뱀', 1, 1], ['🪱', '범람 거머리', 1.1, 1], ['🌬', '강바람 정령', 1.15], ['🐟', '강 메기 졸개', 1.1, 1]], boss: ['🐋', '범람한 방파콩강의 주인', 1] },
-  rls: { lv: 4, tier: 1.4, g: ['#2c6438', '#3b8a4a', '#d8c08a'], water: '#2a6a9a', mon: [['🧟', '6볼 단체팀원', 1.1], ['🐦', '하구 갈매기', .9], ['🥷', '라커룸 옷도둑', 1.2], ['⛵', '폭주 요트', 1.15, 1]], boss: ['👥', '6볼 단체팀장'] },
-  grn: { lv: 8, tier: 1.9, g: ['#2a5a24', '#3a7a30', '#d0b880'], water: '#2a5070', mon: [['🦎', '왕도마뱀', 1.15], ['⏳', '모래 벙커 귀신', 1.1], ['🐗', '언덕 멧돼지', 1.25], ['🐍', '러프 코브라', 1.2]], boss: ['👻', '노블플레이스의 망령'] },
-  swm: { lv: 12, tier: 2.5, g: ['#14301a', '#1e4424', '#6a5a3a'], water: '#16244a', night: 1, mon: [['👻', '정전 유령', 1.2], ['🦋', '야간 나방떼', 1], ['✈', '이착륙 굉음 마수', 1.3], ['🐍', '호수 물뱀', 1.2, 1]], boss: ['🗼', '꺼진 조명탑 골렘'] } };
-const RPG_DAY_RUNS = 3, RFLOORS = 9, WW = 760, WH = 980;
+  bpk: { lv: 10, tier: 1.6, g: ['#2f6a34', '#3f8a44', '#c9b27a'], water: '#2a5a8a', mon: [['🐍', '물뱀', 1, 1], ['🪱', '범람 거머리', 1.1, 1], ['🌬', '강바람 정령', 1.15], ['🐟', '강 메기 졸개', 1.1, 1]], boss: ['🐋', '범람한 방파콩강의 주인', 1] },
+  rls: { lv: 20, tier: 2.5, g: ['#2c6438', '#3b8a4a', '#d8c08a'], water: '#2a6a9a', mon: [['🧟', '6볼 단체팀원', 1.1], ['🐦', '하구 갈매기', .9], ['🥷', '라커룸 옷도둑', 1.2], ['⛵', '폭주 요트', 1.15, 1]], boss: ['👥', '6볼 단체팀장'] },
+  grn: { lv: 30, tier: 3.5, g: ['#2a5a24', '#3a7a30', '#d0b880'], water: '#2a5070', mon: [['🦎', '왕도마뱀', 1.15], ['⏳', '모래 벙커 귀신', 1.1], ['🐗', '언덕 멧돼지', 1.25], ['🐍', '러프 코브라', 1.2]], boss: ['👻', '노블플레이스의 망령'] },
+  swm: { lv: 40, tier: 4.6, g: ['#14301a', '#1e4424', '#6a5a3a'], water: '#16244a', night: 1, mon: [['👻', '정전 유령', 1.2], ['🦋', '야간 나방떼', 1], ['✈', '이착륙 굉음 마수', 1.3], ['🐍', '호수 물뱀', 1.2, 1]], boss: ['🗼', '꺼진 조명탑 골렘'] } };
+const RZONE = [[1, '1~3번홀'], [4, '4~6번홀'], [7, '7~9번홀·보스']]; // 코스 안 사냥터 3구역 (홀이 갈수록 몬스터 레벨↑)
+const mobLv = (M, f, boss) => M.lv + (boss ? 10 : f - 1), mobSc = lv => .55 + lv * .105;
+const RPG_DAY_RUNS = 3, RFLOORS = 9, RPG_CAP = () => Object.keys(RMAP).length * 10, WW = 760, WH = 980;
 // 아이템: 슬롯별 베이스 + 등급별 옵션. 유니크는 멤버 오마주 이름
 const IBASE = { wp: [['🏌', '드라이버'], ['⛳', '아이언'], ['🧲', '퍼터']], hd: [['🧢', '골프모자']], gl: [['🧤', '골프장갑']], ar: [['👕', '골프웨어']], bt: [['👟', '골프화']] };
 const ISLOT = { wp: '무기', hd: '모자', gl: '장갑', ar: '옷', bt: '신발' };
@@ -1771,18 +1773,20 @@ function itemGen(tier, fl, rmin = 0) { const sl = pick(Object.keys(IBASE)), b = 
   it.val = Math.round([30, 90, 280, 900][ra] * tier); return it; }
 function itemTxt(it) { return Object.entries(it.fx).map(([k, v]) => `+${v} ${IAFX.find(a => a[0] === k)[1]}`).join(' · '); }
 function rpgStats(c) { const R_ = rpgSV(), J = RJOB[c.id], A = abil(c), L = lvOf(c.id) + R_.lv, e = { atk: 0, def: 0, hp: 0, crit: 0, spd: 0, gold: 0, ls: 0 }; for (const it of Object.values(R_.eq)) if (it) for (const [k, v] of Object.entries(it.fx)) e[k] = (e[k] || 0) + v; // 골프 능력치(장비 포함) + 골프 레벨 + RPG 레벨 + RPG 아이템
-  return { lv: R_.lv, hpMax: Math.round((90 + L * 9) * J.hp + e.hp), atk: Math.round((A.p * .22 + L * 1.6) * J.atk + e.atk), def: Math.round((A.a * .12 + L * 1.1) * J.def + e.def), mag: Math.round((A.u * .22 + L * 1.6) * J.mag + e.atk * .8), crit: (c.id === 'gm' ? .15 : .06 + A.a / 2000) + e.crit / 100, spd: (c.id === 'ej' ? 1.2 : 1) * (1 + e.spd / 100), gold: 1 + e.gold / 100 + (c.id === 'du' ? .25 : 0), ls: e.ls / 100, mpMax: 24 + Math.floor(L / 2) }; }
+  return { lv: R_.lv, hpMax: Math.round((90 + L * 9) * J.hp + e.hp), atk: Math.round((A.p * .22 + L * 1.6) * J.atk + e.atk), def: Math.round((A.a * .12 + L * 1.1) * J.def + e.def), mag: Math.round((A.u * .22 + L * 1.6) * J.mag + e.atk * .8), crit: (c.id === 'gm' ? .15 : .06 + A.a / 2000) + e.crit / 100, spd: (c.id === 'ej' ? 1.2 : 1) * (1 + e.spd / 100), gold: 1 + e.gold / 100 + (c.id === 'du' ? .15 : 0), ls: e.ls / 100, mpMax: 24 + Math.floor(L / 2) }; }
 let RS = null, RAF = 0; const ICACHE = {};
 function pixIcon(ic, sz) { const k = ic + sz; if (ICACHE[k]) return ICACHE[k]; const s = 14, c = document.createElement('canvas'); c.width = s; c.height = s; const x = c.getContext('2d'); x.font = '12px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ic, s / 2, s / 2 + 1); const o = document.createElement('canvas'); o.width = sz; o.height = sz; const y = o.getContext('2d'); y.imageSmoothingEnabled = false; y.drawImage(c, 0, 0, sz, sz); ICACHE[k] = o; return o; } // 이모지를 14px로 그린 뒤 확대 = 도트 느낌
 function rpgOpen() { const c = CH.find(x => x.id === SV.myCh); if (!c) { whoAmI(); return; } let o = $('#rpgBox'); if (!o) { o = document.createElement('div'); o.id = 'rpgBox'; o.style.cssText = 'position:fixed;inset:0;z-index:98;background:radial-gradient(ellipse at top,#2a1010,#07080b 70%);overflow:auto;padding:12px;color:#e8efe6;touch-action:manipulation'; document.body.appendChild(o); } o.style.display = 'block'; rpgLobby(); }
 function rpgClose() { cancelAnimationFrame(RAF); RS = null; const o = $('#rpgBox'); if (o) o.style.display = 'none'; try { drawMe && drawMe(); } catch (e) { } }
 function rpgLobby(tab) { cancelAnimationFrame(RAF); const c = CH.find(x => x.id === SV.myCh), J = RJOB[c.id], st = rpgStats(c), R_ = rpgSV(), o = $('#rpgBox'), need = 40 + R_.lv * 35;
-  const maps = Object.keys(RMAP).filter(k => COURSES[k]).map(k => { const M = RMAP[k], fee = greenFee(k, 9), b = R_.best[k] || 0, lock = R_.lv < M.lv; return `<button data-rmap="${k}" ${lock ? 'disabled' : ''} style="font:inherit;width:100%;margin:4px 0;padding:10px;border:1px solid #5a3a2a;background:linear-gradient(90deg,${M.g[0]},${M.g[1]});color:#fff;text-align:left;opacity:${lock ? .45 : 1}"><b>${M.boss[0]} ${COURSES[k].name}</b> <span style="float:right;color:#ffd54a">${lock ? '🔒 RPG Lv.' + M.lv + ' 필요' : '입장 ' + fee.toLocaleString() + '밧'}</span><br><small style="opacity:.85">입장 Lv.${M.lv} · 난이도 ×${M.tier} · 보스: ${M.boss[1]} · 최고 ${b ? (b > RFLOORS ? '🏆 클리어' : b + '번홀') : '도전 전'}</small></button>`; }).join('');
+  const maps = Object.keys(RMAP).filter(k => COURSES[k]).map(k => { const M = RMAP[k], bst = R_.best[k] || 0, lock = R_.lv < M.lv;
+    const zb = RZONE.map(([st, nm]) => { const zl = M.lv + st - 1, zl2 = st === 7 ? M.lv + 10 : zl + 2, zlock = R_.lv < zl, fee = greenFee(k, RFLOORS - st + 1); return `<button data-rmap="${k}" data-rst="${st}" ${zlock ? 'disabled' : ''} style="font:inherit;font-size:11.5px;padding:7px 2px;border:1px solid #0006;background:${zlock ? '#0008' : '#0004'};color:${zlock ? '#999' : '#fff'};line-height:1.35">${zlock ? '🔒 ' : ''}${nm}<br><b style="color:${zlock ? '#999' : '#ffd54a'}">Lv.${zl}~${zl2}</b><br><small>${zlock ? 'Lv.' + zl + ' 필요' : fee.toLocaleString() + '밧'}</small></button>`; }).join('');
+    return `<div style="margin:6px 0;padding:8px;border:1px solid #5a3a2a;background:linear-gradient(90deg,${M.g[0]},${M.g[1]});opacity:${lock ? .5 : 1}"><b>${M.boss[0]} ${COURSES[k].name}</b> <span style="float:right;font-size:12px;color:#ffd54a">${lock ? '🔒 RPG Lv.' + M.lv + ' 필요' : '사냥터 Lv.' + M.lv + '~' + (M.lv + 10)}</span><br><small style="opacity:.85">보스: ${M.boss[1]} (Lv.${M.lv + 10}) · 최고 ${bst ? (bst > RFLOORS ? '🏆 클리어' : bst + '번홀') : '도전 전'}</small><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px">${zb}</div></div>`; }).join('');
   const slotRow = Object.keys(ISLOT).map(s => { const it = R_.eq[s]; return `<button data-ueq="${s}" style="font:inherit;font-size:11px;padding:6px 2px;border:1px solid ${it ? IRAR[it.ra][1] : '#333'};background:#120c0c;color:${it ? IRAR[it.ra][1] : '#777'};min-height:58px">${it ? it.ic : '·'}<br>${ISLOT[s]}<br><span style="font-size:10px">${it ? it.n.slice(0, 8) : '없음'}</span></button>`; }).join('');
   const bag = R_.inv.map((it, i) => `<div style="border:1px solid ${IRAR[it.ra][1]}55;padding:6px;margin:3px 0;font-size:12px"><span style="color:${IRAR[it.ra][1]}">${it.ic} [${IRAR[it.ra][0]}] ${it.n}</span> <small style="opacity:.75">(${ISLOT[it.sl]})</small><br><small>${itemTxt(it)}</small><span style="float:right"><button data-eq="${i}" style="font:inherit;font-size:11px;border:0;background:#2a3a5a;color:#fff;padding:3px 8px">장착</button> <button data-sell="${i}" style="font:inherit;font-size:11px;border:0;background:#4a2a1a;color:#ffd27a;padding:3px 8px">판매 ${it.val}밧</button></span></div>`).join('') || '<div style="opacity:.6;font-size:12px">가방이 비었습니다. 던전에서 아이템을 주우세요.</div>';
   o.innerHTML = `<div style="max-width:460px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:4px 0;color:#ff8a4a;letter-spacing:2px">⚔ 주통 RPG</h3><button id="rpgX" style="font:inherit;background:#ffb627;border:0;padding:6px 12px">← 메뉴</button></div>
   <div style="display:flex;gap:10px;align-items:center;background:#170e0e;border:1px solid #4a2a20;padding:8px;margin:6px 0"><canvas id="rpgMe" width="64" height="72" style="image-rendering:pixelated;width:64px;height:72px;background:#0d0909"></canvas>
-  <div style="font-size:13px;line-height:1.5"><b style="color:${c.ink}">${c.name}</b> · ${J.ic} ${J.job}<br><span style="color:#ffd54a">RPG Lv.${R_.lv}</span> <small>(경험치 ${R_.xp}/${need}) · 골프 Lv.${lvOf(c.id)}</small><br>❤ ${st.hpMax} · ⚔ ${st.atk} · 🛡 ${st.def} · ✨ ${st.mag} · 💧 ${st.mpMax}<br><small style="opacity:.75">특성: ${J.trait}</small><br><small style="opacity:.75">💰 지갑 ${SV.wallet.toLocaleString()}밧 · 🍺 회복 맥주 ${R_.pot} · 오늘 입장 ${R_.runs}/${RPG_DAY_RUNS}</small></div></div>
+  <div style="font-size:13px;line-height:1.5"><b style="color:${c.ink}">${c.name}</b> · ${J.ic} ${J.job}<br><span style="color:#ffd54a">RPG Lv.${R_.lv}</span> <small>(${R_.lv >= RPG_CAP() ? '만렙 — 새 코스 추가 시 상한 +10' : '경험치 ' + R_.xp + '/' + need} · 상한 Lv.${RPG_CAP()}) · 골프 Lv.${lvOf(c.id)}</small><br>❤ ${st.hpMax} · ⚔ ${st.atk} · 🛡 ${st.def} · ✨ ${st.mag} · 💧 ${st.mpMax}<br><small style="opacity:.75">특성: ${J.trait}</small><br><small style="opacity:.75">💰 지갑 ${SV.wallet.toLocaleString()}밧 · 🍺 회복 맥주 ${R_.pot} · 오늘 입장 ${R_.runs}/${RPG_DAY_RUNS}</small></div></div>
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">${slotRow}</div>
   <div style="font-size:12px;opacity:.8;margin:8px 0">🎮 화면을 누르면 그쪽으로 이동, 몬스터를 누르면 공격 (가까우면 자동 공격). 아래 스킬 3개 · 🍺 맥주. 몬스터를 다 잡으면 깃발(홀컵)이 나타나고, 밟으면 다음 홀 → 9번홀 보스. 입장료 = 실제 9홀 그린피, 주운 밧·아이템 판매금은 골프 지갑으로.</div>
   ${maps}<button id="rpgPot" style="font:inherit;width:100%;margin:8px 0 4px;padding:10px;border:0;background:#3a1a1a;color:#ffb0b0">🍺 회복 맥주 사기 (HP 50% · 200밧)</button>
@@ -1791,16 +1795,16 @@ function rpgLobby(tab) { cancelAnimationFrame(RAF); const c = CH.find(x => x.id 
   try { const cv = $('#rpgMe'), x = cv.getContext('2d'); x.imageSmoothingEnabled = false; drawSprite(x, c, 0, 4, 2, 3.4); } catch (e) { }
   $('#rpgX').onclick = rpgClose;
   $('#rpgPot').onclick = () => { if (SV.wallet < 200) { toast('지갑이 부족합니다', '#ff9a9a'); return; } led('🍺 RPG 회복 맥주'); SV.wallet -= 200; R_.pot++; saveSV(); rpgLobby(); };
-  o.querySelectorAll('[data-rmap]').forEach(b => b.onclick = () => rpgStart(b.dataset.rmap));
+  o.querySelectorAll('[data-rmap]').forEach(b => b.onclick = () => rpgStart(b.dataset.rmap, +b.dataset.rst || 1));
   o.querySelectorAll('[data-eq]').forEach(b => b.onclick = () => { const i = +b.dataset.eq, it = R_.inv[i], old = R_.eq[it.sl]; R_.eq[it.sl] = it; R_.inv.splice(i, 1); if (old) R_.inv.push(old); saveSV(); rpgLobby(); });
   o.querySelectorAll('[data-ueq]').forEach(b => b.onclick = () => { const s = b.dataset.ueq, it = R_.eq[s]; if (!it || R_.inv.length >= 24) return; R_.inv.push(it); delete R_.eq[s]; saveSV(); rpgLobby(); });
   o.querySelectorAll('[data-sell]').forEach(b => b.onclick = () => { const i = +b.dataset.sell, it = R_.inv[i]; led('⚔ RPG 아이템 판매'); SV.wallet += it.val; R_.inv.splice(i, 1); saveSV(); toast(`${it.n} 판매 +${it.val}밧`, '#ffd54a'); rpgLobby(); }); }
-function rpgStart(k) { const c = CH.find(x => x.id === SV.myCh), R_ = rpgSV(), M = RMAP[k], fee = greenFee(k, 9);
-  if (R_.lv < M.lv) { toast(`RPG Lv.${M.lv}부터 입장할 수 있어요`, '#ffd27a'); return; }
+function rpgStart(k, st0 = 1) { const c = CH.find(x => x.id === SV.myCh), R_ = rpgSV(), M = RMAP[k], fee = greenFee(k, RFLOORS - st0 + 1), zl = M.lv + st0 - 1;
+  if (R_.lv < zl) { toast(`이 사냥터는 RPG Lv.${zl}부터 입장할 수 있어요`, '#ffd27a'); return; }
   if (R_.runs >= RPG_DAY_RUNS) { toast(`오늘 입장 ${RPG_DAY_RUNS}회 다 썼어요 — 내일 다시`, '#ffd27a'); return; }
   if (SV.wallet < fee) { toast(`입장료 ${fee.toLocaleString()}밧이 부족합니다`, '#ff9a9a'); return; }
   led('⚔ RPG 입장료 · ' + COURSES[k].name); SV.wallet -= fee; R_.runs++; saveSV();
-  const st = rpgStats(c); RS = Object.assign({ id: c.id, c, map: k, M, fee, floor: 1, got: [], cds: [0, 0, 0], buf: { atk: 0, crit: 0, dodge: 0, guard: 0 }, msg: [], over: false, t: 0 }, st); RS.hp = st.hpMax; RS.mp = st.mpMax;
+  const st = rpgStats(c); RS = Object.assign({ id: c.id, c, map: k, M, fee, floor: st0, st0, got: [], cds: [0, 0, 0], buf: { atk: 0, crit: 0, dodge: 0, guard: 0 }, msg: [], over: false, t: 0 }, st); RS.hp = st.hpMax; RS.mp = st.mpMax;
   rpgFloor(); rpgView(); }
 function rpgFloor() { const S = RS, M = S.M; S.px = WW / 2; S.py = WH - 80; S.tx = S.px; S.ty = S.py; S.tgt = null; S.flag = null; S.ft = 0; S.atkCd = 0; S.proj = []; S.drops = []; S.fx = []; S.mons = [];
   // 지형: 러프 바탕 + 페어웨이 띠 + 벙커 + 연못(통과 불가) + 나무
@@ -1810,9 +1814,9 @@ function rpgFloor() { const S = RS, M = S.M; S.px = WW / 2; S.py = WH - 80; S.tx
   for (let i = 0; i < 26; i++) { const side = r() < .5; S.trees.push({ x: side ? 20 + r() * 90 : WW - 20 - r() * 90, y: 30 + r() * (WH - 60) }); }
   const boss = S.floor === RFLOORS, n = boss ? 4 : 5 + Math.floor(S.floor * .8);
   for (let i = 0; i < n; i++) S.mons.push(rpgMon(false, r)); if (boss) S.mons.push(rpgMon(true, r));
-  rpgMsg(boss ? `👑 ${S.floor}번홀 — 보스 ${M.boss[1]} 등장!` : `⛳ ${S.floor}번홀 — 몬스터 ${n}마리`); }
-function rpgMon(boss, r) { const S = RS, M = S.M, t = boss ? [M.boss[0], M.boss[1], 1.8, M.boss[2]] : M.mon[Math.floor(r() * M.mon.length)], sc = M.tier * (1 + S.floor * .11) * t[2]; let x, y, k = 0; do { x = 140 + r() * (WW - 280); y = 60 + r() * (WH - 300); k++; } while (rpgBlocked(x, y) && k < 30);
-  const hp = Math.round(48 * sc * (boss ? 9 : 1)); return { ic: t[0], n: t[1], w: !!t[3], boss, x, y, hp, max: hp, atk: Math.round(7 * sc * (boss ? 1.6 : 1)), spd: (boss ? 34 : 44 + r() * 22) * (S.map === 'swm' ? 1.1 : 1), r: boss ? 26 : 13, cd: 0, psn: 0, weak: 1, hit: 0 }; }
+  rpgMsg(boss ? `👑 ${S.floor}번홀 — 보스 ${M.boss[1]} (Lv.${mobLv(M, S.floor, true)}) 등장!` : `⛳ ${S.floor}번홀 — 몬스터 ${n}마리 (Lv.${mobLv(M, S.floor)})`); }
+function rpgMon(boss, r) { const S = RS, M = S.M, t = boss ? [M.boss[0], M.boss[1], 1.8, M.boss[2]] : M.mon[Math.floor(r() * M.mon.length)], lv = mobLv(M, S.floor, boss), sc = mobSc(lv) * t[2]; let x, y, k = 0; do { x = 140 + r() * (WW - 280); y = 60 + r() * (WH - 300); k++; } while (rpgBlocked(x, y) && k < 30);
+  const hp = Math.round(48 * sc * (boss ? 9 : 1)); return { lv, ic: t[0], n: t[1], w: !!t[3], boss, x, y, hp, max: hp, atk: Math.round(7 * sc * (boss ? 1.6 : 1)), spd: (boss ? 34 : 44 + r() * 22) * (S.map === 'swm' ? 1.1 : 1), r: boss ? 26 : 13, cd: 0, psn: 0, weak: 1, hit: 0 }; }
 function rpgBlocked(x, y) { const S = RS; for (const p of S.ponds) if (((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 < 1) return true; return x < 8 || y < 8 || x > WW - 8 || y > WH - 8; }
 function rpgStep(o, kx, ky, gx, gy, v) { const dx = gx - o[kx], dy = gy - o[ky], d = Math.hypot(dx, dy); if (d < .5) return false; const a0 = Math.atan2(dy, dx), st = Math.min(v, d); for (const off of [0, .6, -.6, 1.2, -1.2, 1.8, -1.8]) { const a = a0 + off * (o.sw || 1), nx = o[kx] + Math.cos(a) * st, ny = o[ky] + Math.sin(a) * st; if (!rpgBlocked(nx, ny)) { o[kx] = nx; o[ky] = ny; if (off) o.sw = Math.sign(off) * (o.sw ? Math.abs(o.sw) : 1); return true; } } return false; } // 연못에 막히면 옆으로 돌아감
 function rpgMsg(t) { RS.msg.push({ t, at: performance.now() }); if (RS.msg.length > 4) RS.msg.shift(); }
@@ -1828,9 +1832,9 @@ function rpgView() { const S = RS, o = $('#rpgBox'), sk = ASK[S.id];
   let last = performance.now(); const loop = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; if (!RS || RS !== S) return; rpgTick(dt); rpgRender(); if (!S.over) RAF = requestAnimationFrame(loop); }; cancelAnimationFrame(RAF); RAF = requestAnimationFrame(loop); }
 function rpgDmg(mul, magic) { const S = RS; let d = (magic ? S.mag : S.atk) * mul * (S.buf.atk > 0 ? 1.5 : 1) * (S.id === 'jt' ? 1 + Math.min(.6, S.ft * .02) : 1) * (S.id === 'hw' ? .3 + Math.random() * 1.9 : 1) * (.9 + Math.random() * .2); const cr = S.buf.crit > 0 || Math.random() < S.crit; if (cr) d *= 1.9; return [Math.max(1, Math.round(d)), cr]; }
 function rpgHitMon(m, mul, magic) { const S = RS; if (m.hp <= 0) return; let [d, cr] = rpgDmg(mul, magic); if (m.boss && S.id === 'yt') d = Math.round(d * 1.15); m.hp -= d; m.hit = .15; rpgFx(m.x, m.y - m.r, (cr ? '💥' : '') + d, cr ? '#ffd54a' : '#fff'); if (S.ls) S.hp = Math.min(S.hpMax, S.hp + d * S.ls); if (m.hp <= 0) rpgKill(m); }
-function rpgKill(m) { const S = RS, tier = S.M.tier, g = Math.round(S.fee * (m.boss ? .35 : .018) * (.7 + Math.random() * .6) * S.gold); S.drops.push({ x: m.x, y: m.y, k: 'gold', v: g });
+function rpgKill(m) { const S = RS, tier = mobSc(m.lv) * .6, g = Math.round(S.fee * (m.boss ? .35 : .018) * (.7 + Math.random() * .6) * S.gold); S.drops.push({ x: m.x, y: m.y, k: 'gold', v: g });
   const dropP = (m.boss ? 1 : .06) * (S.id === 'du' ? 1.3 : 1); if (Math.random() < dropP) S.drops.push({ x: m.x + 12, y: m.y + 6, k: 'item', it: itemGen(tier, S.floor, m.boss ? 1 : 0) }); if (m.boss) S.drops.push({ x: m.x - 14, y: m.y + 8, k: 'item', it: itemGen(tier, S.floor, Math.random() < .35 ? 2 : 1) });
-  if (Math.random() < .06) S.drops.push({ x: m.x - 8, y: m.y - 8, k: 'pot' }); rpgXp(Math.round((m.boss ? 70 : 6 + S.floor) * tier)); if (S.tgt === m) S.tgt = null; }
+  if (Math.random() < .06) S.drops.push({ x: m.x - 8, y: m.y - 8, k: 'pot' }); { const gap = rpgSV().lv - m.lv, pen = gap > 5 ? Math.max(.15, 1 - (gap - 5) * .12) : 1; rpgXp(Math.round((6 + m.lv * 1.2) * (m.boss ? 8 : 1) * pen)); } if (S.tgt === m) S.tgt = null; }
 function rpgSkill(i) { const S = RS; if (!S || S.over) return; const s = ASK[S.id][i]; if (S.cds[i] > 0) return; if (S.mp < s.mp) { rpgMsg('💧 MP 부족'); return; } S.mp -= s.mp; S.cds[i] = s.cd;
   const live = S.mons.filter(m => m.hp > 0), near = live.sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py)), tg = (S.tgt && S.tgt.hp > 0) ? S.tgt : near[0];
   if (s.t === 'buff') { S.buf.atk = 8; rpgMsg(s.ic + ' ' + s.n + ' — 공격력 +50%'); }
@@ -1882,7 +1886,7 @@ function rpgRender() { const S = RS, cv = $('#rpgCv'); if (!cv) return; const x 
   // 몬스터
   for (const m of S.mons) if (m.hp > 0) { const sz = m.boss ? 60 : 30; x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(X(m.x), Y(m.y) + sz * .35, sz * .35, sz * .12, 0, 0, TAU); x.fill(); x.globalAlpha = m.hit > 0 ? .55 : 1; x.drawImage(pixIcon(m.ic, sz), X(m.x) - sz / 2, Y(m.y) - sz / 2 + Math.sin(S.t * 6 + m.x) * 1.5); x.globalAlpha = 1;
     if (m.psn > 0) { x.fillStyle = 'rgba(120,255,80,.35)'; x.fillRect(X(m.x) - sz / 2, Y(m.y) - sz / 2, sz, sz); }
-    if (m.hp < m.max || m.boss) { x.fillStyle = '#300'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32, 4); x.fillStyle = m.boss ? '#ffb627' : '#e33'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32 * m.hp / m.max, 4); }
+    { x.fillStyle = '#fff'; x.font = '9px monospace'; x.textAlign = 'center'; x.fillText('Lv.' + m.lv, X(m.x), Y(m.y) - sz / 2 - 9); } if (m.hp < m.max || m.boss) { x.fillStyle = '#300'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32, 4); x.fillStyle = m.boss ? '#ffb627' : '#e33'; x.fillRect(X(m.x) - 16, Y(m.y) - sz / 2 - 6, 32 * m.hp / m.max, 4); }
     if (S.tgt === m) { x.strokeStyle = '#ffd54a'; x.strokeRect(X(m.x) - sz / 2 - 2, Y(m.y) - sz / 2 - 2, sz + 4, sz + 4); } }
   // 플레이어 (골프 게임 도트 캐릭터 그대로)
   x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(X(S.px), Y(S.py) + 2, 12, 4, 0, 0, TAU); x.fill(); x.globalAlpha = S.hurt > 0 ? .6 : 1; S.hurt = Math.max(0, (S.hurt || 0) - .016);
@@ -1897,7 +1901,7 @@ function rpgRender() { const S = RS, cv = $('#rpgCv'); if (!cv) return; const x 
   orb(36, S.hp, S.hpMax, '#ff4a3a', '#8a0a0a'); orb(VW - 36, S.mp, S.mpMax, '#5a8aff', '#0a1a6a');
   x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0, 0, VW, 22); x.fillStyle = '#ffd54a'; x.font = 'bold 12px monospace'; x.textAlign = 'left'; x.fillText(`${COURSES[S.map].name} ${S.floor}/${RFLOORS}홀`, 6, 15); x.textAlign = 'right'; x.fillText(`💰${(S.gold_ || 0).toLocaleString()} 🎁${S.got.length} 👾${S.mons.filter(m => m.hp > 0).length}`, VW - 6, 15);
   const now = performance.now(); S.msg = S.msg.filter(m => now - m.at < 3500); x.textAlign = 'center'; x.font = 'bold 12px sans-serif'; S.msg.forEach((m, i) => { x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(40, 30 + i * 18, VW - 80, 16); x.fillStyle = '#ffe0a0'; x.fillText(m.t, VW / 2, 42 + i * 18); }); }
-function rpgXp(n) { const R_ = rpgSV(); R_.xp += n; const need = l => 40 + l * 35; while (R_.xp >= need(R_.lv)) { R_.xp -= need(R_.lv); R_.lv++; if (RS) { const st = rpgStats(RS.c); Object.assign(RS, { hpMax: st.hpMax, atk: st.atk, def: st.def, mag: st.mag, mpMax: st.mpMax }); RS.hp = Math.min(RS.hpMax, RS.hp + RS.hpMax * .3); rpgMsg(`⭐ 레벨 업! RPG Lv.${R_.lv} (HP 30% 회복)`); } else toast(`⚔ RPG 레벨 업! Lv.${R_.lv}`, '#9fffb0'); } }
+function rpgXp(n) { const R_ = rpgSV(); if (R_.lv >= RPG_CAP()) { R_.xp = 0; return; } R_.xp += n; const need = l => 40 + l * 35; while (R_.xp >= need(R_.lv) && R_.lv < RPG_CAP()) { R_.xp -= need(R_.lv); R_.lv++; if (RS) { const st = rpgStats(RS.c); Object.assign(RS, { hpMax: st.hpMax, atk: st.atk, def: st.def, mag: st.mag, mpMax: st.mpMax }); RS.hp = Math.min(RS.hpMax, RS.hp + RS.hpMax * .3); rpgMsg(`⭐ 레벨 업! RPG Lv.${R_.lv} (HP 30% 회복)`); } else toast(`⚔ RPG 레벨 업! Lv.${R_.lv}`, '#9fffb0'); } }
 function rpgEnd(win, quit) { const S = RS; if (!S || S.over) return; S.over = true; cancelAnimationFrame(RAF); const R_ = rpgSV(); let bonus = 0; if (win) bonus = Math.round(S.fee * .3);
   const gold = (S.gold_ || 0) + bonus, bestNow = win ? RFLOORS + 1 : S.floor - (quit ? 0 : 1); R_.best[S.map] = Math.max(R_.best[S.map] || 0, bestNow);
   let lost = 0; if (!win && !quit) { lost = Math.floor(S.got.length / 2); S.got.splice(0, lost); } // 쓰러지면 주운 아이템 절반을 잃음 (디아블로처럼 시체에 남김)
@@ -1911,7 +1915,7 @@ function rpgEnd(win, quit) { const S = RS; if (!S || S.over) return; S.over = tr
   $('#rpgBack').onclick = () => { RS = null; rpgLobby(); };
   try { if (win && NET.ok) chat('📡 AI특파원', `[속보] ${S.c.name}, ${COURSES[S.map].name} 던전 보스 ${S.M.boss[1]} 격파!`, '#ffd54a'); } catch (e) { } }
 
-window.__golf = { TUNE, rpgOpen: () => rpgOpen(), rpgStart: k => rpgStart(k), rpgSkill: i => rpgSkill(i), rpgTick: d => rpgTick(d), rpgEnd: (w, q) => rpgEnd(w, q), get RS() { return RS; }, itemGen: (a, b, c) => itemGen(a, b, c), cardMake: () => cardMake(), get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
+window.__golf = { TUNE, rpgOpen: () => rpgOpen(), rpgStart: (k, z) => rpgStart(k, z), rpgSkill: i => rpgSkill(i), rpgTick: d => rpgTick(d), rpgEnd: (w, q) => rpgEnd(w, q), get RS() { return RS; }, itemGen: (a, b, c) => itemGen(a, b, c), cardMake: () => cardMake(), get SV() { return SV; }, startHole: (...a) => startHole(...a), chat: (...a) => chat(...a), get MR() { return MR; }, get NET() { return NET; }, nreq: (...a) => nreq(...a), G, CH, get HOLES() { return HOLES; }, useCourse(k, p, sd) { HOLES = k === 'fan' ? FANTASY.slice() : buildCourse(k, p, sd); return HOLES; }, simHole, newState, terr, takeShot, CLUBS, applyResult, setRand(f) { R = f; },
   // 헤드리스 라운드 시뮬레이션 (CPU 전원)
   simRound(ids, n = 9) { const pl = ids.map(id => newState(CH.find(c => c.id === id), false)); for (let i = 0; i < n; i++) { const h = HOLES[i], ws = R() * 6.5, wa = R() * TAU, w = { x: Math.sin(wa) * ws, y: Math.cos(wa) * ws }; pl.forEach(p => { simHole(h, p, w); p.scores.push(p.strokes); }); } return pl.map(p => ({ id: p.ch.id, tot: p.scores.reduce((a, b) => a + b, 0), sc: p.scores, st: p.st })); } };
 
@@ -2010,7 +2014,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.51.0';
+const VERSION = 'v0.51.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -2035,6 +2039,7 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.51.1', '2026-11-28', ['🗺 코스마다 사냥터 3구역: 1~3번홀 / 4~6번홀 / 7~9번홀·보스 — 홀마다 몬스터 레벨 +1, 보스는 코스 시작+10. 내 레벨에 맞는 구역부터 입장(입장료는 남은 홀 수만큼 그린피)', '👾 몬스터 머리 위에 레벨 표시, 내 레벨이 6 이상 높으면 경험치 감소(디아블로식)', '🔒 RPG 코스 입장 10레벨 단위: 스크린 Lv.1 → 방파콩 Lv.10 → 로얄레이크 Lv.20 → 그린우드 Lv.30 → 서밋 윈드밀 Lv.40 (몬스터 강도도 그에 맞춰 상향)', '⭐ 레벨 상한 = 현재 코스 수 × 10 (지금 Lv.50) — 새 골프장 추가될 때마다 상한 +10']],
  ['v0.51.0', '2026-11-28', ['⚔ 주통 RPG를 디아블로2 스타일 실시간 도트 액션으로 전면 개편: 화면 터치로 이동·공격, 몬스터 무리가 쫓아옴, 빨강 HP·파랑 MP 구슬, 스킬 쿨타임', '🎁 아이템 드롭: 일반(흰)·매직(파랑)·레어(노랑)·유니크(금색) — 드라이버·아이언·퍼터·모자·장갑·옷·신발, 랜덤 옵션(공격·방어·HP·치명·이동·골드·흡혈), 유니크는 멤버 오마주(카즈하의 핑 드라이버, 69타의 증명, 퍼터신의 지팡이…)', '🎒 가방·장착 5칸, 아이템 판매금은 골프 지갑으로. 쓰러지면 주운 아이템 절반 잃음', '🔒 코스별 입장 레벨: 스크린·방파콩 Lv.1 → 로얄레이크 Lv.4 → 그린우드 Lv.8 → 서밋 윈드밀 Lv.12 (야간: 주변만 보임)', '⛳ 홀마다 몬스터를 다 잡으면 깃발(홀컵)이 생기고 밟으면 다음 홀, 9번홀 보스']],
  ['v0.50.0', '2026-11-28', ['⚔ 신규: 주통 RPG — 골프장이 던전! 9번홀마다 몬스터, 9번홀 보스', '🧙 멤버별 직업: 정b 특파원 음유시인 · 안IS 법인장 나이트 · 안BJ 의장 팔라딘 · 이B AI 커맨드 마법사 · 신B 역지표 갬블러 · 대우기 정품 연금술사 · K대표 장투 수도승 · 어진 막내 레인저 (직업별 스킬 3개·특성)', '🗺 맵 = 실제 골프장: 방파콩(범람 메기 보스)·로얄레이크(6볼 단체팀장)·그린우드(왕도마뱀·노블플레이스 망령)·서밋 윈드밀(꺼진 조명탑 골렘)·스크린', '💰 골프 지갑 연동: 입장료 = 그 골프장 실제 9홀 그린피, 몬스터 전리품·클리어 보너스는 골프 지갑으로, 가계부 기록. 하루 3회 입장', '🛡 전투력 = 골프 파워·정확도·퍼팅 + 장착 장비 + 골프 레벨 + RPG 레벨']],
  ['v0.49.1', '2026-11-28', ['🌙 서밋 윈드밀 야간 조명 강화: 빛 밖은 훨씬 어둡게, 조명 빛무리는 작고 진하게 + 노란 나트륨등 빛깔 — 낮과 확실히 구분']],
