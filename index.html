@@ -617,7 +617,7 @@ const CLUBS = [
 const LIE = { tee: { d: 1.03, a: 1, top: 1 }, fairway: { d: 1, a: 1, top: 1 }, fringe: { d: .96, a: 1.05, top: 1.1 }, rough: { d: .82, a: 1.4, top: 1.8 }, trees: { d: .62, a: 1.6, top: 2 }, bunker: { d: .58, a: 1.7, top: 2.2 }, green: { d: 1, a: 1, top: 1 } };
 const ROLLM = { tee: 1, fairway: 1, fringe: .8, rough: .35, trees: .1, bunker: 0, green: .5 };
 const LIENAME = { tee: '티잉', fairway: '페어웨이', fringe: '프린지', rough: '러프', trees: '나무 밑', bunker: '벙커', green: '그린' };
-function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; { const CK = COURSES[G.course] || {}, k = lie === 'rough' ? (CK.roughK || 1) : lie === 'bunker' ? (CK.bunkK || 1) : 1; if (k !== 1) L = { d: 1 - (1 - L.d) * k, a: 1 + (L.a - 1) * k, top: 1 + (L.top - 1) * k }; } if (G.swmRepair && lie === 'rough') L = { d: 1 - (1 - L.d) * 1.15, a: 1 + (L.a - 1) * 1.15, top: 1 + (L.top - 1) * 1.15 }; if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
+function lieOf(ch, lie) { let L = LIE[lie] || LIE.rough; { const CK = COURSES[G.course] || {}, k = lie === 'rough' ? (CK.roughK || 1) : lie === 'bunker' ? (CK.bunkK || 1) : 1; if (k !== 1) L = { d: 1 - (1 - L.d) * k, a: 1 + (L.a - 1) * k, top: 1 + (L.top - 1) * k }; } if (G.cev && G.cev.sand && lie === 'bunker') L = { d: 1 - (1 - L.d) * 1.15, a: 1 + (L.a - 1) * 1.15, top: 1 + (L.top - 1) * 1.15 }; if (G.swmRepair && lie === 'rough') L = { d: 1 - (1 - L.d) * 1.15, a: 1 + (L.a - 1) * 1.15, top: 1 + (L.top - 1) * 1.15 }; if (G.rain && lie === 'bunker') L = { d: .75, a: 1.3, top: 1.4 }; if (G.rain && lie === 'rough') L = { d: .9, a: 1.2, top: 1.3 }; if (isMe(ch) && G.gear.lie < 1) { const q = G.gear.lie; L = { d: 1 - (1 - L.d) * q, a: 1 + (L.a - 1) * q, top: 1 + (L.top - 1) * q }; } if (ch.id !== 'gm') return L; return { d: 1 - (1 - L.d) * .7, a: 1 + (L.a - 1) * .7, top: 1 + (L.top - 1) * .7 }; }
 const rainImm = ch => ['gm', 'du', 'yt'].includes(ch.id) || (isMe(ch) && G.gear.rain);
 const immune = ch => ch.id === 'hw' || ch.id === 'jt';
 const moodF = st => { const m = (st.mood || 0) + (st.bonus || 0) + (st.cond || 0); return (m > 0 ? .88 : m < 0 ? 1.12 : 1) * clamp(1 - .06 * (st.beer || 0), .7, 1.4); };
@@ -629,10 +629,10 @@ const SHAPEN = { fade: '↪ 페이드 (살짝 오른쪽으로 휨)', draw: '↩ 
 // ===== 현실 환경 (v0.48): 그린 스피드·기온·건기/우기 페어웨이 =====
 // 스팀프(ft): 실제 후기 기준 — 로얄레이크사이드 9.5, 서밋 윈드밀·그린우드 빠름, 방파콩 빠른 편. 10ft = 기준
 const STIMP = { bpk: 10, rls: 9.5, grn: 10.5, swm: 11, scr: 9, fan: 9.5 };
-function stimpNow() { const b = STIMP[G.course] || 10; return +(b * (G.rain ? .88 : 1) * (G.tod === 'dawn' ? .96 : 1)).toFixed(1); } // 비·새벽 이슬 → 느림
+function stimpNow() { const b = (STIMP[G.course] || 10) + ((G.cev && G.cev.fast) ? 1 : 0); return +(b * (G.rain ? .88 : 1) * (G.tod === 'dawn' ? .96 : 1)).toFixed(1); } // 비·새벽 이슬 → 느림
 const gSpd = () => stimpNow() / 10;
 function bkkMonth() { return new Date(Date.now() + 7 * 3600e3).getUTCMonth() + 1; }
-function firmF() { const dry = [11, 12, 1, 2, 3, 4].includes(bkkMonth()); return (dry ? 1.1 : .9) * (G.rain ? .75 : 1); } // 태국 건기(11~4월) 땅이 단단해 런↑, 우기(5~10월) 런↓
+function firmF() { const dry = [11, 12, 1, 2, 3, 4].includes(bkkMonth()); return (dry ? 1.1 : .9) * (G.rain ? .75 : 1) * ((G.cev && G.cev.wet) ? .8 : 1); } // 태국 건기(11~4월) 땅이 단단해 런↑, 우기(5~10월) 런↓
 function airT() { const w = typeof WX !== 'undefined' && WX[G.course]; return (w && isFinite(w.t)) ? w.t : (G.tod === 'night' ? 27 : G.tod === 'dawn' ? 25 : 32); }
 function tempF() { return 1 + clamp(airT() - 21, -10, 18) * .0018; } // 따뜻한 공기 = 공기 밀도↓ = 비거리↑ (약 10°C당 +1.8%)
 function envText() { const T = Math.round(airT()), tf = (tempF() - 1) * 100, ff = Math.round((firmF() - 1) * 100); return `🟢 그린 ${stimpNow()}ft${stimpNow() >= 10.5 ? ' (빠름)' : stimpNow() <= 9.2 ? ' (느림)' : ''} · 🌡 ${T}°C 비거리 ${tf >= 0 ? '+' : ''}${tf.toFixed(1)}% · ${[11, 12, 1, 2, 3, 4].includes(bkkMonth()) ? '🏜 건기' : '🌧 우기'} 런 ${ff >= 0 ? '+' : ''}${ff}%`; }
@@ -1124,7 +1124,7 @@ function newGame() {
     else if (tm === 'port') { A = G.pl.filter(p => p.ch.port === 1); B = G.pl.filter(p => p.ch.port !== 1); }
     if (!A || !A.length || !B.length) { const r = mulb((G.qSeed || 7) * 17 + 3), a = G.pl.slice().sort(() => r() - .5), h = Math.ceil(a.length / 2); A = a.slice(0, h); B = a.slice(h); G.teamTm = 'rand'; } else G.teamTm = tm;
     if (G.pl.length < 2 || !B.length) { G.bet = 'tadang'; } else { G.teams = [A, B]; G.teamW = [0, 0]; const N = TEAMN[G.teamTm]; setTimeout(() => chat('📡 AI특파원', `👥 팀전! ${N[0]}(${A.map(p => p.ch.short).join('·')}) vs ${N[1]}(${B.map(p => p.ch.short).join('·')}) — ${G.tfmt === 'match' ? '매치: 홀마다 팀 베스트볼' : '스트로크: 팀에서 제일 잘 친 사람 총타수'}, 진 팀이 밥값·캐디피`, '#ffd54a'), 1500); } }
-  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); swmSetup(); G.ins = !G.multi && (G.resuming ? !!G.resuming.ins : $('#oIns').checked); if (G.ins && !G.resuming) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (R() < .45) setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(PRENEWS), '#ffd54a'); } catch (e) { } }, 2600); if (G.multi) mSetup(); else if (G.async) asyncSetup(G.async.cfg); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
+  if (G.bet === 'vegas') { if (G.pl.length >= 4 && G.pl.length % 2 === 0) { const r = mulb((G.qSeed || 7) * 31 + 5), a = G.pl.slice().sort(() => r() - .5); G.teams = []; for (let i = 0; i < a.length; i += 2) G.teams.push([a[i], a[i + 1]]);  setTimeout(() => chat('📡 AI특파원', '🎰 라스베이거스 팀 뽑기: ' + G.teams.map(t => t.map(p => p.ch.short).join('+')).join(' / '), '#ffd54a'), 1500); } else { G.bet = 'skins'; setTimeout(() => toast('라스베이거스는 4·6·8명일 때만 → 스킨스로 진행', '#ffd27a'), 800); } } G.wx = ($('#oWx').checked && WX[G.course]) ? WX[G.course] : null; G.rain = G.wx ? (G.wx.rain > 0 || G.wx.code >= 51) : R() < ((COURSES[G.course] || {}).rain || 0); G.tod = todPick(); if (G.tod === 'squall') G.rain = true; todFx(); swmSetup(); cevSetup(); G.ins = !G.multi && (G.resuming ? !!G.resuming.ins : $('#oIns').checked); if (G.ins && !G.resuming) { led('🛡 홀인원 보험료'); SV.wallet -= 300; saveSV(); setTimeout(() => toast('🛡 홀인원 보험 가입 -300밧', '#cfe8ff'), 600); } G.myLong = 0; G.myPutt = 0; if (R() < .45) setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(PRENEWS), '#ffd54a'); } catch (e) { } }, 2600); if (G.multi) mSetup(); else if (G.async) asyncSetup(G.async.cfg); G.rainShown = false; G.nextStock = null; G.paycut = null; G.permNext = false; G.lastItem = null; G.mult = 1; G.nextMult = 1; G.nextWind = null; G.cpuTilt = 1; G.lastWinner = null; G.reverse = false;
   G.human = G.pl.find(p => p.human); G.hi = 0; G.allNews = [];
   if (G.resuming) { try { resumeApply(G.resuming); } catch (e) { console.error(e); } G.resuming = null; }
   $('#sTitle').classList.remove('on'); $('#sFinal').classList.remove('on');
@@ -1218,7 +1218,7 @@ function startHole() {
       { const base = G.costFee + G.cadFee, use = Math.min(SV.stamp | 0, Math.floor(base * .5 / 100)); G.stampUse = use; G.stampOff = use * 100; SV.stamp = (SV.stamp | 0) - use; }
       led('⛳ 그린피·캐디피·식사'); SV.wallet -= G.costFee + G.cadFee + G.mealPaid - G.stampOff; saveSV(); { const o = ownerOf(G.course); if (o && o.ch !== G.me && G.costFee > 0 && NET.ok) nreq('POST', '/pay/' + o.ch, { amt: G.costFee, why: COURSES[G.course].name + ' 그린피', from: G.me, ts: Date.now() }).catch(() => { }); } } }
   const h = curHole(); const fw = G.multi || G.async; const w = fw ? G.mWind[G.hi] : (G.nextWind || genWind()); G.nextWind = fw ? (G.mWind[G.hi + 1] || G.mWind[0]) : genWind();
-  G.wind = { x: Math.sin(w.a) * w.s, y: Math.cos(w.a) * w.s }; G.windS = w.s; G.windA = w.a; G.news = []; G.mult = Math.max(G.nextMult || 1, G.course === 'rls' ? 2 : 1); G.nextMult = 1;
+  const gs_ = (G.cev && G.cev.gust) || 1; G.wind = { x: Math.sin(w.a) * w.s * gs_, y: Math.cos(w.a) * w.s * gs_ }; G.windS = w.s * gs_; G.windA = w.a; G.news = []; G.mult = Math.max(G.nextMult || 1, G.course === 'rls' ? 2 : 1); G.nextMult = 1;
   $('#chat').innerHTML = '';
   G.pl.forEach(p => { p.bonus = 0; p.fly = false; p.tilt = 1; p.perm = false; p.cond = 0; if (p.item > 0) { p.bonus = 1; p.item--; } if (p.human && G.cad && G.cad.cm) p.cond = G.cad.cm; });
   const sgp = G.pl.find(p => p.ch.id === 'sg'); if (sgp) { const r = R(); sgp.cond = r < .25 ? 1 : r > .78 ? -1 : 0; }
@@ -1237,7 +1237,7 @@ function startHole() {
     if (hm.ch.id === 'du' && G.hi + 1 < G.nHoles) { const nw = G.nextWind; chat('윤대욱', `전화 체크 완료. 다음 홀 바람 ${nw.s.toFixed(1)} ${ARR[Math.round(((nw.a + TAU) % TAU) / (Math.PI / 4)) % 8]} · 그린 경사 ${slopeText(HOLES[G.hi + 1])}`, hm.ch.ink); }
     if (sgp && sgp.cond > 0) chat('📡 정b특파원', '[속보] 정b 83타 각성 모드 돌입, 1포트 긴장', '#ff7a7a'); else if (sgp && sgp.cond < 0) chat('📡 정b특파원', '[속보] 백슬기 강림... 앞으로는 8자를 보지 않겠다', '#ff7a7a');
     if (G.rain && R() < .15) chat('📡 AI특파원', '⚡ 천둥! 타 미 파 롱, 끌랍 클럽하우 러이 (30분 대피 후 재개)', '#ff7a7a');
-    swmHole(h);
+    swmHole(h); cevHole(h);
     if (G.hi === 0) setTimeout(() => { try { chat('🧢 캐디', envText(), '#bfe8c8'); } catch (e) { } }, 1800);
     if (perm) chat('권어진', '(웃참 실패) ㅋㅋㅋㅋ 부장님 머리...', '#ffb3c9');
     if (G.course === 'bpk' && h.no === 14) { const g = G.pl.find(p => p.ch.id === 'gy'); chat(g ? '안경용' : '📡 AI특파원', '14번홀 티샷 오른쪽 물가 벌레 조심', g ? g.ch.ink : '#ff7a7a'); }
@@ -1560,6 +1560,7 @@ function finalScreen() { try { resumeClear(); } catch (e) { }
   $('#fTable').innerHTML = scoreTable(G.nHoles);
   G.cardCourse = `⛳ ${G.course === 'fan' ? '주통방 가상 코스' : COURSES[G.course].name} · ${(G.course !== 'fan' && partName(G.course, G.part)) || G.nHoles + '홀'}${G.tod === 'night' ? ' · 🌙 야간' : ''}${G.rain ? ' · ☔ 우중' : ''}${G.multi ? ' · 🌐 멀티' : G.async ? ' · 📨 따로 치기' : ''}${G.bet ? ' · ' + ({ tadang: '타당', skins: '스킨스', jopok: '조폭', vegas: '라스베이거스' }[G.bet] || '') : ''}`; G.summary = `[판통 느와르: 주통배 골프 ${VERSION}] ${G.cardCourse}\n` + order.map((t, i) => `${i + 1}위 ${t.p.ch.name} ${t.g}타${t.hd ? '(핸디-' + t.hd + ')' : ''} ${fmtPar(t.g - t.par)} / 홀승 ${t.wins} / ${t.tot >= 0 ? '+' : ''}${t.tot.toLocaleString()}바트${t.p.cadPen ? ` (🧢캐디 직격 위로금 -${t.p.cadPen.toLocaleString()} 포함)` : ''}`).join('\n') + '\n' + aw.join('\n') + (T.some(a => a.p.cadPen) ? '\n※ 합계가 0이 아닌 건 캐디 직격 위로금(캐디에게 지급) 때문' : '') + '\n👉 같이 치기: https://lkm7890-cyber.github.io/golf/';
   try { boardSave(order); endExtras(); } catch (e) { }
+  try { if (G.cev && G.cev.endMsg) setTimeout(() => toast(G.cev.endMsg, '#ffd27a'), 1500); } catch (e) { }
   try { if (G.async) asyncSubmit(); } catch (e) { }
   $('#sFinal').classList.add('on'); $('#top').style.display = 'none'; $('#bottom').style.display = 'none';
 }
@@ -1622,18 +1623,35 @@ function pxRing(cx0, cy0, r, col) { bx.fillStyle = col; for (let i = 0; i < 16; 
 // ===== 야간 조명 (서밋 윈드밀 야간 전용 + 일반 야간 티타임) =====
 let nbuf = null, nx = null;
 function holeLights(h) { if (h.lights) return h.lights; const L = [], perp = s => { const p = pathPoint(h, s), q = pathPoint(h, Math.min(h.len, s + 2)), r = pathPoint(h, Math.max(0, s - 2)); let tx = q.x - r.x, ty = q.y - r.y; const l = Math.hypot(tx, ty) || 1; return { p, nx: ty / l, ny: -tx / l }; };
-  let n = 0; for (let s = 10; s < h.len - 15; s += 52, n++) { const a = perp(s), side = n % 2 ? 1 : -1, off = side * (h.fw / 2 + 18); L.push({ x: a.p.x + a.nx * off, y: a.p.y + a.ny * off, r: 74 }); }
+  let n = 0; for (let s = 10; s < h.len - 15; s += 52, n++) { const a = perp(s), side = n % 2 ? 1 : -1, off = side * (h.fw / 2 + 18); L.push({ x: a.p.x + a.nx * off, y: a.p.y + a.ny * off, r: 50 }); }
   const g = h.g; [[-1, 0], [1, 0], [0, 1]].forEach(([dx, dy], i) => L.push({ x: g.x + dx * (g.rx + 20), y: g.y + dy * (g.ry + 20), r: 46, gl: 1 })); L.push({ x: -16, y: -6, r: 40 }); h.lights = L; return L; }
 function nightLights(h, X, Y, k) { if (!nbuf || nbuf.width !== BW || nbuf.height !== BH) { nbuf = document.createElement('canvas'); nbuf.width = BW; nbuf.height = BH; nx = nbuf.getContext('2d'); }
   const out = G.lightsOut === G.hi, flick = G.lightsOut === G.hi && Math.sin(G.t * 23) > .92, L = holeLights(h).filter((l, i) => !out || l.gl || i % 2 === 0);
-  nx.globalCompositeOperation = 'source-over'; nx.clearRect(0, 0, BW, BH); nx.fillStyle = out ? 'rgba(3,6,16,.88)' : 'rgba(4,8,22,.8)'; nx.fillRect(0, 0, BW, BH); nx.globalCompositeOperation = 'destination-out';
-  for (const l of L) { const x = X(l.x), y = Y(l.y), r = l.r * k * (flick ? .6 : 1); if (x < -r || x > BW + r || y < -r || y > BH + r) continue; const gr = nx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.55, 'rgba(0,0,0,.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); nx.fillStyle = gr; nx.beginPath(); nx.arc(x, y, r, 0, TAU); nx.fill(); }
+  nx.globalCompositeOperation = 'source-over'; nx.clearRect(0, 0, BW, BH); nx.fillStyle = out ? 'rgba(1,2,8,.95)' : 'rgba(2,4,16,.9)'; nx.fillRect(0, 0, BW, BH); nx.globalCompositeOperation = 'destination-out';
+  for (const l of L) { const x = X(l.x), y = Y(l.y), r = l.r * k * (flick ? .6 : 1); if (x < -r || x > BW + r || y < -r || y > BH + r) continue; const gr = nx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.35, 'rgba(0,0,0,.85)'); gr.addColorStop(.75, 'rgba(0,0,0,.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); nx.fillStyle = gr; nx.beginPath(); nx.arc(x, y, r, 0, TAU); nx.fill(); }
   bx.drawImage(nbuf, 0, 0);
+  // 조명 아래 따뜻한 나트륨등 빛 (가산 합성)
+  bx.save(); bx.globalCompositeOperation = 'lighter'; for (const l of L) { const x = X(l.x), y = Y(l.y), r = l.r * k * .8 * (flick ? .6 : 1); if (x < -r || x > BW + r || y < -r || y > BH + r) continue; const g2 = bx.createRadialGradient(x, y, 0, x, y, r); g2.addColorStop(0, 'rgba(255,214,130,.16)'); g2.addColorStop(1, 'rgba(255,214,130,0)'); bx.fillStyle = g2; bx.beginPath(); bx.arc(x, y, r, 0, TAU); bx.fill(); } bx.restore();
   // 조명탑 (기둥 + 램프 + 노란 빛무리)
   const ps = Math.max(1, Math.round(k * .7)); for (const l of holeLights(h)) { const x = Math.round(X(l.x)), y = Math.round(Y(l.y)); if (x < -10 || x > BW + 10 || y < -20 || y > BH + 10) continue; const on = L.includes(l); bx.fillStyle = '#4a4f57'; bx.fillRect(x, y - 12 * ps, ps, 12 * ps); bx.fillStyle = on ? '#fff3b0' : '#333'; bx.fillRect(x - 2 * ps, y - 14 * ps, 5 * ps, 2 * ps); if (on) { bx.fillStyle = 'rgba(255,236,150,.18)'; bx.beginPath(); bx.arc(x, y - 13 * ps, 5 * ps, 0, TAU); bx.fill(); } } }
 // ===== 서밋 윈드밀 사건사고 (2026 실제 리뷰·소식 기반) =====
 const SWNEWS = ['[현지] 서밋 윈드밀 페어웨이·그린 오버시딩 보수공사… "그린 상태 들쭉날쭉" 후기 속출', '[현지] "앞팀이 6볼" 슬로 플레이 불만… 카트는 카트도로만, 90도 룰도 없음', '[현지] 나이트골프 후기 "그린 엄청 빠름, 캐디 말 믿어라"', '[현지] 수완나품 공항 바로 옆… 머리 위 이착륙 굉음에 스윙 리듬 주의', '[현지] 야간 그린피 평일 1,800밧 · 주말 3,250밧 — 낮보다 반값'];
 function swmSetup() { G.lightsOut = -1; G.swmRepair = false; if (G.course !== 'swm') return; const sd = G.qSeed || (typeof MR !== 'undefined' && MR && MR.data && MR.data.cfg && MR.data.cfg.seed) || 7, r = mulb(sd * 13 + 77); if (r() < .4) G.swmRepair = true; if (r() < .45) G.lightsOut = 1 + Math.floor(r() * Math.max(1, ((typeof HOLES !== "undefined" && HOLES.length) || 9) - 1)); setTimeout(() => { try { chat('📡 AI특파원', '🌙 ' + pick(SWNEWS), '#ffd54a'); if (G.swmRepair) chat('📡 AI특파원', '🚧 오늘 보수공사 구역 운영 — 러프·수리지 라이가 더 나쁩니다', '#ffd27a'); } catch (e) { } }, 3200); }
+// ===== 구장별 사건사고·이벤트 (v0.49, 실제 소식·후기 기반 + 제미나이 교차 조사) =====
+const CEV = {
+  bpk: { news: ['[현지] 10월 방파콩강 범람 경보 — 차청사오 3개 군 침수, 배수는 11월 중순까지 이어져', '[현지] 방파콩 리버사이드 "늘 바람 분다" — 오후 강바람 주의', '[현지] 방파콩 그린피 쿠폰 5장 4,500밧 마지막 판매(평일, 2027-02-26까지)', '[현지] "그린 잔디 결이 까다롭다" 후기 다수 — 1990년 개장, 차청사오 1호 골프장'],
+    setup: r => { if (r() < .45) { G.cev.wet = 1; return '🌊 강 범람 후유증 — 일부 페어웨이가 아직 젖어 공이 덜 구릅니다 (런 -20%)'; } if (r() < .5) { G.cev.gust = 1.25; return '🌬 오늘 방파콩 강바람이 셉니다 (바람 +25%)'; } return ''; },
+    hole: h => R() < .2 ? ['🥤 음료 스탠드 — 시원한 거 한 잔 (체력 +3)', () => { G.sta = Math.min(100, (G.sta || 100) + 3); }] : (G.cev.wet && R() < .2) ? ['🚧 침수 수리지(GUR) 표시 구역 — 걸리면 무벌타 드롭', null] : null },
+  rls: { news: ['[현지] 로얄레이크사이드 "6볼만 피하면 최고의 코스" 후기 — 슬로플레이 주의', '[현지] 방파콩강 하구 근처 — 바닷바람 섞인 바람, 1993년 개장·2011년 리뉴얼', '[현지] 라커룸에서 샤워 중 옷이 사라졌다는 후기… 귀중품 주의', '[현지] 코스 안 요트 선착장 — 해 질 녘 뷰 맛집'],
+    setup: r => { if (r() < .4) { G.cev.gust = 1.2; return '🌊 바닷바람이 올라옵니다 (바람 +20%)'; } if (r() < .35) { G.cev.slow = 1; return '🐢 오늘 6볼 단체팀이 앞에 있습니다 — 홀마다 대기, 체력 소모 ↑'; } if (r() < .3) { G.cev.fast = 1; return '⚡ 그린 스피드 데이 — 오늘 그린을 대회처럼 빠르게 깎았습니다 (+1ft)'; } return ''; },
+    hole: h => (G.cev.slow && R() < .4) ? ['🐢 앞팀 6볼 대기 10분… (체력 -2)', () => { G.sta = Math.max(20, (G.sta || 100) - 2); }] : R() < .1 ? ['⛵ 요트 선착장 옆 홀 — 경치 보다가 집중력 잠깐 흐트러짐', null] : null,
+    end: r => r() < .08 ? '🧺 라운드 후 샤워하는 사이 옷이 사라졌다! (실화 후기 오마주) — 프런트에서 겨우 찾음' : '' },
+  grn: { news: ['[현지] 그린우드(구 노블플레이스) — 피터 톰슨 설계, 언덕 많은 27홀', '[현지] "그린이 빠르고 좁다" — 새 벙커 모래 교체·클럽하우스 리뉴얼', '[현지] 태국 골프장 단골손님 왕도마뱀·뱀 — 러프 들어갈 땐 캐디 먼저', '[현지] 캐디는 전원 필수 — 그린우드 캐디들 그린 라인 잘 봄'],
+    setup: r => { if (r() < .45) { G.cev.sand = 1; return '🏖 새로 교체한 벙커 모래가 푹신 — 벙커 탈출이 더 어렵습니다'; } return ''; },
+    hole: h => R() < .14 ? ['🦎 왕도마뱀이 페어웨이를 건너는 중… 잠깐 대기', null] : R() < .12 ? ['⛰ 오르막 언덕 홀 — 카트 내려서 걸어 올라감 (체력 -2)', () => { G.sta = Math.max(20, (G.sta || 100) - 2); }] : null } };
+function cevSetup() { G.cev = {}; const c = CEV[G.course]; if (!c) return; const sd = G.qSeed || (typeof MR !== 'undefined' && MR && MR.data && MR.data.cfg && MR.data.cfg.seed) || 11, r = mulb(sd * 7 + G.course.length * 31); const msg = c.setup ? c.setup(r) : ''; G.cev.endMsg = c.end ? c.end(r) : '';
+  setTimeout(() => { try { chat('📡 AI특파원', '📰 ' + pick(c.news), '#ffd54a'); if (msg) chat('📡 AI특파원', msg, '#ffd27a'); } catch (e) { } }, 3000); }
+function cevHole(h) { const c = CEV[G.course]; if (!c || !c.hole) return; const e = c.hole(h); if (!e) return; chat('📡 AI특파원', e[0], '#cfe8ff'); if (e[1]) e[1](); }
 function swmHole(h) { if (G.course !== 'swm') return; if (G.lightsOut === G.hi) chat('📡 정b특파원', '[속보] ⚡ 조명탑 절반 정전! 어둠 속 티샷 — 정확도 추가 하락', '#ff7a7a'); else if (R() < .25) chat('📡 AI특파원', '✈ 수완나품 이륙기 굉음… 잠깐 멈췄다 치세요', '#cfe8ff'); else if (R() < .18) chat('📡 AI특파원', '🐢 앞팀 6볼 대기 중 — 카트도로 걸어서 이동, 체력 소모 ↑', '#cfe8ff'); if (h.no === 12) chat('📡 AI특파원', '🏝 12번 아일랜드 그린 — 밤엔 물이 안 보입니다', '#ff7a7a'); }
 function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1809,7 +1827,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.48.0';
+const VERSION = 'v0.49.1';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -1834,6 +1852,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
+ ['v0.49.1', '2026-11-28', ['🌙 서밋 윈드밀 야간 조명 강화: 빛 밖은 훨씬 어둡게, 조명 빛무리는 작고 진하게 + 노란 나트륨등 빛깔 — 낮과 확실히 구분']],
+ ['v0.49.0', '2026-11-28', ['📰 구장별 사건사고·이벤트 (서밋 윈드밀처럼, 실제 소식·후기 + 제미나이 교차 조사)', '🌊 방파콩: 10월 방파콩강 범람 후유증 — 젖은 페어웨이(런 -20%)·침수 수리지, 강바람 강한 날(+25%), 음료 스탠드(체력+3), 쿠폰 소식', '⛵ 로얄레이크사이드: 그린 스피드 데이(+1ft, 제미나이 아이디어), 6볼 단체팀 슬로플레이(체력↓), 하구 바닷바람(+20%), 요트 선착장, 라커룸 옷 분실 해프닝(후기 오마주)', '🦎 그린우드: 새 벙커 모래 푹신(벙커 탈출↓), 왕도마뱀 횡단, 언덕 오르막 홀(체력↓), 빠르고 좁은 그린 소식']],
  ['v0.48.0', '2026-11-27', ['🟢 그린 스피드(스팀프) 구장별 적용: 로얄레이크사이드 9.5 · 방파콩 10 · 그린우드 10.5 · 서밋 윈드밀 11ft — 빠른 그린은 같은 힘에 더 구르고 경사도 더 탐. 비 오면 12% 느려지고 새벽 이슬도 살짝 느림', '🌡 실제 기온 반영: 따뜻할수록 공기가 가벼워 비거리↑ (10°C당 약 +1.8%, 실시간 날씨 쓰면 현지 기온)', '🏜 태국 건기(11~4월) 페어웨이 단단 → 런 +10%, 우기(5~10월) -10%, 비 오면 더 줄어듦', '🧢 첫 홀에 캐디가 오늘 그린 스피드·기온·런 상태를 알려줌, 그린 위 경사 표시에도 스피드 표시', '캐디 가이드(파워 표시)·CPU도 그린 스피드와 기온을 읽고 침']],
  ['v0.47.5', '2026-11-27', ['🖼 결과 카드에 구장 정보 표시: 골프장 이름 · 코스(A·B 등)/홀 수 · 야간·우중 · 멀티/따로치기 · 내기 방식', '🐞 결과 카드 긴 줄이 잘리던 문제 수정 (같이 치기 주소 끝 /golf 잘림 등) — 자동 줄바꿈']],
  ['v0.47.4', '2026-11-27', ['🧢 방파콩 리버사이드 캐디 정보 반영 (공식 예약 안내 기준): 캐디피 400밧(18홀) 별도 · 캐디팁 최소 400밧 · 카트 750밧 — 멀티 체크인 비용·안내에 표시', '🎫 방파콩 그린피 쿠폰 안내: 5장 4,500밧(평일, 2027-02-26까지)']],
@@ -2158,7 +2178,7 @@ function aceReward() { const msgs = []; led('⛳ 홀인원 상금'); SV.wallet +
 // ===== 티타임(시간대·날씨), 코스튬, 캐디 호감도, 미니게임 기록, 환생 =====
 const TODW = { dawn: .5, day: 1, after: 1.3, squall: 1.7, night: .8 }, TODN = { dawn: '🌅 새벽', day: '☀ 한낮', after: '🌤 오후', squall: '⛈ 스콜', night: '🌙 야간' };
 function todPick() { if ((COURSES[G.course] || {}).night) return 'night'; const v = (G.multi ? G.mTod : ($('#oTod') || {}).value) || 'auto'; if (G.daily) return 'day'; if (v !== 'auto') return v; const h = new Date().getHours(); return h < 8 ? 'dawn' : h < 13 ? 'day' : h < 18 ? 'after' : 'night'; }
-function todFx() { const f = { dawn: 'sepia(.25) brightness(.92)', day: '', after: 'saturate(1.1) sepia(.1)', squall: 'brightness(.78) saturate(.7)', night: 'saturate(.85)' }[G.tod] || ''; $('#cv').style.filter = f; if (G.tod !== 'day') setTimeout(() => toast(TODN[G.tod] + ' 라운드' + (G.tod === 'night' ? ((COURSES[G.course] || {}).night ? ' — 서밋 윈드밀 조명 점등! 빛 밖은 깜깜, 정확도 소폭 하락' : ' — 라이트 켜짐, 정확도 소폭 하락') : G.tod === 'dawn' ? ' — 이슬로 런 감소, 바람 약함' : G.tod === 'squall' ? ' — 비와 돌풍 주의' : ' — 바람 강해짐'), '#cfe8ff'), 900); }
+function todFx() { const f = { dawn: 'sepia(.25) brightness(.92)', day: '', after: 'saturate(1.1) sepia(.1)', squall: 'brightness(.78) saturate(.7)', night: 'saturate(.7) brightness(.92) hue-rotate(8deg)' }[G.tod] || ''; $('#cv').style.filter = f; if (G.tod !== 'day') setTimeout(() => toast(TODN[G.tod] + ' 라운드' + (G.tod === 'night' ? ((COURSES[G.course] || {}).night ? ' — 서밋 윈드밀 조명 점등! 빛 밖은 깜깜, 정확도 소폭 하락' : ' — 라이트 켜짐, 정확도 소폭 하락') : G.tod === 'dawn' ? ' — 이슬로 런 감소, 바람 약함' : G.tod === 'squall' ? ' — 비와 돌풍 주의' : ' — 바람 강해짐'), '#cfe8ff'), 900); }
 const COS = [['base', '기본 복장', 0], ['red', '선데이 레드', 3000, '#c81e1e', '#111111'], ['navy', '네이비 프로', 1500, '#1f3a7a', '#d8d8d8'], ['pink', '핑크 패셔니스타', 2500, '#ff7fb0', '#ffffff'], ['white', '올화이트 신사', 2000, '#f2f2f2', '#f2f2f2'], ['gold', '골드 챔피언', 8000, '#ffcc33', '#262b36'], ['jacket', '우승 그린 재킷', 20000, '#1f7a3a', '#e8e0c8']];
 function endExtras() { if (G.cad && G.cad.des) { SV.cadAff = SV.cadAff || {}; const a = (SV.cadAff[G.cad.no] || 0) + 5 + Math.floor((G.tipTot || 0) / 100); SV.cadAff[G.cad.no] = Math.min(100, a); setTimeout(() => toast(`💗 ${G.cad.no}번 캐디 호감도 ${SV.cadAff[G.cad.no]}/100 (높을수록 능력 상승, 팁 주면 더 올라요)`, '#ffb0d0'), 2200); }
   saveSV(); if (!NET.ok || !SV.myCh) return; const nm = (CH.find(c => c.id === SV.myCh) || {}).name;
