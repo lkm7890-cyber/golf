@@ -1740,7 +1740,7 @@ const RJOB = {
   sg: { job: '특파원 음유시인', ic: '🎤', hp: 1.1, atk: 1.05, def: 1.05, mag: 1.1, trait: '물 몬스터에게 받는 피해 +20% (물귀신 체질)' },
   yt: { job: '법인장 나이트', ic: '🛡', hp: 1.15, atk: 1.15, def: 1.1, mag: .7, trait: '보스에게 주는 피해 +15% (배판 체질)' },
   gy: { job: '의장 팔라딘', ic: '📜', hp: 1.2, atk: 1.0, def: 1.2, mag: 1.0, trait: '초당 HP 1% 회복 (싱글의 여유)' },
-  gm: { job: 'AI 커맨드 마법사', ic: '🧙', hp: 1.0, atk: .9, def: .95, mag: 1.45, trait: '원거리 마법 공격 · 치명타 기본 15% (퍼터신)' },
+  gm: { job: 'AI 커맨드 마법사', ic: '🧙', hp: 1.0, atk: .9, def: .95, mag: 1.25, trait: '원거리 마법 공격 · 치명타 기본 15% (퍼터신)' },
   hw: { job: '역지표 갬블러', ic: '🎲', hp: 1.0, atk: 1.05, def: .95, mag: 1.0, trait: '공격 피해 0.3~2.2배 랜덤 (역지표)' },
   du: { job: '정품 연금술사', ic: '⚗', hp: 1.05, atk: .95, def: 1.0, mag: 1.15, trait: '골드 획득 +15% · 아이템 드롭 +30% (현실파 실무형)' },
   jt: { job: '장투 수도승', ic: '🧘', hp: 1.1, atk: 1.0, def: 1.05, mag: 1.0, trait: '같은 층에 오래 있을수록 공격력↑ (복리, 최대 +60%)' },
@@ -1964,7 +1964,7 @@ function rpgMon(bt, r, ti) { bt = bt === true ? 4 : (bt | 0); const S = RS, M = 
   else { t = M.mon[ti != null ? ti : Math.floor(r() * M.mon.length)].slice(); if (bt === 2) t[1] = UPRE[Math.floor(r() * UPRE.length)] + ' ' + t[1]; if (bt === 3) { const ids = Object.keys(SUTI).filter(i => i !== S.id), id = ids[[...S.map].reduce((a, ch) => a + ch.charCodeAt(0), 0) % ids.length], ch = CH.find(x => x.id === id); t = [RJOB[id].ic, SUTI[id] + ' ' + (ch ? ch.name : id), 1.2, 0]; } }
   const lv = mobLv(M, S.floor, bt), sc = mobSc(lv) * t[2]; let x, y; { const q = S.hole ? rpgSpot(r) : { x: WW / 2, y: WH / 2 }; x = q.x; y = q.y; }
   const af = []; const nA = [0, 0, S.floor >= 12 ? 2 : 1, 3, 0][bt]; while (af.length < nA) { const ks = Object.keys(BAFX), a = ks[Math.floor(r() * ks.length)]; if (!af.includes(a)) af.push(a); }
-  const lvk = 1 + lv * .005, hm = lvk * (bt ? .8 : 1.8) * [1, S.floor >= 6 ? 2.5 : 2, 4, 6, 9][bt] * (af.includes('tuf') ? 1.5 : 1), am = lvk * (bt ? .7 : .6) * [1, S.floor >= 6 ? 2.2 : 2, 1.6, 1.8, 1.6][bt] * (af.includes('str') ? 1.35 : 1);
+  const lvk = 1 + lv * .005, hm = lvk * (bt ? 1.1 : 3.2) * [1, S.floor >= 6 ? 2.5 : 2, 4, 6, 9][bt] * (af.includes('tuf') ? 1.5 : 1), am = lvk * (bt ? .6 : .45) * [1, S.floor >= 6 ? 2.2 : 2, 1.6, 1.8, 1.6][bt] * (af.includes('str') ? 1.35 : 1);
   const hp = Math.round(48 * MOBK.hp * sc * hm * (1 + .45 * ((S.allies || []).length))); return { lv, ic: t[0], n: t[1], w: !!t[3], boss: bt > 0, bt, af, an: af.map(a => BAFX[a]), ph: 1, sp_: 2 + r() * 2, x, y, hp, max: hp, atk: Math.round(7 * MOBK.atk * sc * am), spd: (bt === 4 ? 34 : (44 + r() * 22) * (bt ? .85 : 1)) * (S.map === 'swm' ? 1.1 : 1) * (af.includes('spd') ? 1.5 : 1), r: [13, 17, 19, 21, 26][bt], cd: 0, psn: 0, weak: 1, hit: 0 }; }
 function rpgBlocked(x, y) { const S = RS; for (const p of S.ponds) if (((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 < 1 && !(p.br != null && Math.abs(x - p.br) < 26)) return true; return x < 8 || y < 8 || x > WW - 8 || y > WH - 8; }
 function rpgStep(o, kx, ky, gx, gy, v) { const dx = gx - o[kx], dy = gy - o[ky], d = Math.hypot(dx, dy); if (d < .5) return false; const a0 = Math.atan2(dy, dx), st = Math.min(v, d); for (const off of [0, .6, -.6, 1.2, -1.2, 1.8, -1.8]) { const a = a0 + off * (o.sw || 1), nx = o[kx] + Math.cos(a) * st, ny = o[ky] + Math.sin(a) * st; if (!rpgBlocked(nx, ny)) { o[kx] = nx; o[ky] = ny; if (off) o.sw = Math.sign(off) * (o.sw ? Math.abs(o.sw) : 1); return true; } } return false; } // 연못에 막히면 옆으로 돌아감
@@ -2026,7 +2026,7 @@ function rpgKill(m) { RS.pt = RS.pt || []; rpgBurst(m.x, m.y, m.bt ? BGR[m.bt][1
   const bt = m.bt | 0, R = Math.random, up = Math.max(0, m.lv - rpgSV().lv), dl = bt === 0 ? (R() < .05 * (S.id === 'du' ? 1.3 : 1) * (1 + Math.min(.6, up * .06)) * (rpgBuf('drop') ? 2 : 1) ? [0] : []) : bt === 1 ? [1] : bt === 2 ? (R() < .4 ? [2, 1] : [2]) : bt === 3 ? [2, R() < .35 ? 3 : 2] : [1, 2, R() < .5 ? 3 : 2]; // 등급별 최소 등급: 챔피언 매직+ · 유니크 레어+ · 슈퍼유니크 레어 확정+유니크 35% · 최종 유니크 50%
   for (let i = 0; i < dl.length; i++) if (R() < Math.min(.35, up * .035) + (rpgBuf('drop') ? .1 : 0)) dl[i] = Math.min(3, dl[i] + 1); /* 높은 몹: 등급 한 단계 상승 확률 (1레벨당 3.5%) */
   dl.forEach((rm, i) => S.drops.push({ x: m.x + (i - (dl.length - 1) / 2) * 22, y: m.y + 8, k: 'item', it: itemGen(tier, S.floor, rm, S.map) })); if (bt >= 1) { rpgMsg(`💎 [${BGR[bt][0]}] ${m.n} 처치!`); rpgNarr(`${BGR[bt][0]} 처치!`); setTimeout(() => rpgSay('kill', 1, true), 1200); } else rpgSay('kill', .04);
-  if (Math.random() < .06) S.drops.push({ x: m.x - 8, y: m.y - 8, k: 'pot' }); { const gap = rpgSV().lv - m.lv, pen = gap > 5 ? Math.max(.15, 1 - (gap - 5) * .12) : gap < 0 ? Math.min(2, 1 - gap * .1) : 1; /* 높은 몹: 1레벨당 +10% (최대 2배) */ rpgXp(Math.round((8 + m.lv * 1.5) * [1, 3, 5, 7, 10][m.bt | 0] * pen * (rpgBuf('xp') ? 2 : 1))); } S.drops.forEach(d => { if (rpgBlocked(d.x, d.y)) { d.x = m.x; d.y = m.y; } }); if (S.tgt === m) S.tgt = null; }
+  if (Math.random() < .06) S.drops.push({ x: m.x - 8, y: m.y - 8, k: 'pot' }); { const gap = rpgSV().lv - m.lv, pen = gap > 5 ? Math.max(.15, 1 - (gap - 5) * .12) : gap < 0 ? Math.min(2, 1 - gap * .1) : 1; /* 높은 몹: 1레벨당 +10% (최대 2배) */ rpgXp(Math.round((11 + m.lv * 2) * [1, 3, 5, 7, 10][m.bt | 0] * pen * (rpgBuf('xp') ? 2 : 1))); } S.drops.forEach(d => { if (rpgBlocked(d.x, d.y)) { d.x = m.x; d.y = m.y; } }); if (S.tgt === m) S.tgt = null; }
 function rpgSkill(i) { const S = RS; if (!S || S.over) return; const s = S.sk ? S.sk[i] : skOf(S.id, i); if (S.cds[i] > 0) return; if (S.mp < s.mp) { rpgMsg('💧 MP 부족'); return; } S.mp -= s.mp; S.cds[i] = s.cd; rpgSay('skill', .45); { const c = SKC[s.t] || '#fff'; S.cast = { c, t: .4 }; S.swing = .25; rpgFx(S.px, S.py - 58, s.ic, c, 2); rpgBurst(S.px, S.py - 16, c, 12, 70, 40); if (['aoe', 'nuke', 'exec'].includes(s.t)) S.shk = Math.max(S.shk || 0, s.t === 'aoe' ? .2 : .25); } // 시전 연출: 발밑 빛 + 큰 아이콘 + 파티클
   const live = S.mons.filter(m => m.hp > 0), near = live.sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py)), tg = (S.tgt && S.tgt.hp > 0) ? S.tgt : near[0];
   if (s.t === 'buff') { S.buf.atk = 8 * s.dur; rpgMsg(s.ic + ' ' + s.n + ' — 공격력 +50%'); }
@@ -2252,7 +2252,7 @@ if (SV.music === undefined) SV.music = true;
 $('#mMusic').onclick = () => { SV.music = !SV.music; saveSV(); musicLabel(); bgmStart(); };
 document.addEventListener('pointerdown', () => { if (SV.music && !bgmTimer) bgmStart(); }, { once: true });
 // ================= 게임 안내 · 업데이트 내역 (업데이트할 때마다 VERSION과 CHANGELOG 맨 위에 추가) =================
-const VERSION = 'v0.55.2';
+const VERSION = 'v0.55.3';
 const ABOUT = [
  ['한 줄 소개', '촌부리 주통방 8인이 도트 캐릭터로 나오는 모바일 골프 게임. 실제 코스 스코어카드, 실제 장비, 실제 말투로 치는 타당 100밧 내기 한 판.'],
  ['플레이', '스타트 → 내 캐릭터·인원(2~8명)·스테이지 선택 → 화면 탭으로 스윙. ① 파워(노란 선, 게이지 두 번 왕복) ② 정확도(가운데 초록 칸). 나머지 멤버는 CPU가 칩니다.'],
@@ -2277,7 +2277,8 @@ const ABOUT = [
  ['저장', '지갑·레벨·장비·스토리는 이 기기 브라우저에 저장됩니다. 결과는 카톡 붙여넣기용으로 복사할 수 있습니다.'],
 ];
 const CHANGELOG = [
-   ['v0.55.2', '2026-11-28', ['🔊 RPG 음성 멘트: 멤버별 말투로 입장·스킬·보스 등장·레벨업·위기·레어 획득·사망·클리어 대사 (말풍선 + 대사 음성, 설정의 🔊 대사 음성 따라감)', '📡 AI특파원 해설: 보스 등장·처치, 18홀 정복 때 음성 중계']],
+   ['v0.55.3', '2026-11-28', ['👾 몬스터가 너무 쉽게 잡히던 것 조정: 일반 몬스터 체력 약 1.8배(같은 레벨 기준 5~7대), 대신 공격력 25% 낮춰 무리에 바로 녹지 않게 · 보스 체력 1.4배', '🧙 AI 커맨드 마법사 마법 배율 1.45 → 1.25 (원거리+치명 15%로 혼자 너무 강했음)', '⭐ 몬스터 체력이 늘어난 만큼 처치 경험치 약 1.3배 (만렙 시간 유지)']],
+ ['v0.55.2', '2026-11-28', ['🔊 RPG 음성 멘트: 멤버별 말투로 입장·스킬·보스 등장·레벨업·위기·레어 획득·사망·클리어 대사 (말풍선 + 대사 음성, 설정의 🔊 대사 음성 따라감)', '📡 AI특파원 해설: 보스 등장·처치, 18홀 정복 때 음성 중계']],
  ['v0.55.1', '2026-11-28', ['👑 구장 주인 수입 확대: 골프 멀티 참가비 전체(그린피 + 카트·캐디피·락커)와 RPG 던전 입장료가 구장 주인 지갑으로 (식사비·캐디팁 제외)']],
  ['v0.55.0', '2026-11-28', ['⛳ RPG 맵 = 실제 골프장 홀: 골프 게임과 같은 코스 레이아웃 (티잉 그라운드 → 도그렉 페어웨이 → 그린·핀, 실제 벙커·물 위치, 양옆 나무 라인, 물을 가로지르는 곳은 카트 다리)', '👾 몬스터 수 약 2배 + 디아블로처럼 무리(팩)로 배치, 일반 몬스터 체력 약 1.7배 (한두 방에 안 죽음)', '⚖ 골프 레벨이 RPG 능력치에 너무 크게 들어가던 것 축소 (골프 레벨의 20%, 최대 +12)', '💳 현질 상점 (골프 지갑 밧): 경험치 2배·드롭 2배(1시간), 부활 주문서, 강화 보호권, 맥주 10병, 경험치 물약', '🏌 공격 모션: 팔이 보이게 클럽을 크게 휘두름(가속·감속), 원거리는 팔 뻗어 시전', '👑 구장 정복: 주인 없는 구장을 RPG 1번홀부터 18홀 최초 클리어하면 구장 주인 → 골프 멀티 그린피가 주인 지갑으로', '⚔ 구장 쟁탈전: 그 구장 18홀을 한 번 클리어한 멤버는 주인에게 하루 1번 자동 대결 도전, 이기면 구장 양도', '🛺 다음 홀로 넘어갈 때 HP 50%·MP 전부 회복 (카트 휴식)']],
  ['v0.54.2', '2026-11-28', ['⚖ 레벨 차이 전투 (디아블로식): 나보다 높은 몬스터는 공격이 빗나가고(최대 30%) 주는 피해↓·받는 피해↑, 낮은 몬스터는 반대', '⭐ 높은 몬스터 처치 시 경험치 1레벨당 +10% (최대 2배), 아이템 드롭률↑·등급 한 단계 상승 확률 1레벨당 3.5% (최대 35%)', '🎨 몬스터 레벨 숫자 색: 빨강(5↑ 높음)·주황·흰색(비슷)·초록·회색(낮음 = 경험치 감소)']],
